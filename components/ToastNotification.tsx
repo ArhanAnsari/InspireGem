@@ -1,20 +1,19 @@
 // components/ToastNotification.tsx
-"use client"; // Ensure this is a client-side component
+"use client"; // Make this a client-side component
 
-import React from 'react';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-export const notify = (message: string, type: "success" | "error" = "success") => {
+export const notify = (message: string, type: "success" | "error") => {
   if (type === "success") {
     toast.success(message);
-  } else {
+  } else if (type === "error") {
     toast.error(message);
   }
 };
 
-const ToastNotification: React.FC = () => {
-  return <ToastContainer position="top-right" autoClose={5000} hideProgressBar />;
+const ToastNotification = () => {
+  return <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} closeOnClick pauseOnHover draggable pauseOnFocusLoss />;
 };
 
 export default ToastNotification;
