@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { signIn } from 'next-auth/react';
-import { notify } from '../../../components/ToastNotification';
+import { notify } from '../components/ToastNotification';
 
 const SignInPage: React.FC = () => {
   const handleGoogleSignIn = () => {
