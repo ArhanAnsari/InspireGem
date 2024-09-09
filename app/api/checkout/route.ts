@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
   const plan = searchParams.get('plan');
   let priceId: string | undefined;
 
+  // Set Stripe Price IDs for each plan
   if (plan === 'pro') {
     priceId = 'price_12345_pro'; // Replace with your actual Stripe price ID
   } else if (plan === 'enterprise') {
@@ -29,8 +30,8 @@ export async function GET(req: NextRequest) {
         },
       ],
       mode: 'subscription',
-      success_url: ${req.nextUrl.origin}/success?session_id={CHECKOUT_SESSION_ID},
-      cancel_url: ${req.nextUrl.origin}/plans,
+      success_url: `${req.nextUrl.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${req.nextUrl.origin}/plans`,
     });
 
     return NextResponse.json({ sessionId: session.id });
@@ -38,4 +39,3 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Something went wrong with Stripe' }, { status: 500 });
   }
 }
-
