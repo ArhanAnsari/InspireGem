@@ -1,7 +1,7 @@
 // app/api/auth/[...nextauth].ts
 import NextAuth from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
-import { toast } from 'react-toastify';
+import { notify } from '../../../components/ToastNotification'; // Import the notification utility
 
 export default NextAuth({
   providers: [
@@ -13,17 +13,31 @@ export default NextAuth({
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async signIn({ user, account, profile }) {
-      toast.success('Signed in successfully!');
-      return true; // Custom logic if needed
+      const allowedDomains = [
+        "gmail.com",
+        "yahoo.com",
+        "outlook.com",
+        "hotmail.com",
+        "icloud.com",
+      ];
+
+      const userDomain = profile?.email?.split("@")[1];
+
+      if (userDomain && allowedDomains.includes(userDomain.toLowerCase())) {
+        notify("Sign-in successful!", "success"); // Show success notification
+        return true;
+      }
+
+      notify("Sign-in failed: Unauthorized domain", "error"); // Show error notification
+      return false;
     },
     async session({ session, token }) {
       session.user = token;
       return session;
     },
   },
-  events: {
-    signIn: () => toast.success('Successfully signed in!'),
-    signOut: () => toast.info('Successfully signed out!'),
-    error: (message) => toast.error(Error: ${message}),
-  }
+  pages: {
+    signIn: '/auth/signin',
+    error: '/auth/error',
+  },
 });
