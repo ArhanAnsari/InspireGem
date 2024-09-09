@@ -1,13 +1,16 @@
 // app/auth/signin/page.tsx
 "use client"; // Client-side component
 
-import React from 'react';
-import { signIn } from 'next-auth/react';
-import { notify } from './components/ToastNotification';
+import React from "react";
+import { signIn } from "next-auth/react";
+import { notify } from "../../../components/ToastNotification"; // Correct path
+import ToastNotification from "../../../components/ToastNotification";
 
 const SignInPage: React.FC = () => {
   const handleGoogleSignIn = () => {
-    signIn('google').catch(() => notify('Failed to sign in with Google', 'error'));
+    signIn("google").catch(() =>
+      notify("Failed to sign in with Google", "error")
+    );
   };
 
   return (
@@ -20,6 +23,8 @@ const SignInPage: React.FC = () => {
         >
           Sign in with Google
         </button>
+        {/* Add Toast Notification */}
+        <ToastNotification />
       </div>
     </div>
   );
