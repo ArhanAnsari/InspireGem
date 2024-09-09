@@ -1,7 +1,7 @@
 // app/api/auth/[...nextauth].ts
 import NextAuth from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
-import { notify } from '../../../components/ToastNotification'; // Import the notification utility
+import { notify } from '../components/ToastNotification'; // Import the notification utility
 
 export default NextAuth({
   providers: [
