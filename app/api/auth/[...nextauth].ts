@@ -1,7 +1,6 @@
 // app/api/auth/[...nextauth].ts
-import NextAuth from 'next-auth';
-import GoogleProvider from 'next-auth/providers/google';
-import { notify } from '../components/ToastNotification';
+import NextAuth from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
 
 export default NextAuth({
   providers: [
@@ -13,31 +12,19 @@ export default NextAuth({
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async signIn({ user, account, profile }) {
-      const allowedDomains = [
-        "gmail.com",
-        "yahoo.com",
-        "outlook.com",
-        "hotmail.com",
-        "icloud.com",
-      ];
-
-      const userDomain = profile?.email?.split("@")[1];
-
-      if (userDomain && allowedDomains.includes(userDomain.toLowerCase())) {
-        notify("Sign-in successful!", "success"); // Show success notification
-        return true;
+      // Use an underscore to indicate the variables are intentionally unused
+      const popularDomains = ["gmail.com", "yahoo.com", "outlook.com"];
+      const emailDomain = profile?.email?.split("@")[1];
+      
+      if (!emailDomain || !popularDomains.includes(emailDomain)) {
+        return false; // Deny sign-in if the email domain is not in the popular list
       }
 
-      notify("Sign-in failed: Unauthorized domain", "error"); // Show error notification
-      return false;
+      return true; // Allow sign-in for popular domains
     },
     async session({ session, token }) {
       session.user = token;
       return session;
     },
-  },
-  pages: {
-    signIn: '/auth/signin',
-    error: '/auth/error',
   },
 });
