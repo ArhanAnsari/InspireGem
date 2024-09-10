@@ -1,28 +1,28 @@
 // components/Header.tsx
 "use client"; // Make this a client-side component
-import React from 'react';
-import Link from 'next/link';
-import { signIn, signOut, useSession } from 'next-auth/react';
-import { toast } from 'react-toastify';
+import React from "react";
+import Link from "next/link";
+import { signIn, signOut, useSession } from "next-auth/react";
+import { toast } from "react-toastify";
 
 const Header: React.FC = () => {
   const { data: session } = useSession();
 
   const handleSignIn = async () => {
     try {
-      await signIn('google');
-      toast.success('Signing in...');
+      await signIn("google");
+      toast.success("Signing in...");
     } catch (error) {
-      toast.error('Failed to sign in. Please try again.');
+      toast.error("Failed to sign in. Please try again.");
     }
   };
 
   const handleSignOut = async () => {
     try {
       await signOut();
-      toast.info('Signing out...');
+      toast.info("Signing out...");
     } catch (error) {
-      toast.error('Failed to sign out. Please try again.');
+      toast.error("Failed to sign out. Please try again.");
     }
   };
 
@@ -62,4 +62,4 @@ const Header: React.FC = () => {
   );
 };
 
-export default Header;
+export default Header;
