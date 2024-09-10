@@ -2,7 +2,7 @@
 import React from 'react';
 import Link from 'next/link';
 
-const PlansPage: React.FC = () => {
+const PlansPage = () => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
       {/* Free Plan */}
