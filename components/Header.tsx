@@ -1,27 +1,28 @@
 // components/Header.tsx
-import React from 'react';
-import Link from 'next/link';
-import { signIn, signOut, useSession } from 'next-auth/react';
-import { toast } from 'react-toastify';
+"use client";
+import React from "react";
+import Link from "next/link";
+import { signIn, signOut, useSession } from "next-auth/react";
+import { toast } from "react-toastify";
 
 const Header: React.FC = () => {
   const { data: session } = useSession();
 
   const handleSignIn = async () => {
     try {
-      await signIn('google');
-      toast.success('Signing in...');
+      await signIn("google");
+      toast.success("Signing in...");
     } catch (error) {
-      toast.error('Failed to sign in. Please try again.');
+      toast.error("Failed to sign in. Please try again.");
     }
   };
 
   const handleSignOut = async () => {
     try {
       await signOut();
-      toast.info('Signing out...');
+      toast.info("Signing out...");
     } catch (error) {
-      toast.error('Failed to sign out. Please try again.');
+      toast.error("Failed to sign out. Please try again.");
     }
   };
 
@@ -29,14 +30,14 @@ const Header: React.FC = () => {
     <header className="w-full bg-white shadow p-4">
       <nav className="flex justify-between items-center max-w-4xl mx-auto">
         <Link href="/">
-          <a className="text-2xl font-bold">AI App</a>
+          <p className="text-2xl font-bold">AI App</p>
         </Link>
         <div>
           <Link href="/">
-            <a className="mr-4 text-gray-600">Home</a>
+            <p className="mr-4 text-gray-600">Home</p>
           </Link>
           <Link href="/plans">
-            <a className="mr-4 text-gray-600">Plans</a>
+            <p className="mr-4 text-gray-600">Plans</p>
           </Link>
           {session ? (
             <>
@@ -61,4 +62,4 @@ const Header: React.FC = () => {
   );
 };
 
-export default Header;
+export default Header;

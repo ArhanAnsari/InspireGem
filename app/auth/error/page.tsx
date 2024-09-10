@@ -1,5 +1,4 @@
 // app/auth/error/page.tsx
-"use client";
 
 export default function AuthErrorPage() {
   return (
