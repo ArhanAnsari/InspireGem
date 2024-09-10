@@ -1,5 +1,5 @@
 // components/Header.tsx
-"use client";
+"use client"; // Make this a client-side component
 import React from "react";
 import Link from "next/link";
 import { signIn, signOut, useSession } from "next-auth/react";
@@ -30,14 +30,14 @@ const Header: React.FC = () => {
     <header className="w-full bg-white shadow p-4">
       <nav className="flex justify-between items-center max-w-4xl mx-auto">
         <Link href="/">
-          <p className="text-2xl font-bold">AI App</p>
+          <span className="text-2xl font-bold">AI App</span>
         </Link>
         <div>
           <Link href="/">
-            <p className="mr-4 text-gray-600">Home</p>
+            <span className="mr-4 text-gray-600">Home</span>
           </Link>
           <Link href="/plans">
-            <p className="mr-4 text-gray-600">Plans</p>
+            <span className="mr-4 text-gray-600">Plans</span>
           </Link>
           {session ? (
             <>
