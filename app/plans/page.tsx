@@ -1,8 +1,9 @@
 // app/plans/page.tsx
+"use client";
 import React from 'react';
 import Link from 'next/link';
 
-const PlansPage = () => {
+export default function PlansPage() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
       {/* Free Plan */}
@@ -45,6 +46,4 @@ const PlansPage = () => {
       </div>
     </div>
   );
-};
-
-export default PlansPage;
+}
