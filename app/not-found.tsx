@@ -1,5 +1,5 @@
 // app/not-found.tsx
-"use client";
+"use client"; // Ensure the client directive is at the top
 
 export default function NotFound() {
   return (
