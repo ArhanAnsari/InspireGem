@@ -2,7 +2,7 @@
 import React from 'react';
 import Link from 'next/link';
 
-const HomePage = () => {
+export default function HomePage() {
   return (
     <div className="flex flex-col items-center justify-center text-center">
       <h1 className="text-4xl font-bold mb-4">Welcome to the AI-Powered Web App</h1>
@@ -14,6 +14,6 @@ const HomePage = () => {
       </Link>
     </div>
   );
-};
+}
 
-export default HomePage;
+//export default HomePage;
