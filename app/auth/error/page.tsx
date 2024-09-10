@@ -1,9 +1,9 @@
 // app/auth/error/page.tsx
-'use client'; // This is a client component
+'use client';
 
 import React from 'react';
 
-const AuthErrorPage: React.FC = () => {
+const AuthErrorPage = () => {
   return (
     <div className="text-center">
       <h1 className="text-4xl font-bold">Authentication Error</h1>
