@@ -30,14 +30,14 @@ const Header: React.FC = () => {
     <header className="w-full bg-white shadow p-4">
       <nav className="flex justify-between items-center max-w-4xl mx-auto">
         <Link href="/">
-          <a className="text-2xl font-bold">AI App</a>
+          <span className="text-2xl font-bold">AI App</span>
         </Link>
         <div>
           <Link href="/">
-            <a className="mr-4 text-gray-600">Home</a>
+            <span className="mr-4 text-gray-600">Home</span>
           </Link>
           <Link href="/plans">
-            <a className="mr-4 text-gray-600">Plans</a>
+            <span className="mr-4 text-gray-600">Plans</span>
           </Link>
           {session ? (
             <>
