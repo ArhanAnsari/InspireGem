@@ -1,15 +1,11 @@
 // app/auth/error/page.tsx
-'use client';
+"use client";
 
-import React from 'react';
-
-const AuthErrorPage = () => {
+export default function ErrorPage() {
   return (
-    <div className="text-center">
-      <h1 className="text-4xl font-bold">Authentication Error</h1>
-      <p>There was an issue with your sign-in. Please try again.</p>
+    <div>
+      <h1>Authentication Error</h1>
+      <p>There was an error with your authentication request.</p>
     </div>
   );
-};
-
-export default AuthErrorPage;
+}
