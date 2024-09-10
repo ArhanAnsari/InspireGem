@@ -2,7 +2,7 @@
 'use client'; // This is a client component
 
 import React from 'react';
-import ToastNotification from './components/ToastNotification'; // Update path if necessary
+import ToastNotification from '../components/ToastNotification'; // Update path if necessary
 
 const SignInPage: React.FC = () => {
   return (
