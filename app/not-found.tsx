@@ -1,9 +1,9 @@
 // app/not-found.tsx
-'use client'; // This is a client component
+'use client';
 
 import React from 'react';
 
-const NotFoundPage: React.FC = () => {
+const NotFoundPage = () => {
   return (
     <div className="text-center">
       <h1 className="text-4xl font-bold">404 - Not Found</h1>
