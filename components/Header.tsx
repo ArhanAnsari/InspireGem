@@ -1,4 +1,5 @@
 // components/Header.tsx
+"use client"; // Make this a client-side component
 import React from 'react';
 import Link from 'next/link';
 import { signIn, signOut, useSession } from 'next-auth/react';
