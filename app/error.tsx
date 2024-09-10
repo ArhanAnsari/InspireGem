@@ -1,9 +1,9 @@
 // app/error.tsx
-'use client'; // This is a client component
+'use client';
 
 import React from 'react';
 
-const ErrorPage: React.FC = () => {
+const ErrorPage = () => {
   return (
     <div className="text-center">
       <h1 className="text-4xl font-bold">An Error Occurred</h1>
