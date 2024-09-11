@@ -13,12 +13,12 @@ export default NextAuth({
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async signIn({ user, account, profile }) {
-      // Use an underscore to indicate the variables are intentionally unused
+      // Check if the user's email domain is popular
       const popularDomains = ["gmail.com", "yahoo.com", "outlook.com"];
-      const emailDomain = profile?.email?.split("@")[1];
+      const emailDomain = profile?.email?.split("@")[1]; // Get the domain from the user's email
       
       if (!emailDomain || !popularDomains.includes(emailDomain)) {
-        return false; // Deny sign-in if the email domain is not in the popular list
+        return false; // Deny sign-in if the email domain is not in the allowed list
       }
 
       return true; // Allow sign-in for popular domains
