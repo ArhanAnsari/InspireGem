@@ -28,4 +28,6 @@ export default NextAuth({
       return session;
     },
   },
+  // Other configurations...
+  debug: true, // Enable this for more detailed logs
 });
