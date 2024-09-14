@@ -4,13 +4,13 @@ import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import PlansPage from "../plans/page"; // Import the PlansPage component
 
 export default function Dashboard() {
   const { data: session } = useSession();
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
 
-  // Function to handle AI content generation
   const generateAIContent = async () => {
     if (!input) {
       toast.error("Please enter some text to generate AI content.");
@@ -61,7 +61,7 @@ export default function Dashboard() {
 
       <div>
         <h2>Available Plans</h2>
-        <Plans />
+        <PlansPage /> {/* Use the imported PlansPage component */}
       </div>
 
       <ToastContainer />
