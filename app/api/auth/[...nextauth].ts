@@ -7,9 +7,9 @@ import bcrypt from "bcryptjs"; // Use bcryptjs for better compatibility in vario
 // Mocked list of users (In production, replace this with your DB logic)
 const users = [
   {
-    id: 1,
-    name: "Arhan Ansari",
-    email: "arhanansari2009@gmail.com",
+    id: 1, // user ID as a number
+    name: "John Doe",
+    email: "johndoe@gmail.com",
     password: "$2a$10$1234567890123456789012" // This should be the hashed password
   }
 ];
@@ -32,8 +32,12 @@ export default NextAuth({
         const user = users.find(user => user.email === credentials.email);
 
         if (user && bcrypt.compareSync(credentials.password, user.password)) {
-          // If user is found and password matches, return the user object
-          return user;
+          // Convert the user object to match the expected structure by NextAuth
+          return {
+            id: String(user.id),  // Convert id from number to string
+            name: user.name,
+            email: user.email
+          };
         } else {
           // If user is not found or password doesn't match, return null
           return null;
