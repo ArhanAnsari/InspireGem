@@ -1,33 +1,49 @@
 // app/auth/signin/page.tsx
-"use client"; // Client-side component
-
-import React from "react";
+"use client";
 import { signIn } from "next-auth/react";
-import { notify } from "../../../components/ToastNotification"; // Correct path
-import ToastNotification from "../../../components/ToastNotification";
+import { useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-const SignInPage: React.FC = () => {
-  const handleGoogleSignIn = () => {
-    signIn("google").catch(() =>
-      notify("Failed to sign in with Google", "error")
-    );
+export default function SignIn() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const res = await signIn("credentials", {
+      redirect: false,
+      email,
+      password,
+    });
+
+    if (res?.error) {
+      toast.error("Invalid credentials. Please try again.");
+    } else {
+      toast.success("Successfully signed in!");
+      window.location.href = "/dashboard"; // Redirect to the dashboard or desired page
+    }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 bg-white rounded shadow">
-        <h1 className="mb-6 text-2xl font-bold text-center">Sign In</h1>
-        <button
-          onClick={handleGoogleSignIn}
-          className="w-full py-2 mb-4 text-white bg-blue-500 rounded hover:bg-blue-600"
-        >
-          Sign in with Google
-        </button>
-        {/* Add Toast Notification */}
-        <ToastNotification />
-      </div>
+    <div>
+      <h1>Sign In</h1>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
+        />
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password"
+        />
+        <button type="submit">Sign In</button>
+      </form>
+      <ToastContainer />
     </div>
   );
-};
-
-export default SignInPage;
+}
