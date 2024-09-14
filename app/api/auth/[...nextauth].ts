@@ -1,16 +1,17 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // app/api/auth/[...nextauth].ts
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcryptjs"; // Use bcryptjs for better compatibility in various environments
 
-// Dummy user data for demonstration purposes
+// Mocked list of users (In production, replace this with your DB logic)
 const users = [
   {
-    id: "1",
+    id: 1,
     name: "Arhan Ansari",
     email: "arhanansari2009@gmail.com",
-    password: bcrypt.hashSync("password123", 10), // Hash password for security
-  },
+    password: "$2a$10$1234567890123456789012" // This should be the hashed password
+  }
 ];
 
 export default NextAuth({
@@ -18,37 +19,37 @@ export default NextAuth({
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "text", placeholder: "john@example.com" },
-        password: { label: "Password", type: "password" },
+        email: { label: "Email", type: "text", placeholder: "johndoe@gmail.com" },
+        password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
+        // Ensure credentials exist before proceeding
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Invalid credentials");
+        }
+
         // Find the user by email
-        const user = users.find((user) => user.email === credentials?.email);
-        if (user && bcrypt.compareSync(credentials?.password, user.password)) {
+        const user = users.find(user => user.email === credentials.email);
+
+        if (user && bcrypt.compareSync(credentials.password, user.password)) {
           // If user is found and password matches, return the user object
           return user;
         } else {
-          // If no user is found or password is incorrect, return null
+          // If user is not found or password doesn't match, return null
           return null;
         }
-      },
-    }),
+      }
+    })
   ],
+  secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async session({ session, token }) {
-      session.user = token.user; // Attach user data to the session
+      session.user = token;
       return session;
-    },
-    async jwt({ token, user }) {
-      if (user) {
-        token.user = user; // Attach user data to the JWT token
-      }
-      return token;
-    },
+    }
   },
   pages: {
-    signIn: "/auth/signin", // Redirect to the sign-in page
-    error: "/auth/error",   // Redirect to the error page
-  },
-  secret: process.env.NEXTAUTH_SECRET,
+    signIn: '/auth/signin',
+    error: '/auth/error' // Error page if sign-in fails
+  }
 });
