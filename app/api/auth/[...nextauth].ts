@@ -1,33 +1,54 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 // app/api/auth/[...nextauth].ts
 import NextAuth from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
+
+// Dummy user data for demonstration purposes
+const users = [
+  {
+    id: "1",
+    name: "Arhan Ansari",
+    email: "arhanansari2009@gmail.com",
+    password: bcrypt.hashSync("password123", 10), // Hash password for security
+  },
+];
 
 export default NextAuth({
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "text", placeholder: "john@example.com" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        // Find the user by email
+        const user = users.find((user) => user.email === credentials?.email);
+        if (user && bcrypt.compareSync(credentials?.password, user.password)) {
+          // If user is found and password matches, return the user object
+          return user;
+        } else {
+          // If no user is found or password is incorrect, return null
+          return null;
+        }
+      },
     }),
   ],
-  secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
-    async signIn({ user, account, profile }) {
-      // Check if the user's email domain is popular
-      const popularDomains = ["gmail.com", "yahoo.com", "outlook.com"];
-      const emailDomain = profile?.email?.split("@")[1]; // Get the domain from the user's email
-      
-      if (!emailDomain || !popularDomains.includes(emailDomain)) {
-        return false; // Deny sign-in if the email domain is not in the allowed list
-      }
-
-      return true; // Allow sign-in for popular domains
-    },
     async session({ session, token }) {
-      session.user = token;
+      session.user = token.user; // Attach user data to the session
       return session;
     },
+    async jwt({ token, user }) {
+      if (user) {
+        token.user = user; // Attach user data to the JWT token
+      }
+      return token;
+    },
   },
-  // Other configurations...
-  debug: true, // Enable this for more detailed logs
+  pages: {
+    signIn: "/auth/signin", // Redirect to the sign-in page
+    error: "/auth/error",   // Redirect to the error page
+  },
+  secret: process.env.NEXTAUTH_SECRET,
 });
