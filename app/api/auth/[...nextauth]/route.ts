@@ -2,19 +2,19 @@
 // app/api/auth/[...nextauth]/route.ts
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs"; // Use bcryptjs for better compatibility in various environments
+import bcrypt from "bcryptjs";
 
 // Mocked list of users (In production, replace this with your DB logic)
 const users = [
   {
-    id: 1, // user ID as a number
+    id: 1,
     name: "Arhan",
     email: "arhanansari2009@gmail.com",
-    password: "Password123" // This should be the hashed password
+    password: bcrypt.hashSync("Password123", 10) // Hashed password
   }
 ];
 
-export default NextAuth({
+const handler = NextAuth({
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -23,23 +23,19 @@ export default NextAuth({
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        // Ensure credentials exist before proceeding
         if (!credentials?.email || !credentials?.password) {
           throw new Error("Invalid credentials");
         }
 
-        // Find the user by email
         const user = users.find(user => user.email === credentials.email);
 
         if (user && bcrypt.compareSync(credentials.password, user.password)) {
-          // Convert the user object to match the expected structure by NextAuth
           return {
-            id: String(user.id),  // Convert id from number to string
+            id: String(user.id),
             name: user.name,
             email: user.email
           };
         } else {
-          // If user is not found or password doesn't match, return null
           return null;
         }
       }
@@ -47,13 +43,26 @@ export default NextAuth({
   ],
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
     async session({ session, token }) {
-      session.user = token;
+      session.user = {
+        id: token.id,
+        name: session.user?.name,
+        email: session.user?.email
+      };
       return session;
     }
   },
   pages: {
     signIn: '/auth/signin',
-    error: '/auth/error' // Error page if sign-in fails
+    error: '/auth/error'
   }
 });
+
+// Instead of "export default", use "export" for route handling
+export { handler as GET, handler as POST };
