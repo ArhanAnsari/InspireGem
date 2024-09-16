@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-// app/api/auth/[...nextauth]/route.ts
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import GoogleProvider from "next-auth/providers/google"; // Google auth if needed
+import GoogleProvider from "next-auth/providers/google"; // Google auth
 import bcrypt from "bcryptjs";
 
 // Mocked list of users (In production, replace this with your DB logic)
@@ -14,6 +12,14 @@ const users = [
     password: bcrypt.hashSync("Password123", 10) // Hashed password
   }
 ];
+
+// Type guard to ensure env vars are defined
+const googleClientId = process.env.GOOGLE_CLIENT_ID || "";
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET || "";
+
+if (!googleClientId || !googleClientSecret) {
+  throw new Error("Missing Google Client ID or Secret in environment variables");
+}
 
 const handler = NextAuth({
   providers: [
@@ -32,7 +38,7 @@ const handler = NextAuth({
 
         if (user && bcrypt.compareSync(credentials.password, user.password)) {
           return {
-            id: String(user.id),  // Convert id from number to string
+            id: String(user.id),
             name: user.name,
             email: user.email
           };
@@ -42,15 +48,15 @@ const handler = NextAuth({
       }
     }),
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET
+      clientId: googleClientId,
+      clientSecret: googleClientSecret
     })
   ],
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id; // Pass user id to token
+        token.id = user.id;
       }
       return token;
     },
