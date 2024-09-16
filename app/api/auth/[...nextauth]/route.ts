@@ -62,7 +62,7 @@ const handler = NextAuth({
     async session({ session, token }) {
       session.user = {
         ...session.user,
-        id: token.id // Assign the id from token to session
+        id: String(token.id) // Cast token.id as a string
       };
       return session;
     }
