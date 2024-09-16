@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-// app/api/auth/[...nextauth].ts
+// app/api/auth/[...nextauth]/route.ts
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs"; // Use bcryptjs for better compatibility in various environments
@@ -8,9 +8,9 @@ import bcrypt from "bcryptjs"; // Use bcryptjs for better compatibility in vario
 const users = [
   {
     id: 1, // user ID as a number
-    name: "John Doe",
-    email: "johndoe@gmail.com",
-    password: "$2a$10$1234567890123456789012" // This should be the hashed password
+    name: "Arhan",
+    email: "arhanansari2009@gmail.com",
+    password: "Password123" // This should be the hashed password
   }
 ];
 
