@@ -40,27 +40,33 @@ export default function Dashboard() {
   };
 
   return (
-    <div>
-      <h1>Welcome to the Dashboard, {session?.user?.name}</h1>
+    <div className="max-w-4xl mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-6">Welcome to the Dashboard, {session?.user?.name}</h1>
 
-      <div>
-        <h2>AI Content Generator</h2>
+      <div className="mb-6">
+        <h2 className="text-2xl font-semibold mb-4">AI Content Generator</h2>
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Enter text to generate AI content"
+          className="border p-2 w-full mb-4 h-40"
         />
-        <button onClick={generateAIContent}>Generate AI Content</button>
+        <button
+          onClick={generateAIContent}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-200"
+        >
+          Generate AI Content
+        </button>
         {output && (
-          <div>
-            <h3>Generated Content:</h3>
+          <div className="mt-6 bg-gray-100 p-4 rounded">
+            <h3 className="text-xl font-semibold mb-2">Generated Content:</h3>
             <p>{output}</p>
           </div>
         )}
       </div>
 
       <div>
-        <h2>Available Plans</h2>
+        <h2 className="text-2xl font-semibold mb-4">Available Plans</h2>
         <PlansPage /> {/* Use the imported PlansPage component */}
       </div>
 
