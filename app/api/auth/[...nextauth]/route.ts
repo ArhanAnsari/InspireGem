@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import GoogleProvider from "next-auth/providers/google"; // Google auth
+import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 
 // Mocked list of users (In production, replace this with your DB logic)
@@ -13,7 +13,6 @@ const users = [
   }
 ];
 
-// Type guard to ensure env vars are defined
 const googleClientId = process.env.GOOGLE_CLIENT_ID || "";
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET || "";
 
@@ -61,12 +60,10 @@ const handler = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      if (token?.id) {
-        session.user = {
-          ...session.user,
-          id: token.id // Assign the id from token to session
-        };
-      }
+      session.user = {
+        ...session.user,
+        id: token.id // Assign the id from token to session
+      };
       return session;
     }
   },
@@ -76,5 +73,4 @@ const handler = NextAuth({
   }
 });
 
-// Instead of "export default", use "export" for route handling in Next.js 13+
 export { handler as GET, handler as POST };
