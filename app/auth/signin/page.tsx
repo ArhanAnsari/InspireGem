@@ -19,7 +19,7 @@ export default function SignIn() {
       <h1 className="text-4xl font-bold mb-8">Sign In</h1>
       <p className="mb-4">Sign in with your Google account.</p>
       <button
-        onClick={() => signIn("google")}
+        onClick={handleSignUp}
         className="bg-blue-500 text-white px-4 py-2 rounded"
       >
         Sign in with Google
