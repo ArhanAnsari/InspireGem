@@ -10,7 +10,7 @@ export default function SignUp() {
       await signIn("google");
       router.push("/dashboard");
     } catch (error) {
-      console.error("Sign-in failed", error);
+      console.error("Sign-up failed", error);
     }
   };
 
