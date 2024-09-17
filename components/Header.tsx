@@ -1,65 +1,40 @@
-// components/Header.tsx
-"use client"; // Make this a client-side component
-import React from "react";
-import Link from "next/link";
-import { signIn, signOut, useSession } from "next-auth/react";
-import { toast } from "react-toastify";
+"use client";
 
-const Header: React.FC = () => {
+import { useSession, signOut } from "next-auth/react";
+import Link from "next/link";
+
+export default function Header() {
   const { data: session } = useSession();
 
-  const handleSignIn = async () => {
-    try {
-      await signIn("google");
-      toast.success("Signing in...");
-    } catch (error) {
-      toast.error("Failed to sign in. Please try again.");
-    }
-  };
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      toast.info("Signing out...");
-    } catch (error) {
-      toast.error("Failed to sign out. Please try again.");
-    }
-  };
-
   return (
-    <header className="w-full bg-white shadow p-4">
-      <nav className="flex justify-between items-center max-w-4xl mx-auto">
-        <Link href="/">
-          <span className="text-2xl font-bold">AI App</span>
-        </Link>
-        <div>
-          <Link href="/">
-            <span className="mr-4 text-gray-600">Home</span>
-          </Link>
-          <Link href="/plans">
-            <span className="mr-4 text-gray-600">Plans</span>
-          </Link>
+    <nav className="bg-gray-800 p-4">
+      <div className="max-w-7xl mx-auto flex justify-between items-center">
+        <div className="text-white text-xl">MyApp</div>
+        <ul className="flex space-x-4">
+          <li>
+            <Link href="/" className="text-white">Home</Link>
+          </li>
           {session ? (
             <>
-              <button
-                onClick={handleSignOut}
-                className="text-red-600 hover:text-red-700 font-bold"
-              >
-                Sign Out
-              </button>
+              <li>
+                <Link href="/dashboard" className="text-white">Dashboard</Link>
+              </li>
+              <li>
+                <button onClick={() => signOut()} className="text-white">Sign Out</button>
+              </li>
             </>
           ) : (
-            <button
-              onClick={handleSignIn}
-              className="text-blue-600 hover:text-blue-700 font-bold"
-            >
-              Sign In with Google
-            </button>
+            <>
+              <li>
+                <Link href="/auth/signin" className="text-white">Sign In</Link>
+              </li>
+              <li>
+                <Link href="/auth/signup" className="text-white">Sign Up</Link>
+              </li>
+            </>
           )}
-        </div>
-      </nav>
-    </header>
+        </ul>
+      </div>
+    </nav>
   );
-};
-
-export default Header;
+}
