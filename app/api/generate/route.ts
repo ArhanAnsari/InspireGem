@@ -24,16 +24,15 @@ export async function POST(request: Request) {
       })
     });
 
+    // Log the entire response to catch any issues
+    const data = await response.json();
+    console.log("Response from API:", data);
+
     if (!response.ok) {
-      const errorData = await response.json();
-      return NextResponse.json({ error: errorData.error?.message || 'Failed to generate content' }, { status: response.status });
+      return NextResponse.json({ error: data.error?.message || 'Failed to generate content' }, { status: response.status });
     }
 
-    const data = await response.json();
-    
-    // Adjust the key according to the actual response structure
     const generatedContent = data.generatedText || data.generatedContent || 'No content generated';
-
     return NextResponse.json({ generatedContent });
   } catch (error) {
     console.error('Error generating content:', error);
