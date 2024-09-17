@@ -3,7 +3,7 @@
 
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation"; // Correct import for app/ directory
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PlansPage from "../plans/page"; // Import the PlansPage component
