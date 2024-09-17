@@ -1,8 +1,12 @@
+// app/api/generate/route.ts
+import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 
+// Define the model and API key
 const MODEL_NAME = "gemini-1.5-pro";
 const API_KEY = process.env.GEMINI_API_KEY as string;
 
+// Function to call Google Generative AI (Gemini) API
 async function runChat(prompt: string) {
   const genAI = new GoogleGenerativeAI(API_KEY);
   const model = genAI.getGenerativeModel({ model: MODEL_NAME });
@@ -40,9 +44,22 @@ async function runChat(prompt: string) {
   });
 
   const result = await chat.sendMessage(prompt);
-  const response = result.response;
-  console.log(response.text());
-  return response.text();
+  return result.response.text();
 }
 
-export default runChat;
+// POST handler for the API route
+export async function POST(request: Request) {
+  const { prompt } = await request.json();
+
+  if (!prompt) {
+    return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
+  }
+
+  try {
+    const content = await runChat(prompt);
+    return NextResponse.json({ generatedContent: content });
+  } catch (error) {
+    console.error('Error generating content:', error);
+    return NextResponse.json({ error: 'An error occurred while generating content' }, { status: 500 });
+  }
+}
