@@ -1,4 +1,3 @@
-// app/api/generate/route.ts
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
@@ -9,7 +8,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta2/models/gemini-1-5-pro:generate', {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1-5-pro:generateContent`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -17,16 +16,11 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify({
         prompt: { text: prompt },
-        temperature: 0.7,          // Controls randomness
-        maxOutputTokens: 2048,     // Maximum length of the response
-        top_p: 0.9,                // Nucleus sampling parameter
-        frequencyPenalty: 0.5,    // Penalty for frequent tokens
-        presencePenalty: 0.5,     // Penalty for repeated topics
-        safetySettings: {
-          safeSearch: true,       // Safe search to filter explicit content
-          contentFiltering: true, // Content filtering for appropriateness
-          moderation: true        // Content moderation
-        }
+        temperature: 0.7,
+        maxOutputTokens: 2048,
+        top_p: 0.9,
+        frequencyPenalty: 0.5,
+        presencePenalty: 0.5
       })
     });
 
@@ -36,7 +30,11 @@ export async function POST(request: Request) {
     }
 
     const data = await response.json();
-    return NextResponse.json({ generatedContent: data.generatedText || 'No content generated' });
+    
+    // Adjust the key according to the actual response structure
+    const generatedContent = data.generatedText || data.generatedContent || 'No content generated';
+
+    return NextResponse.json({ generatedContent });
   } catch (error) {
     console.error('Error generating content:', error);
     return NextResponse.json({ error: 'An error occurred while generating content' }, { status: 500 });
