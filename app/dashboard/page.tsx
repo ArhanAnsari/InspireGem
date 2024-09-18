@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation"; // Correct import for app/ directory
 import { ToastContainer, toast } from "react-toastify";
@@ -53,34 +53,41 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Welcome to the Dashboard, {session?.user?.name}</h1>
+    <div className="max-w-5xl mx-auto p-8 bg-white shadow-lg rounded-lg">
+      <h1 className="text-4xl font-bold text-gray-900 mb-8">
+        Welcome to InspireGem, {session?.user?.name}
+      </h1>
 
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-2">AI Content Generator</h2>
+      <div className="mb-8">
+        <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+          AI Content Generator
+        </h2>
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Enter text to generate AI content"
-          className="border p-2 w-full mb-4"
+          className="border p-4 w-full h-32 rounded-lg shadow-inner mb-4"
         />
         <button
           onClick={generateAIContent}
-          className="bg-blue-500 text-white px-4 py-2 rounded"
+          className="bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-white py-2 px-6 rounded-lg shadow-lg transition-all"
         >
           Generate AI Content
         </button>
+
         {output && (
-          <div className="mt-6 bg-gray-100 p-4 rounded">
-            <h3 className="text-lg font-semibold">Generated Content:</h3>
-            <p>{output}</p>
+          <div className="mt-6 p-6 bg-gray-100 rounded-lg shadow-lg">
+            <h3 className="text-lg font-semibold text-gray-800">Generated Content:</h3>
+            <p className="text-gray-700 mt-2">{output}</p>
           </div>
         )}
       </div>
 
-      <div>
-        <h2 className="text-xl font-semibold mb-4">Available Plans</h2>
-        <PlansPage /> {/* Use the imported PlansPage component */}
+      <div className="mt-10">
+        <h2 className="text-2xl font-semibold text-gray-800 mb-6">Available Plans</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <PlansPage /> {/* Use the imported PlansPage component */}
+        </div>
       </div>
 
       <ToastContainer />
