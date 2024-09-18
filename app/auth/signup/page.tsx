@@ -16,16 +16,11 @@ export default function SignUp() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
-        <h1 className="text-3xl font-bold text-blue-500 mb-4">Sign Up</h1>
-        <p className="text-gray-700 mb-6">Sign up with your Google account.</p>
-        <button
-          onClick={handleSignUp}
-          className="bg-blue-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-600 transition-colors"
-        >
-          Sign up with Google
-        </button>
-      </div>
+      <h1 className="text-4xl font-bold mb-8">Sign Up</h1>
+      <p className="mb-4">Sign up with your Google account.</p>
+      <button onClick={handleSignUp} className="bg-blue-500 text-white px-4 py-2 rounded">
+        Sign up with Google
+      </button>
     </div>
   );
 }
