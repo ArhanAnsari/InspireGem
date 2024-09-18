@@ -1,34 +1,8 @@
+/* globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 body {
-  font-family: 'Poppins', sans-serif;
-  background-color: #f7fafc;
-}
-
-h1, h2, h3 {
-  color: #1a202c;
-}
-
-textarea {
-  font-size: 1rem;
-  background-color: #f0f4f8;
-  border-radius: 8px;
-}
-
-button {
-  transition: all 0.3s ease;
-}
-
-button:hover {
-  transform: translateY(-2px);
-}
-
-.bg-gradient-to-r {
-  background-image: linear-gradient(to right, #0066ff, #00c6ff);
-}
-
-.shadow-inner {
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.shadow-lg {
-  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  @apply bg-gray-50 text-gray-900;
 }

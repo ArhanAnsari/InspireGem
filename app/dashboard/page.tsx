@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
-
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation"; // Correct import for app/ directory
+import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import PlansPage from "../plans/page"; // Import the PlansPage component
+import PlansPage from "../plans/page";
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
@@ -16,7 +15,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/auth/signin"); // Redirect to sign-in if unauthenticated
+      router.push("/auth/signin");
     }
   }, [status, router]);
 
@@ -49,47 +48,37 @@ export default function Dashboard() {
   };
 
   if (status === "loading") {
-    return <div>Loading...</div>;
+    return <div className="flex justify-center items-center min-h-screen bg-gray-100">Loading...</div>;
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-8 bg-white shadow-lg rounded-lg">
-      <h1 className="text-4xl font-bold text-gray-900 mb-8">
-        Welcome to InspireGem, {session?.user?.name}
-      </h1>
-
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-          AI Content Generator
-        </h2>
+    <div className="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-lg">
+      <h1 className="text-3xl font-bold mb-6 text-blue-600">Welcome to the Dashboard, {session?.user?.name}</h1>
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold mb-2">AI Content Generator</h2>
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Enter text to generate AI content"
-          className="border p-4 w-full h-32 rounded-lg shadow-inner mb-4"
+          className="border border-gray-300 p-3 w-full mb-4 rounded-lg"
         />
         <button
           onClick={generateAIContent}
-          className="bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-white py-2 px-6 rounded-lg shadow-lg transition-all"
+          className="bg-blue-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-600 transition-colors"
         >
           Generate AI Content
         </button>
-
         {output && (
-          <div className="mt-6 p-6 bg-gray-100 rounded-lg shadow-lg">
-            <h3 className="text-lg font-semibold text-gray-800">Generated Content:</h3>
-            <p className="text-gray-700 mt-2">{output}</p>
+          <div className="mt-6 bg-gray-100 p-4 rounded-lg">
+            <h3 className="text-lg font-semibold">Generated Content:</h3>
+            <p>{output}</p>
           </div>
         )}
       </div>
-
-      <div className="mt-10">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-6">Available Plans</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <PlansPage /> {/* Use the imported PlansPage component */}
-        </div>
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Available Plans</h2>
+        <PlansPage />
       </div>
-
       <ToastContainer />
     </div>
   );
