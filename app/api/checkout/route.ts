@@ -13,9 +13,9 @@ export async function GET(req: NextRequest) {
 
   // Set Stripe Price IDs for each plan
   if (plan === 'pro') {
-    priceId = 'price_12345_pro'; // Replace with your actual Stripe price ID
+    priceId = 'price_1Q0L3aSCr1Ne8DGFAI9n4GbW'; // Replace with your actual Stripe price ID
   } else if (plan === 'enterprise') {
-    priceId = 'price_12345_enterprise'; // Replace with your actual Stripe price ID
+    priceId = 'price_1Q0L3aSCr1Ne8DGF3yD1iMnd'; // Replace with your actual Stripe price ID
   } else {
     return NextResponse.json({ error: 'Invalid plan selected' }, { status: 400 });
   }
