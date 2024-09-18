@@ -1,35 +1,36 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
-
-import { useSession } from 'next-auth/react';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { ToastContainer, toast } from 'react-toastify';
-import PlansPage from '../plans/page';
-import 'react-toastify/dist/ReactToastify.css';
+import { useSession } from "next-auth/react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import PlansPage from "../plans/page";
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
-  const [input, setInput] = useState('');
-  const [output, setOutput] = useState('');
+  const [input, setInput] = useState("");
+  const [output, setOutput] = useState("");
   const router = useRouter();
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin');
+    if (status === "unauthenticated") {
+      router.push("/auth/signin");
     }
   }, [status, router]);
 
   const generateAIContent = async () => {
     if (!input) {
-      toast.error('Please enter some text to generate AI content.');
+      toast.error("Please enter some text to generate AI content.");
       return;
     }
 
     try {
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ prompt: input }),
       });
 
@@ -37,48 +38,47 @@ export default function Dashboard() {
 
       if (response.ok) {
         setOutput(data.generatedContent);
-        toast.success('AI content generated successfully!');
+        toast.success("AI content generated successfully!");
       } else {
-        toast.error('Failed to generate AI content.');
+        toast.error("Failed to generate AI content.");
       }
     } catch (error) {
-      toast.error('An error occurred while generating AI content.');
+      toast.error("An error occurred while generating AI content.");
     }
   };
 
-  if (status === 'loading') {
-    return <div className="text-center text-lg">Loading...</div>;
+  if (status === "loading") {
+    return <div className="flex justify-center items-center min-h-screen bg-gray-100">Loading...</div>;
   }
 
   return (
-    <div className="container mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <h1 className="text-4xl font-bold mb-6">Welcome, {session?.user?.name}</h1>
-
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4">AI Content Generator</h2>
+    <div className="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-lg">
+      <h1 className="text-3xl font-bold mb-6 text-blue-600">Welcome to the Dashboard, {session?.user?.name}</h1>
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold mb-2">AI Content Generator</h2>
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Enter text to generate AI content"
-          className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 mb-4"
+          className="border border-gray-300 p-3 w-full mb-4 rounded-lg"
         />
         <button
           onClick={generateAIContent}
-          className="bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-white py-2 px-4 rounded-lg shadow-lg transition-all"
+          className="bg-blue-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-600 transition-colors"
         >
           Generate AI Content
         </button>
         {output && (
-          <div className="mt-6 p-4 bg-gray-100 rounded-lg shadow-md">
+          <div className="mt-6 bg-gray-100 p-4 rounded-lg">
             <h3 className="text-lg font-semibold">Generated Content:</h3>
             <p>{output}</p>
           </div>
         )}
       </div>
-
-      <h2 className="text-2xl font-semibold mb-6">Available Plans</h2>
-      <PlansPage />
-
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Available Plans</h2>
+        <PlansPage />
+      </div>
       <ToastContainer />
     </div>
   );
