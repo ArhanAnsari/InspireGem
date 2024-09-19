@@ -1,4 +1,3 @@
-// app/layout.tsx
 import "./styles/globals.css";
 import React from "react";
 import Header from "../components/Header";
@@ -9,7 +8,7 @@ import Layout from "@/components/Layout";
 const RootLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <html lang="en">
-      <body className="bg-gray-50">
+      <body className="bg-gray-100 text-gray-900 antialiased">
         <Layout>
           <Header />
           <main className="min-h-screen flex flex-col items-center justify-center py-12">
@@ -20,6 +19,12 @@ const RootLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             position="top-right"
             autoClose={3000}
             hideProgressBar
+            newestOnTop
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
           />
         </Layout>
       </body>
