@@ -8,6 +8,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PlansPage from "../plans/page";
 import { checkUserPlanLimit } from "@/utils/planLimits"; // A helper function for checking limits
+import MarkdownRenderer from "@/components/MarkdownRenderer"; // Import the custom MarkdownRenderer
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
@@ -82,7 +83,8 @@ export default function Dashboard() {
         {output && (
           <div className="mt-6 bg-gray-100 p-4 rounded">
             <h3 className="text-lg font-semibold">Generated Content:</h3>
-            <p>{output}</p>
+            {/* Render the output as Markdown using the MarkdownRenderer */}
+            <MarkdownRenderer content={output} />
           </div>
         )}
       </div>
