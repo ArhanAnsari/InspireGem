@@ -12,10 +12,11 @@ export default function HomePage() {
           Leverage the power of AI with Google Gemini to create amazing content
           effortlessly. Start now by choosing a plan that fits your needs.
         </p>
-        <Link href="/plans">
-          <a className="inline-block bg-blue-500 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-600 transition-colors">
-            View Plans
-          </a>
+        <Link
+          href="/plans"
+          className="inline-block bg-blue-500 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-600 transition-colors"
+        >
+          View Plans
         </Link>
       </div>
     </div>
