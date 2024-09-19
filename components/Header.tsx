@@ -20,7 +20,12 @@ export default function Header() {
                 <Link href="/dashboard" className="text-white">Dashboard</Link>
               </li>
               <li>
-                <button onClick={() => signOut()} className="text-white">Sign Out</button>
+                <button
+                  onClick={() => signOut()}
+                  className="text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
+                >
+                  Sign Out
+                </button>
               </li>
             </>
           ) : (
