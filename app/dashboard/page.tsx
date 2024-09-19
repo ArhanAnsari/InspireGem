@@ -28,7 +28,7 @@ export default function Dashboard() {
     }
 
     // Check user's plan limits before making the API call
-    const canGenerate = await checkUserPlanLimit(session?.user?.email);
+    const canGenerate = await checkUserPlanLimit(session?.user?.email ?? null);
 
     if (!canGenerate) {
       toast.error("You have reached your limit for this month.");
