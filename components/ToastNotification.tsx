@@ -1,4 +1,3 @@
-// components/ToastNotification.tsx
 "use client"; // Make this a client-side component
 
 import { ToastContainer, toast } from "react-toastify";
@@ -13,7 +12,19 @@ export const notify = (message: string, type: "success" | "error") => {
 };
 
 const ToastNotification = () => {
-  return <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} closeOnClick pauseOnHover draggable pauseOnFocusLoss />;
+  return (
+    <ToastContainer
+      position="top-right"
+      autoClose={5000}
+      hideProgressBar={false}
+      newestOnTop={true}
+      closeOnClick
+      rtl={false}
+      pauseOnFocusLoss
+      draggable
+      pauseOnHover
+    />
+  );
 };
 
 export default ToastNotification;
