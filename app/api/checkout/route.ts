@@ -11,11 +11,10 @@ export async function GET(req: NextRequest) {
   const plan = searchParams.get('plan');
   let priceId: string | undefined;
 
-  // Set Stripe Price IDs for each plan
   if (plan === 'pro') {
-    priceId = 'price_1Q0L3aSCr1Ne8DGFAI9n4GbW'; // Replace with your actual Stripe price ID
+    priceId = 'price_1Q0L3aSCr1Ne8DGFAI9n4GbW';
   } else if (plan === 'enterprise') {
-    priceId = 'price_1Q0L3aSCr1Ne8DGF3yD1iMnd'; // Replace with your actual Stripe price ID
+    priceId = 'price_1Q0L3aSCr1Ne8DGF3yD1iMnd';
   } else {
     return NextResponse.json({ error: 'Invalid plan selected' }, { status: 400 });
   }
@@ -36,6 +35,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ sessionId: session.id });
   } catch (error) {
+    console.error("Error creating Stripe checkout session:", error);
     return NextResponse.json({ error: 'Something went wrong with Stripe' }, { status: 500 });
   }
 }
