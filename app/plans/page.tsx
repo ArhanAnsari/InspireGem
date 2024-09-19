@@ -1,7 +1,21 @@
+"use client";
+import getStripe from "@/lib/stripe-js";
 import React from "react";
-import Link from "next/link";
 
 export default function PlansPage() {
+  const getPriceFn = (plan: string) => {
+    fetch("/api/checkout?plan=" + plan)
+      .then((data) => data.json())
+      .then(async (body) => {
+        const sessionId = body.sessionId;
+        const stripe = await getStripe();
+
+        await stripe?.redirectToCheckout({
+          sessionId,
+        });
+      });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -11,11 +25,15 @@ export default function PlansPage() {
           <p className="text-gray-600 mb-4">Up to 20 requests per month.</p>
           <p className="text-gray-600 mb-4">Basic AI content generation.</p>
           <p className="text-gray-600 mb-6">Community support.</p>
-          <Link href="/api/checkout?plan=free">
-            <a className="w-full block text-center text-white bg-blue-500 hover:bg-blue-600 font-bold py-2 rounded">
-              Get Started
-            </a>
-          </Link>
+          <button
+            type="button"
+            className="w-full block text-center text-white bg-blue-500 hover:bg-blue-600 font-bold py-2 rounded"
+            onClick={() => {
+              getPriceFn("free");
+            }}
+          >
+            Get Started
+          </button>
         </div>
 
         {/* Pro Plan */}
@@ -24,24 +42,34 @@ export default function PlansPage() {
           <p className="text-gray-600 mb-4">200 requests per month.</p>
           <p className="text-gray-600 mb-4">Advanced AI content generation.</p>
           <p className="text-gray-600 mb-6">Priority email support.</p>
-          <Link href="/api/checkout?plan=pro">
-            <a className="w-full block text-center text-white bg-green-500 hover:bg-green-600 font-bold py-2 rounded">
-              Subscribe for ₹499/month
-            </a>
-          </Link>
+          <button
+            type="button"
+            className="w-full block text-center text-white bg-green-500 hover:bg-green-600 font-bold py-2 rounded"
+            onClick={() => {
+              getPriceFn("pro");
+            }}
+          >
+            Subscribe for ₹499/month
+          </button>
         </div>
 
         {/* Enterprise Plan */}
         <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 transform hover:scale-105">
-          <h2 className="text-3xl font-bold text-red-600 mb-4">Enterprise Plan</h2>
+          <h2 className="text-3xl font-bold text-red-600 mb-4">
+            Enterprise Plan
+          </h2>
           <p className="text-gray-600 mb-4">Unlimited requests.</p>
           <p className="text-gray-600 mb-4">Access to all AI features.</p>
           <p className="text-gray-600 mb-6">24/7 premium support.</p>
-          <Link href="/api/checkout?plan=enterprise">
-            <a className="w-full block text-center text-white bg-red-500 hover:bg-red-600 font-bold py-2 rounded">
-              Subscribe for ₹1,999/month
-            </a>
-          </Link>
+          <button
+            type="button"
+            className="w-full block text-center text-white bg-red-500 hover:bg-red-600 font-bold py-2 rounded"
+            onClick={() => {
+              getPriceFn("enterprise");
+            }}
+          >
+            Subscribe for ₹1,999/month
+          </button>
         </div>
       </div>
     </div>
