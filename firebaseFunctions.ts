@@ -1,4 +1,4 @@
-// firebaseFunctions.js
+// firebaseFunctions.ts
 // Functions for managing user data and request limits in Firestore
 
 import { db } from "./firebaseConfig";
@@ -12,7 +12,7 @@ const requestLimits = {
 };
 
 // Get user plan and request count from Firestore
-export const getUserPlan = async (email) => {
+export const getUserPlan = async (email: string) => {  // Explicitly define 'email' as a string
   const userDocRef = doc(db, "users", email);
   const userDoc = await getDoc(userDocRef);
 
@@ -25,13 +25,13 @@ export const getUserPlan = async (email) => {
 };
 
 // Increment request count for a user and check if the limit is exceeded
-export const incrementRequestCount = async (email) => {
+export const incrementRequestCount = async (email: string) => {  // Explicitly define 'email' as a string
   const userDocRef = doc(db, "users", email);
   const userDoc = await getDoc(userDocRef);
   const userData = userDoc.data();
 
-  const plan = userData.plan;
-  const requestCount = userData.requestCount;
+  const plan = userData?.plan;
+  const requestCount = userData?.requestCount;
 
   // Check if user exceeded the request limit for their plan
   if (requestCount >= requestLimits[plan]) {
@@ -45,7 +45,7 @@ export const incrementRequestCount = async (email) => {
 };
 
 // Update the user's plan when they upgrade (Pro or Enterprise)
-export const updateUserPlan = async (email, newPlan) => {
+export const updateUserPlan = async (email: string, newPlan: string) => {  // Explicitly define both parameters
   const userDocRef = doc(db, "users", email);
   await updateDoc(userDocRef, {
     plan: newPlan,
