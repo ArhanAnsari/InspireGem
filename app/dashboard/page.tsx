@@ -7,8 +7,9 @@ import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PlansPage from "../plans/page";
-import MarkdownRenderer from "@/components/MarkdownRenderer";
-import { checkUserPlanLimit, incrementRequestCount } from "@/firebaseFunctions";
+import { checkUserPlanLimit, incrementRequestCount } from "@/firebaseFunctions"; // Import Firebase functions
+import MarkdownRenderer from "@/components/MarkdownRenderer"; // Import the custom MarkdownRenderer
+
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const [input, setInput] = useState("");
@@ -26,6 +27,9 @@ export default function Dashboard() {
       toast.error("Please enter some text to generate AI content.");
       return;
     }
+
+    // Avoid making Firebase API calls on the server side
+    if (typeof window === "undefined") return;
 
     // Check user's plan limits before making the API call
     const canGenerate = await checkUserPlanLimit(session?.user?.email ?? "");
@@ -49,12 +53,12 @@ export default function Dashboard() {
       if (response.ok) {
         setOutput(data.generatedContent);
         toast.success("AI content generated successfully!");
-
-        // Increment the user's request count in Firebase
-        await incrementRequestCount(session?.user?.email ?? "");
       } else {
         toast.error("Failed to generate AI content.");
       }
+
+      // Increment the user's request count in Firebase
+      await incrementRequestCount(session?.user?.email ?? "");
     } catch (error) {
       toast.error("An error occurred while generating AI content.");
     }
