@@ -9,7 +9,7 @@ interface MarkdownRendererProps {
   content: string;
 }
 
-const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
+export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
   return (
     <ReactMarkdown
       components={{
@@ -35,6 +35,4 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
       {content}
     </ReactMarkdown>
   );
-};
-
-export default MarkdownRenderer;
+}
