@@ -9,11 +9,11 @@ interface MarkdownRendererProps {
   content: string;
 }
 
-// Define the type of props the code component will receive
+// Define the type of props for the code block
 interface CodeComponentProps {
   inline?: boolean;
   className?: string;
-  children: React.ReactNode;
+  children?: React.ReactNode; // Make children optional to match HTMLAttributes
 }
 
 export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
