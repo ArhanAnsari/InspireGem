@@ -9,11 +9,18 @@ interface MarkdownRendererProps {
   content: string;
 }
 
+// Define the type of props the code component will receive
+interface CodeComponentProps {
+  inline?: boolean;
+  className?: string;
+  children: React.ReactNode;
+}
+
 export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
   return (
     <ReactMarkdown
       components={{
-        code({ inline, className, children, ...props }) {
+        code({ inline, className, children, ...props }: CodeComponentProps) {
           const match = /language-(\w+)/.exec(className || '');
           return !inline && match ? (
             <SyntaxHighlighter
