@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PlansPage from "../plans/page";
-import { checkUserPlanLimit } from "@/utils/planLimits"; // A helper function for checking limits
+import { checkUserPlanLimit, incrementRequestCount } from "@/firebaseFunctions"; // Import Firebase functions
 import MarkdownRenderer from "@/components/MarkdownRenderer"; // Import the custom MarkdownRenderer
 
 export default function Dashboard() {
@@ -28,8 +28,11 @@ export default function Dashboard() {
       return;
     }
 
+    // Avoid making Firebase API calls on the server side
+    if (typeof window === "undefined") return;
+
     // Check user's plan limits before making the API call
-    const canGenerate = await checkUserPlanLimit(session?.user?.email ?? null);
+    const canGenerate = await checkUserPlanLimit(session?.user?.email ?? "");
 
     if (!canGenerate) {
       toast.error("You have reached your limit for this month.");
@@ -53,6 +56,9 @@ export default function Dashboard() {
       } else {
         toast.error("Failed to generate AI content.");
       }
+
+      // Increment the user's request count in Firebase
+      await incrementRequestCount(session?.user?.email ?? "");
     } catch (error) {
       toast.error("An error occurred while generating AI content.");
     }
