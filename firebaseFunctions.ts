@@ -1,6 +1,14 @@
-// firebaseFunctions.ts
 import { db } from "./firebaseConfig";
 import { doc, getDoc, updateDoc, increment } from "firebase/firestore";
+
+// Define the allowed plans as a union type
+type Plan = "free" | "pro" | "enterprise";
+
+// Define an interface for the user data
+interface UserData {
+  plan: Plan;
+  requestCount: number;
+}
 
 // Define allowed plans and request limits
 const requestLimits = {
@@ -10,20 +18,20 @@ const requestLimits = {
 };
 
 // Function to get user data from Firestore
-export const getUserData = async (email: string) => {
+export const getUserData = async (email: string): Promise<UserData | null> => {
   const userDocRef = doc(db, "users", email);
   const userDoc = await getDoc(userDocRef);
 
   if (!userDoc.exists()) {
-    throw new Error("User not found");
+    return null;
   }
 
-  return userDoc.data();
+  return userDoc.data() as UserData; // Ensure the returned data matches UserData interface
 };
 
 // Function to check if the user has exceeded their request limit
-export const checkUserPlanLimit = async (email: string) => {
-  const userData = await getUserData(email);
+export const checkUserPlanLimit = async (email: string): Promise<boolean> => {
+  const userData = await getUserData(email) as UserData; // Cast the result as UserData
   const plan = userData?.plan || "free";
   const requestCount = userData?.requestCount || 0;
 
