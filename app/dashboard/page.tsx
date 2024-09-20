@@ -8,8 +8,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PlansPage from "../plans/page";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
-import { checkUserPlanLimit, incrementRequestCount } from "@/firebaseFunctions"; // Import Firebase functions
-
+import { checkUserPlanLimit, incrementRequestCount } from "@/firebaseFunctions";
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const [input, setInput] = useState("");
