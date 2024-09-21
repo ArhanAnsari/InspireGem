@@ -1,76 +1,42 @@
 import NextAuth from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import bcrypt from "bcryptjs";
+import { FirestoreAdapter } from "@next-auth/firebase-adapter";
+import { db } from "@/firebaseConfig"; // Import Firestore config
+import { doc, setDoc } from "firebase/firestore"; // Import Firestore methods
 
-// Mocked list of users (In production, replace this with your DB logic)
-const users = [
-  {
-    id: 1,
-    name: "Arhan",
-    email: "arhanansari2009@gmail.com",
-    password: bcrypt.hashSync("Password123", 10) // Hashed password
-  }
-];
-
-const googleClientId = process.env.GOOGLE_CLIENT_ID || "";
-const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET || "";
-
-if (!googleClientId || !googleClientSecret) {
-  throw new Error("Missing Google Client ID or Secret in environment variables");
-}
-
-const handler = NextAuth({
+export const authOptions = {
   providers: [
-    CredentialsProvider({
-      name: "Credentials",
-      credentials: {
-        email: { label: "Email", type: "text", placeholder: "johndoe@gmail.com" },
-        password: { label: "Password", type: "password" }
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("Invalid credentials");
-        }
-
-        const user = users.find(user => user.email === credentials.email);
-
-        if (user && bcrypt.compareSync(credentials.password, user.password)) {
-          return {
-            id: String(user.id),
-            name: user.name,
-            email: user.email
-          };
-        } else {
-          return null;
-        }
-      }
-    }),
     GoogleProvider({
-      clientId: googleClientId,
-      clientSecret: googleClientSecret
-    })
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
   ],
-  secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
+    async signIn({ user, account, profile }) {
+      if (account.provider === "google") {
+        // Store user data in Firestore when signing in
+        const userRef = doc(db, "users", user.email!);
+        await setDoc(userRef, {
+          email: user.email,
+          name: user.name,
+          image: user.image,
+          plan: "free", // Assign default plan (free)
+          requestCount: 0, // Initialize request count
+        }, { merge: true }); // Use merge to avoid overwriting existing data
       }
-      return token;
+      return true;
     },
-    async session({ session, token }) {
-      session.user = {
-        ...session.user,
-        id: String(token.id) // Cast token.id as a string
-      };
+    async session({ session, token, user }) {
+      // Send properties to the client, like user id from a provider.
+      session.user.id = token.sub;
       return session;
-    }
+    },
   },
   pages: {
-    signIn: '/auth/signin',
-    error: '/auth/error'
-  }
-});
+    signIn: "/auth/signin",
+    signUp: "/auth/signup",
+  },
+  // Additional NextAuth configuration options
+};
 
-export { handler as GET, handler as POST };
+export default NextAuth(authOptions);
