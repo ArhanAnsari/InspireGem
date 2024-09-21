@@ -11,7 +11,7 @@ interface UserData {
 }
 
 // Define allowed plans and request limits
-const requestLimits = {
+const requestLimits: Record<Plan, number> = {
   free: 20,
   pro: 200,
   enterprise: Infinity, // Unlimited requests for enterprise plan
@@ -19,23 +19,34 @@ const requestLimits = {
 
 // Function to get user data from Firestore
 export const getUserData = async (email: string): Promise<UserData | null> => {
-  const userDocRef = doc(db, "users", email);
-  const userDoc = await getDoc(userDocRef);
+  try {
+    const userDocRef = doc(db, "users", email);
+    const userDoc = await getDoc(userDocRef);
 
-  if (!userDoc.exists()) {
-    return null;
+    if (!userDoc.exists()) {
+      return null; // No user data found
+    }
+
+    return userDoc.data() as UserData; // Ensure the returned data matches UserData interface
+  } catch (error) {
+    console.error(`Error fetching user data for ${email}:`, error);
+    return null; // Return null if an error occurs
   }
-
-  return userDoc.data() as UserData; // Ensure the returned data matches UserData interface
 };
 
 // Function to check if the user has exceeded their request limit
 export const checkUserPlanLimit = async (email: string): Promise<boolean> => {
-  const userData = await getUserData(email) as UserData; // Cast the result as UserData
-  const plan = userData?.plan || "free";
-  const requestCount = userData?.requestCount || 0;
+  const userData = await getUserData(email);
 
-  if (requestCount >= requestLimits[plan]) {
+  if (!userData) {
+    console.warn(`No user data found for ${email}. Defaulting to free plan.`);
+    return false; // No user data found, assume no access
+  }
+
+  const { plan, requestCount } = userData;
+  const limit = requestLimits[plan];
+
+  if (requestCount >= limit) {
     return false; // User has reached their limit
   }
 
@@ -43,9 +54,14 @@ export const checkUserPlanLimit = async (email: string): Promise<boolean> => {
 };
 
 // Function to increment the user's request count after each AI content generation
-export const incrementRequestCount = async (email: string) => {
-  const userDocRef = doc(db, "users", email);
-  await updateDoc(userDocRef, {
-    requestCount: increment(1),
-  });
+export const incrementRequestCount = async (email: string): Promise<void> => {
+  try {
+    const userDocRef = doc(db, "users", email);
+    await updateDoc(userDocRef, {
+      requestCount: increment(1),
+    });
+  } catch (error) {
+    console.error(`Error incrementing request count for ${email}:`, error);
+    throw new Error("Unable to increment request count.");
+  }
 };
