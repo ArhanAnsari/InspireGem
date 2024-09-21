@@ -14,14 +14,17 @@ export default function Dashboard() {
   const { data: session, status } = useSession();
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
+  const [isLoading, setIsLoading] = useState(false); // Add loading state
   const router = useRouter();
 
+  // Redirect unauthenticated users to sign in page
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth/signin");
     }
   }, [status, router]);
 
+  // Function to generate AI content
   const generateAIContent = async () => {
     if (!input) {
       toast.error("Please enter some text to generate AI content.");
@@ -38,6 +41,8 @@ export default function Dashboard() {
       toast.error("You have reached your limit for this month.");
       return;
     }
+
+    setIsLoading(true); // Start loading
 
     try {
       const response = await fetch("/api/generate", {
@@ -61,9 +66,12 @@ export default function Dashboard() {
       await incrementRequestCount(session?.user?.email ?? "");
     } catch (error) {
       toast.error("An error occurred while generating AI content.");
+    } finally {
+      setIsLoading(false); // End loading
     }
   };
 
+  // If session is still loading
   if (status === "loading") {
     return <div>Loading...</div>;
   }
@@ -82,16 +90,19 @@ export default function Dashboard() {
         />
         <button
           onClick={generateAIContent}
-          className="bg-blue-500 text-white px-4 py-2 rounded"
+          className={`bg-blue-500 text-white px-4 py-2 rounded ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          disabled={isLoading}
         >
-          Generate AI Content
+          {isLoading ? 'Generating...' : 'Generate AI Content'}
         </button>
-        {output && (
+        {output ? (
           <div className="mt-6 bg-gray-100 p-4 rounded">
             <h3 className="text-lg font-semibold">Generated Content:</h3>
             {/* Render the output as Markdown using the MarkdownRenderer */}
             <MarkdownRenderer content={output} />
           </div>
+        ) : (
+          <div className="mt-6 text-gray-500">No content generated yet.</div>
         )}
       </div>
 

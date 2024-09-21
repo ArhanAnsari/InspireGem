@@ -1,4 +1,3 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
@@ -18,7 +17,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Check if running in the browser before initializing analytics
+// Initialize Analytics only in the browser environment
 let analytics;
 if (typeof window !== 'undefined') {
   analytics = getAnalytics(app);
