@@ -12,8 +12,8 @@ interface UserData {
 
 // Define allowed plans and request limits
 const requestLimits: Record<Plan, number> = {
-  free: 20,
-  pro: 200,
+  free: 50,
+  pro: 500,
   enterprise: Infinity, // Unlimited requests for enterprise plan
 };
 
