@@ -1,76 +1,57 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import NextAuth from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import bcrypt from "bcryptjs";
+import { FirestoreAdapter } from "@next-auth/firebase-adapter";
+import { adminDb } from "@/firebaseAdmin"; // Import Firestore Admin instance
+import { doc, getDoc, setDoc } from "firebase-admin/firestore"; // Firestore Admin functions
 
-// Mocked list of users (In production, replace this with your DB logic)
-const users = [
-  {
-    id: 1,
-    name: "Arhan",
-    email: "arhanansari2009@gmail.com",
-    password: bcrypt.hashSync("Password123", 10) // Hashed password
-  }
-];
-
-const googleClientId = process.env.GOOGLE_CLIENT_ID || "";
-const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET || "";
-
-if (!googleClientId || !googleClientSecret) {
-  throw new Error("Missing Google Client ID or Secret in environment variables");
-}
-
-const handler = NextAuth({
+const authOptions = {
   providers: [
-    CredentialsProvider({
-      name: "Credentials",
-      credentials: {
-        email: { label: "Email", type: "text", placeholder: "johndoe@gmail.com" },
-        password: { label: "Password", type: "password" }
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("Invalid credentials");
-        }
-
-        const user = users.find(user => user.email === credentials.email);
-
-        if (user && bcrypt.compareSync(credentials.password, user.password)) {
-          return {
-            id: String(user.id),
-            name: user.name,
-            email: user.email
-          };
-        } else {
-          return null;
-        }
-      }
-    }),
     GoogleProvider({
-      clientId: googleClientId,
-      clientSecret: googleClientSecret
-    })
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
   ],
-  secret: process.env.NEXTAUTH_SECRET,
+  adapter: FirestoreAdapter(adminDb), // Use the Firebase Admin Firestore instance
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      session.user = {
-        ...session.user,
-        id: String(token.id) // Cast token.id as a string
-      };
-      return session;
-    }
-  },
-  pages: {
-    signIn: '/auth/signin',
-    error: '/auth/error'
-  }
-});
+    async signIn({ user }) {
+      const userEmail = user.email;
 
+      if (!userEmail) {
+        console.error("No email found for user");
+        return false; // Block sign-in if no email
+      }
+
+      // Reference to the user's document in Firestore
+      const userDocRef = adminDb.collection("users").doc(userEmail);
+      const userDoc = await userDocRef.get();
+
+      if (userDoc.exists) {
+        // User already exists, fetch plan and request count
+        const userData = userDoc.data();
+        console.log("User Plan:", userData?.plan);
+        console.log("Request Count:", userData?.requestCount);
+      } else {
+        // New user, create a default entry in Firestore
+        const newUser = {
+          plan: "free", // Default plan
+          requestCount: 0, // Default request count
+        };
+        await userDocRef.set(newUser);
+        console.log("New user created with Free plan and 0 request count.");
+      }
+
+      return true; // Allow sign-in
+    },
+    async session({ session, token, user }) {
+      // Pass session information
+      return session;
+    },
+  },
+};
+
+// Create the NextAuth handler
+const handler = NextAuth(authOptions);
+
+// Export the handler for POST and GET requests
 export { handler as GET, handler as POST };

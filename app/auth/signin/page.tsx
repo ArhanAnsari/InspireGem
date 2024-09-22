@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
+import { getUserData } from "@/firebaseFunctions"; // Import Firebase function to get user data
 import "react-toastify/dist/ReactToastify.css";
 
 export default function SignIn() {
@@ -12,7 +14,25 @@ export default function SignIn() {
   const handleSignIn = async () => {
     setLoading(true);
     try {
-      await signIn("google");
+      const result = await signIn("google");
+      if (result?.error) {
+        throw new Error(result.error);
+      }
+
+      // Fetch user data after sign-in
+      const user = result?.user;
+      if (user && user.email) {
+        const userData = await getUserData(user.email);
+        if (userData) {
+          console.log(`User Plan: ${userData.plan}`);
+          console.log(`Max Requests Allowed: ${userData.requestCount}`);
+          console.log(`Requests Made: ${userData.requestCount}`);
+
+          // Optionally show a toast with this information
+          toast.success(`Welcome back! You are on the ${userData.plan} plan.`);
+        }
+      }
+
       router.push("/dashboard");
     } catch (error) {
       toast.error("Sign-in failed. Please try again.");
