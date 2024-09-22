@@ -2,7 +2,7 @@
 "use client";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import { getUserData } from "@/firebaseFunctions"; // Import Firebase function to get user data
 import "react-toastify/dist/ReactToastify.css";
@@ -14,13 +14,15 @@ export default function SignIn() {
   const handleSignIn = async () => {
     setLoading(true);
     try {
-      const result = await signIn("google");
+      const result = await signIn("google", { redirect: false }); // Pass { redirect: false }
+
       if (result?.error) {
         throw new Error(result.error);
       }
 
-      // Fetch user data after sign-in
-      const user = result?.user;
+      // The session data is typically in a different structure
+      const user = result?.user; // This may need adjustment based on your NextAuth setup
+
       if (user && user.email) {
         const userData = await getUserData(user.email);
         if (userData) {
