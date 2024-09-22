@@ -12,11 +12,7 @@ const authOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
-  adapter: FirestoreAdapter({
-    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
-    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
-  }),
+  adapter: FirestoreAdapter(db), // Use the Firestore instance directly
   callbacks: {
     async signIn({ user }) {
       const userEmail = user.email;
@@ -33,8 +29,8 @@ const authOptions = {
       if (userDoc.exists()) {
         // User already exists, fetch plan and request count
         const userData = userDoc.data();
-        console.log("User Plan:", userData.plan);
-        console.log("Request Count:", userData.requestCount);
+        console.log("User Plan:", userData?.plan);
+        console.log("Request Count:", userData?.requestCount);
       } else {
         // New user, create a default entry in Firestore
         const newUser = {
