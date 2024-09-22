@@ -23,10 +23,10 @@ const authOptions = {
       }
 
       // Reference to the user's document in Firestore
-      const userDocRef = adminDb.collection("users").doc(userEmail);
-      const userDoc = await userDocRef.get();
+      const userDocRef = doc(adminDb.collection("users"), userEmail);
+      const userDoc = await getDoc(userDocRef);
 
-      if (userDoc.exists) {
+      if (userDoc.exists()) {
         // User already exists, fetch plan and request count
         const userData = userDoc.data();
         console.log("User Plan:", userData?.plan);
@@ -37,7 +37,7 @@ const authOptions = {
           plan: "free", // Default plan
           requestCount: 0, // Default request count
         };
-        await userDocRef.set(newUser);
+        await setDoc(userDocRef, newUser);
         console.log("New user created with Free plan and 0 request count.");
       }
 
