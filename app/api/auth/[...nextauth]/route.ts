@@ -2,8 +2,8 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { FirestoreAdapter } from "@next-auth/firebase-adapter";
-import { db } from "@/firebaseConfig"; // Import Firestore instance
-import { doc, getDoc, setDoc } from "firebase/firestore"; // Firestore functions
+import { adminDb } from "@/firebaseAdmin"; // Import Firestore Admin instance
+import { doc, getDoc, setDoc } from "firebase-admin/firestore"; // Firestore Admin functions
 
 const authOptions = {
   providers: [
@@ -12,7 +12,7 @@ const authOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
-  adapter: FirestoreAdapter(db), // Use the Firestore instance directly
+  adapter: FirestoreAdapter(adminDb), // Use the Firebase Admin Firestore instance
   callbacks: {
     async signIn({ user }) {
       const userEmail = user.email;
@@ -23,10 +23,10 @@ const authOptions = {
       }
 
       // Reference to the user's document in Firestore
-      const userDocRef = doc(db, "users", userEmail);
-      const userDoc = await getDoc(userDocRef);
+      const userDocRef = adminDb.collection("users").doc(userEmail);
+      const userDoc = await userDocRef.get();
 
-      if (userDoc.exists()) {
+      if (userDoc.exists) {
         // User already exists, fetch plan and request count
         const userData = userDoc.data();
         console.log("User Plan:", userData?.plan);
@@ -37,7 +37,7 @@ const authOptions = {
           plan: "free", // Default plan
           requestCount: 0, // Default request count
         };
-        await setDoc(userDocRef, newUser);
+        await userDocRef.set(newUser);
         console.log("New user created with Free plan and 0 request count.");
       }
 
