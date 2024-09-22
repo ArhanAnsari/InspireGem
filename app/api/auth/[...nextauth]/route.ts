@@ -5,12 +5,6 @@ import { FirestoreAdapter } from "@next-auth/firebase-adapter";
 import { db } from "@/firebaseConfig"; // Import Firestore instance
 import { doc, getDoc, setDoc } from "firebase/firestore"; // Firestore functions
 
-// Firebase Adapter Configuration
-const firestoreAdapterConfig = {
-  firestore: db,
-  collection: 'users', // Optional, specify the collection if needed
-};
-
 const authOptions = {
   providers: [
     GoogleProvider({
@@ -18,7 +12,11 @@ const authOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
-  adapter: FirestoreAdapter(firestoreAdapterConfig), // Use the Firebase adapter config
+  adapter: FirestoreAdapter({
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
+  }),
   callbacks: {
     async signIn({ user }) {
       const userEmail = user.email;
