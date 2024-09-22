@@ -2,22 +2,8 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { FirestoreAdapter } from "@next-auth/firebase-adapter";
-import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-
-// Firebase configuration
-const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY,
-  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.FIREBASE_PROJECT_ID,
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.FIREBASE_APP_ID,
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+import { db } from "@/firebaseConfig"; // Import Firestore instance
+import { doc, getDoc, setDoc } from "firebase/firestore"; // Firestore functions
 
 const authOptions = {
   providers: [
@@ -26,13 +12,39 @@ const authOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
-  adapter: FirestoreAdapter(db), // Pass the Firestore instance directly
+  adapter: FirestoreAdapter(db), // Use Firestore instance directly
   callbacks: {
-    async signIn({ user, account, profile, email, credentials }) {
-      console.log("Sign-in successful");
-      return true;
+    async signIn({ user }) {
+      const userEmail = user.email;
+
+      if (!userEmail) {
+        console.error("No email found for user");
+        return false; // Block sign-in if no email
+      }
+
+      // Reference to the user's document in Firestore
+      const userDocRef = doc(db, "users", userEmail);
+      const userDoc = await getDoc(userDocRef);
+
+      if (userDoc.exists()) {
+        // User already exists, fetch plan and request count
+        const userData = userDoc.data();
+        console.log("User Plan:", userData.plan);
+        console.log("Request Count:", userData.requestCount);
+      } else {
+        // New user, create a default entry in Firestore
+        const newUser = {
+          plan: "free", // Default plan
+          requestCount: 0, // Default request count
+        };
+        await setDoc(userDocRef, newUser);
+        console.log("New user created with Free plan and 0 request count.");
+      }
+
+      return true; // Allow sign-in
     },
     async session({ session, token, user }) {
+      // Pass session information
       return session;
     },
   },
