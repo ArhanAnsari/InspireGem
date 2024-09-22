@@ -7,12 +7,12 @@ import { ToastContainer, toast } from "react-toastify";
 import { getUserData } from "@/firebaseFunctions"; // Import Firebase function to get user data
 import "react-toastify/dist/ReactToastify.css";
 
-export default function SignUp() {
+export default function SignIn() {
   const router = useRouter();
   const { data: session } = useSession(); // Get session data
   const [loading, setLoading] = useState(false);
 
-  const handleSignUp = async () => {
+  const handleSignIn = async () => {
     setLoading(true);
     try {
       const result = await signIn("google", { redirect: false });
@@ -21,26 +21,23 @@ export default function SignUp() {
         throw new Error(result.error);
       }
 
-      // Wait for session to update after sign-in
-      const sessionCheck = useSession(); // Re-check session
-      if (sessionCheck.data) {
-        const userEmail = sessionCheck.data.user?.email;
+      // Wait for the session to update
+      const userEmail = session?.user?.email;
 
-        if (userEmail) {
-          const userData = await getUserData(userEmail);
-          if (userData) {
-            console.log(`User Plan: ${userData.plan}`);
-            console.log(`Max Requests Allowed: ${userData.requestCount}`);
+      if (userEmail) {
+        const userData = await getUserData(userEmail);
+        if (userData) {
+          console.log(`User Plan: ${userData.plan}`);
+          console.log(`Max Requests Allowed: ${userData.requestCount}`);
 
-            toast.success(`Welcome! You are on the ${userData.plan} plan.`);
-          }
+          toast.success(`Welcome back! You are on the ${userData.plan} plan.`);
         }
-
-        router.push("/dashboard");
       }
+
+      router.push("/dashboard");
     } catch (error) {
-      toast.error("Sign-up failed. Please try again.");
-      console.error("Sign-up failed", error);
+      toast.error("Sign-in failed. Please try again.");
+      console.error("Sign-in failed", error);
     } finally {
       setLoading(false);
     }
@@ -48,14 +45,14 @@ export default function SignUp() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-gray-800">
-      <h1 className="text-4xl font-bold mb-8">Sign Up</h1>
-      <p className="mb-4">Sign up with your Google account.</p>
+      <h1 className="text-4xl font-bold mb-8">Sign In</h1>
+      <p className="mb-4">Sign in with your Google account.</p>
       <button
-        onClick={handleSignUp}
+        onClick={handleSignIn}
         className={`bg-blue-500 text-white px-4 py-2 rounded ${loading ? "opacity-50" : "hover:bg-blue-600"}`}
         disabled={loading}
       >
-        {loading ? "Signing up..." : "Sign up with Google"}
+        {loading ? "Signing in..." : "Sign in with Google"}
       </button>
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
     </div>
