@@ -1,41 +1,43 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import { getUserData } from "@/firebaseFunctions"; // Import Firebase function to get user data
 import "react-toastify/dist/ReactToastify.css";
 
 export default function SignIn() {
   const router = useRouter();
+  const { data: session } = useSession(); // Get session data
   const [loading, setLoading] = useState(false);
 
   const handleSignIn = async () => {
     setLoading(true);
     try {
-      const result = await signIn("google", { redirect: false }); // Pass { redirect: false }
+      const result = await signIn("google", { redirect: false });
 
       if (result?.error) {
         throw new Error(result.error);
       }
 
-      // The session data is typically in a different structure
-      const user = result?.user; // This may need adjustment based on your NextAuth setup
+      // After sign-in, the session should contain the user data
+      if (session) {
+        const userEmail = session.user?.email;
 
-      if (user && user.email) {
-        const userData = await getUserData(user.email);
-        if (userData) {
-          console.log(`User Plan: ${userData.plan}`);
-          console.log(`Max Requests Allowed: ${userData.requestCount}`);
-          console.log(`Requests Made: ${userData.requestCount}`);
+        if (userEmail) {
+          const userData = await getUserData(userEmail);
+          if (userData) {
+            console.log(`User Plan: ${userData.plan}`);
+            console.log(`Max Requests Allowed: ${userData.requestCount}`);
+            console.log(`Requests Made: ${userData.requestCount}`);
 
-          // Optionally show a toast with this information
-          toast.success(`Welcome back! You are on the ${userData.plan} plan.`);
+            toast.success(`Welcome back! You are on the ${userData.plan} plan.`);
+          }
         }
-      }
 
-      router.push("/dashboard");
+        router.push("/dashboard");
+      }
     } catch (error) {
       toast.error("Sign-in failed. Please try again.");
       console.error("Sign-in failed", error);
