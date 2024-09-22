@@ -51,7 +51,7 @@ export const getUserData = async (email: string): Promise<UserData | null> => {
 // Function to check if the user has exceeded their request limit
 export const checkUserPlanLimit = async (email: string): Promise<boolean> => {
   const userData = await getUserData(email);
-
+  console.log(userData)
   if (!userData) {
     console.warn(`No user data found for ${email}.`);
     return false;
