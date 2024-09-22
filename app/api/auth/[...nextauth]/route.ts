@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import NextAuth from "next-auth";
+import NextAuth, { NextAuthOptions, User } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { FirestoreAdapter } from "@next-auth/firebase-adapter";
 import { adminDb } from "@/firebaseAdmin"; // Import Firestore Admin instance
-import { doc, getDoc, setDoc } from "firebase-admin/firestore"; // Firestore Admin functions
 
-const authOptions = {
+const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -14,7 +13,7 @@ const authOptions = {
   ],
   adapter: FirestoreAdapter(adminDb), // Use the Firebase Admin Firestore instance
   callbacks: {
-    async signIn({ user }) {
+    async signIn({ user }: { user: User }) {
       const userEmail = user.email;
 
       if (!userEmail) {
@@ -23,10 +22,10 @@ const authOptions = {
       }
 
       // Reference to the user's document in Firestore
-      const userDocRef = doc(adminDb.collection("users"), userEmail);
-      const userDoc = await getDoc(userDocRef);
+      const userDocRef = adminDb.collection("users").doc(userEmail);
+      const userDoc = await userDocRef.get();
 
-      if (userDoc.exists()) {
+      if (userDoc.exists) {
         // User already exists, fetch plan and request count
         const userData = userDoc.data();
         console.log("User Plan:", userData?.plan);
@@ -37,13 +36,13 @@ const authOptions = {
           plan: "free", // Default plan
           requestCount: 0, // Default request count
         };
-        await setDoc(userDocRef, newUser);
+        await userDocRef.set(newUser);
         console.log("New user created with Free plan and 0 request count.");
       }
 
       return true; // Allow sign-in
     },
-    async session({ session, token, user }) {
+    async session({ session }) {
       // Pass session information
       return session;
     },
