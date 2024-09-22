@@ -21,16 +21,16 @@ export default function SignUp() {
         throw new Error(result.error);
       }
 
-      // After sign-up, check the session for user data
-      if (session) {
-        const userEmail = session.user?.email;
+      // Wait for session to update after sign-in
+      const sessionCheck = useSession(); // Re-check session
+      if (sessionCheck.data) {
+        const userEmail = sessionCheck.data.user?.email;
 
         if (userEmail) {
           const userData = await getUserData(userEmail);
           if (userData) {
             console.log(`User Plan: ${userData.plan}`);
             console.log(`Max Requests Allowed: ${userData.requestCount}`);
-            console.log(`Requests Made: ${userData.requestCount}`);
 
             toast.success(`Welcome! You are on the ${userData.plan} plan.`);
           }
