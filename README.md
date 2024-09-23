@@ -64,7 +64,7 @@ npm run dev
 http://localhost:3000
 ```
 
-##🧑‍💻 Usage
+## 🧑‍💻 Usage
 
 1. **Sign Up**: Users can sign up using their Google accounts.
 
@@ -77,11 +77,11 @@ http://localhost:3000
 
 4. **Content Generation**: Start generating AI-powered content once signed in.
 
-##📦 Deployment
+## 📦 Deployment
 
 To deploy InspireGem, ensure your Firebase, Google, and Stripe credentials are correctly set up in the .env file.
 
-Vercel
+### Vercel
 
 To deploy to Vercel:
 
@@ -95,44 +95,44 @@ To deploy to Vercel:
 
 
 
-Firebase Hosting
+### Firebase Hosting
 
 1. Initialize Firebase Hosting:
-
+```bash
 firebase init hosting
-
+```
 
 2. Deploy the app:
-
+```bash
 firebase deploy
+```
 
 
-
-##🤝 Contributing
+## 🤝 Contributing
 
 We welcome contributions! Please follow the steps below:
 
 1. Fork the repository.
 
 
-2. Create a feature branch (git checkout -b feature-branch).
+2. Create a feature branch (```git checkout -b feature-branch```).
 
 
-3. Commit your changes (git commit -m 'Add a new feature').
+3. Commit your changes (```git commit -m 'Add a new feature'```).
 
 
-4. Push to the branch (git push origin feature-branch).
+4. Push to the branch (```git push origin feature-branch```).
 
 
 5. Open a Pull Request.
 
 
 
-##📝 License
+## 📝 License
 
 This project is licensed under the MIT License. See the LICENSE file for details.
 
-##💡 Future Plans
+## 💡 Future Plans
 
 Enhanced AI-powered content generation.
 
@@ -144,4 +144,4 @@ Additional authentication providers.
 
 ---
 
-InspireGem - Unlock the power of AI-driven content creation!
+**InspireGem** - Unlock the power of AI-driven content creation!
