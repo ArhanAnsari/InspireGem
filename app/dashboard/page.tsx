@@ -9,6 +9,7 @@ import PlansPage from "../plans/page";
 import { checkUserPlanLimit, incrementRequestCount, getPreviousContent } from "@/firebaseFunctions"; // Import Firebase functions
 import { DocumentData } from "firebase/firestore"; // Import DocumentData type from Firebase
 import MarkdownRenderer from "@/components/MarkdownRenderer"; // Import the custom MarkdownRenderer
+import { StarIcon } from "@heroicons/react/solid"; // Import StarIcon from Heroicons
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
@@ -138,6 +139,19 @@ export default function Dashboard() {
         ) : (
           <p className="text-gray-500">No previously generated content found.</p>
         )}
+      </div>
+
+      {/* Star us on GitHub Button */}
+      <div className="mt-8">
+        <a
+          href="https://github.com/ArhanAnsari/InspireGem"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center bg-gray-800 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-gray-900 transition-colors"
+        >
+          <StarIcon className="w-5 h-5 mr-2 text-yellow-400" />
+          Star us on GitHub
+        </a>
       </div>
 
       <ToastContainer />
