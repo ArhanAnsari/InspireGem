@@ -1,5 +1,6 @@
 import { db } from "./firebaseConfig";
 import { doc, getDoc, updateDoc, setDoc, increment } from "firebase/firestore";
+import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
 
 // Define the allowed plans as a union type
 type Plan = "free" | "pro" | "enterprise";
@@ -78,4 +79,13 @@ export const incrementRequestCount = async (email: string): Promise<void> => {
     console.error(`Error incrementing request count for ${email}:`, error);
     throw new Error("Unable to increment request count.");
   }
+};
+
+export const getPreviousContent = async (email: string) => {
+  const db = getFirestore();
+  const q = query(collection(db, "generatedContent"), where("userEmail", "==", email));
+  const querySnapshot = await getDocs(q);
+
+  const previousContent = querySnapshot.docs.map((doc) => doc.data());
+  return previousContent;
 };

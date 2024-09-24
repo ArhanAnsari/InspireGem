@@ -1,4 +1,3 @@
-// app/dashboard/page.tsx
 "use client";
 
 import { useSession } from "next-auth/react";
@@ -7,13 +6,15 @@ import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PlansPage from "../plans/page";
-import { checkUserPlanLimit, incrementRequestCount } from "@/firebaseFunctions"; // Import Firebase functions
+import { checkUserPlanLimit, incrementRequestCount, getPreviousContent } from "@/firebaseFunctions"; // Import Firebase functions
+import { DocumentData } from "firebase/firestore"; // Import DocumentData type from Firebase
 import MarkdownRenderer from "@/components/MarkdownRenderer"; // Import the custom MarkdownRenderer
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
+  const [previousContent, setPreviousContent] = useState<DocumentData[]>([]); // Define state as an array of DocumentData
   const [isLoading, setIsLoading] = useState(false); // Add loading state
   const router = useRouter();
 
@@ -23,6 +24,18 @@ export default function Dashboard() {
       router.push("/auth/signin");
     }
   }, [status, router]);
+
+  // Fetch previously generated content when session is ready
+  useEffect(() => {
+    if (session) {
+      const fetchPreviousContent = async () => {
+        const content = await getPreviousContent(session?.user?.email ?? "");
+        setPreviousContent(content); // Set the previously generated content
+      };
+
+      fetchPreviousContent();
+    }
+  }, [session]);
 
   // Function to generate AI content
   const generateAIContent = async () => {
@@ -109,6 +122,22 @@ export default function Dashboard() {
       <div>
         <h2 className="text-xl font-semibold mb-4">Available Plans</h2>
         <PlansPage />
+      </div>
+
+      {/* Display previously generated content */}
+      <div className="mt-6">
+        <h2 className="text-xl font-semibold mb-4">Your Previous Content</h2>
+        {previousContent.length > 0 ? (
+          <ul className="list-disc list-inside space-y-2">
+            {previousContent.map((content, index) => (
+              <li key={index}>
+                <MarkdownRenderer content={content.generatedContent} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-500">No previously generated content found.</p>
+        )}
       </div>
 
       <ToastContainer />
