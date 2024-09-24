@@ -14,6 +14,9 @@ export default function Header() {
           <li>
             <Link href="/" className="text-white">Home</Link>
           </li>
+          <li>
+            <Link href="/about" className="text-white">About Us</Link>
+          </li>
           {session ? (
             <>
               <li>
