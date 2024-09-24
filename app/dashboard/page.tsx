@@ -7,27 +7,26 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PlansPage from "../plans/page";
 import { checkUserPlanLimit, incrementRequestCount, getPreviousContent } from "@/firebaseFunctions"; // Import Firebase functions
-import { DocumentData } from "firebase/firestore"; // Import DocumentData type from Firebase
 import MarkdownRenderer from "@/components/MarkdownRenderer"; // Import the custom MarkdownRenderer
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
-  const [previousContent, setPreviousContent] = useState<DocumentData[]>([]); // Define state as an array of DocumentData
+  const [previousContent, setPreviousContent] = useState([]); // State for previous content
   const [isLoading, setIsLoading] = useState(false); // Add loading state
   const router = useRouter();
 
-  // Redirect unauthenticated users to sign in page
+  // Redirect unauthenticated users to sign-in page
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth/signin");
     }
   }, [status, router]);
 
-  // Fetch previously generated content when session is ready
+  // Fetch previous content after the session is loaded
   useEffect(() => {
-    if (session) {
+    if (session?.user?.email) {
       const fetchPreviousContent = async () => {
         const content = await getPreviousContent(session?.user?.email ?? "");
         setPreviousContent(content); // Set the previously generated content
@@ -71,12 +70,12 @@ export default function Dashboard() {
       if (response.ok) {
         setOutput(data.generatedContent);
         toast.success("AI content generated successfully!");
+
+        // Save the generated content to Firebase
+        await incrementRequestCount(session?.user?.email ?? "");
       } else {
         toast.error("Failed to generate AI content.");
       }
-
-      // Increment the user's request count in Firebase
-      await incrementRequestCount(session?.user?.email ?? "");
     } catch (error) {
       toast.error("An error occurred while generating AI content.");
     } finally {
@@ -111,7 +110,6 @@ export default function Dashboard() {
         {output ? (
           <div className="mt-6 bg-gray-100 p-4 rounded">
             <h3 className="text-lg font-semibold">Generated Content:</h3>
-            {/* Render the output as Markdown using the MarkdownRenderer */}
             <MarkdownRenderer content={output} />
           </div>
         ) : (
@@ -119,12 +117,6 @@ export default function Dashboard() {
         )}
       </div>
 
-      <div>
-        <h2 className="text-xl font-semibold mb-4">Available Plans</h2>
-        <PlansPage />
-      </div>
-
-      {/* Display previously generated content */}
       <div className="mt-6">
         <h2 className="text-xl font-semibold mb-4">Your Previous Content</h2>
         {previousContent.length > 0 ? (
@@ -138,6 +130,11 @@ export default function Dashboard() {
         ) : (
           <p className="text-gray-500">No previously generated content found.</p>
         )}
+      </div>
+
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Available Plans</h2>
+        <PlansPage />
       </div>
 
       <ToastContainer />
