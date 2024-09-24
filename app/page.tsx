@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 // Import the StarIcon from Heroicons
-import { StarIcon } from "@heroicons/react/solid";
+import { StarIcon } from "@heroicons/react";
 
 export default function HomePage() {
   return (
