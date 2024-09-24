@@ -22,7 +22,7 @@ export default function AboutPage() {
           <ul className="text-left space-y-4 text-gray-600">
             <li>
               <strong>AI-Powered Content Creation:</strong> Leverage Google
-              Gemini's capabilities to generate accurate, creative content
+              Gemini&apos;s capabilities to generate accurate, creative content
               effortlessly.
             </li>
             <li>
@@ -45,7 +45,7 @@ export default function AboutPage() {
               securely using your Google account.
             </li>
             <li>
-              <strong>History & Reuse:</strong> View and reuse previously
+              <strong>History &amp; Reuse:</strong> View and reuse previously
               generated content (coming soon).
             </li>
           </ul>
