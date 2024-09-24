@@ -1,5 +1,7 @@
 import React from "react";
 import Link from "next/link";
+// Import the StarIcon from Heroicons
+import { StarIcon } from "@heroicons/react/solid";
 
 export default function HomePage() {
   return (
@@ -31,6 +33,20 @@ export default function HomePage() {
         <Link href="/about" className="text-blue-600 hover:underline">
           Learn More About InspireGem
         </Link>
+      </div>
+
+      {/* Star us on GitHub Button */}
+      <div className="mt-8">
+        <a
+          href="https://github.com/ArhanAnsari/InspireGem"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center bg-gray-800 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-gray-900 transition-colors"
+        >
+          {/* Star Icon (Heroicons) */}
+          <StarIcon className="w-5 h-5 mr-2 text-yellow-400" />
+          Star us on GitHub
+        </a>
       </div>
     </div>
   );
