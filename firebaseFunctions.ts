@@ -1,6 +1,5 @@
 import { db } from "./firebaseConfig";
-import { doc, getDoc, updateDoc, setDoc, increment } from "firebase/firestore";
-import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
+import { doc, getDoc, updateDoc, setDoc, increment, collection, query, where, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
 
 // Define the allowed plans as a union type
 type Plan = "free" | "pro" | "enterprise";
@@ -52,7 +51,6 @@ export const getUserData = async (email: string): Promise<UserData | null> => {
 // Function to check if the user has exceeded their request limit
 export const checkUserPlanLimit = async (email: string): Promise<boolean> => {
   const userData = await getUserData(email);
-  console.log(userData)
   if (!userData) {
     console.warn(`No user data found for ${email}.`);
     return false;
@@ -81,11 +79,32 @@ export const incrementRequestCount = async (email: string): Promise<void> => {
   }
 };
 
-export const getPreviousContent = async (email: string) => {
-  const db = getFirestore();
-  const q = query(collection(db, "generatedContent"), where("userEmail", "==", email));
-  const querySnapshot = await getDocs(q);
+// Function to save the generated content to Firestore
+export const saveGeneratedContent = async (email: string, generatedContent: string): Promise<void> => {
+  try {
+    const contentRef = collection(db, "generatedContent");
 
-  const previousContent = querySnapshot.docs.map((doc) => doc.data());
-  return previousContent;
+    await addDoc(contentRef, {
+      userEmail: email,
+      generatedContent: generatedContent,
+      timestamp: serverTimestamp(), // Record the time of content generation
+    });
+  } catch (error) {
+    console.error(`Error saving generated content for ${email}:`, error);
+    throw new Error("Unable to save generated content.");
+  }
+};
+
+// Function to fetch previous AI-generated content for a user
+export const getPreviousContent = async (email: string) => {
+  try {
+    const q = query(collection(db, "generatedContent"), where("userEmail", "==", email));
+    const querySnapshot = await getDocs(q);
+
+    const previousContent = querySnapshot.docs.map((doc) => doc.data());
+    return previousContent;
+  } catch (error) {
+    console.error(`Error fetching previous content for ${email}:`, error);
+    throw new Error("Unable to fetch previous content.");
+  }
 };
