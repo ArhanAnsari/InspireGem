@@ -1,28 +1,26 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
-import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
+import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { getUserData } from "@/firebaseFunctions"; // Import Firebase function to get user data
 import "react-toastify/dist/ReactToastify.css";
 
 export default function SignIn() {
   const router = useRouter();
-  const { data: session } = useSession(); // Get session data
   const [loading, setLoading] = useState(false);
 
   const handleSignIn = async () => {
     setLoading(true);
+    const auth = getAuth();
+    const provider = new GoogleAuthProvider();
+
     try {
-      const result = await signIn("google", { redirect: false });
+      const result = await signInWithPopup(auth, provider);
 
-      if (result?.error) {
-        throw new Error(result.error);
-      }
-
-      // Wait for the session to update
-      const userEmail = session?.user?.email;
+      const user = result.user;
+      const userEmail = user.email;
 
       if (userEmail) {
         const userData = await getUserData(userEmail);
@@ -57,4 +55,4 @@ export default function SignIn() {
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
     </div>
   );
-}
+  }
