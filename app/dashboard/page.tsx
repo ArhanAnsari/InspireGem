@@ -28,10 +28,15 @@ export default function Dashboard() {
 
   // Fetch previously generated content when session is ready
   useEffect(() => {
-    if (session) {
+    if (session?.user?.email) {
       const fetchPreviousContent = async () => {
-        const content = await getPreviousContent(session?.user?.email ?? "");
-        setPreviousContent(content); // Set the previously generated content
+        try {
+          const content = await getPreviousContent(session.user.email);
+          setPreviousContent(content); // Set the previously generated content
+        } catch (error) {
+          console.error("Error fetching previous content:", error);
+          toast.error("Failed to load previous content.");
+        }
       };
 
       fetchPreviousContent();
