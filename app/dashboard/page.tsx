@@ -31,7 +31,7 @@ export default function Dashboard() {
     if (session?.user?.email) {
       const fetchPreviousContent = async () => {
         try {
-          const content = await getPreviousContent(session.user.email as string); // Ensure email is a string
+          const { content } = await getPreviousContent(session.user.email as string); // Extract content from the response
           setPreviousContent(content); // Set the previously generated content
         } catch (error) {
           console.error("Error fetching previous content:", error);
