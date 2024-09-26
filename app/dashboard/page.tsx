@@ -1,3 +1,4 @@
+// app/dashboard/page.tsx
 "use client";
 
 import { useSession } from "next-auth/react";
@@ -6,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PlansPage from "../plans/page";
-import { adminDb } from "@/firebaseAdmin"; // Import Firebase Admin
 import { DocumentData } from "firebase/firestore"; // Import DocumentData type from Firebase
 import MarkdownRenderer from "@/components/MarkdownRenderer"; // Import the custom MarkdownRenderer
 import { StarIcon } from "@heroicons/react/24/solid"; // Import StarIcon from Heroicons
@@ -35,15 +35,16 @@ export default function Dashboard() {
     if (session?.user?.email) {
       const fetchPreviousContent = async () => {
         try {
-          const chatRef = adminDb
-            .collection("users")
-            .doc(session.user.email)
-            .collection("content");
+          const response = await fetch(
+            `/api/getPreviousContent?email=${session.user.email}`
+          );
+          const data = await response.json();
 
-          const chatSnapshot = await chatRef.get();
-          const content = chatSnapshot.docs.map((doc) => doc.data());
-
-          setPreviousContent(content);
+          if (response.ok) {
+            setPreviousContent(data.content);
+          } else {
+            toast.error(data.message || "Failed to load previous content.");
+          }
         } catch (error) {
           console.error("Error fetching previous content:", error);
           toast.error("Failed to load previous content.");
@@ -64,11 +65,6 @@ export default function Dashboard() {
       if (!userData) {
         toast.error("User data not found.");
         return false;
-      }
-
-      const isEnterpriseUser = userData.plan === "Enterprise"; // Check if the user is on the Enterprise plan
-      if (isEnterpriseUser) {
-        return true; // Skip limit check for Enterprise users
       }
 
       const isProUser = userData.hasActiveMembership;
