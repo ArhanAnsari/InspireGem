@@ -10,6 +10,7 @@ import PlansPage from "../plans/page";
 import { DocumentData } from "firebase/firestore"; // Import DocumentData type from Firebase
 import MarkdownRenderer from "@/components/MarkdownRenderer"; // Import the custom MarkdownRenderer
 import { StarIcon } from "@heroicons/react/24/solid"; // Import StarIcon from Heroicons
+import { adminDb } from "@/firebaseAdmin";
 
 // Request limits
 const PRO_LIMIT = 500;
