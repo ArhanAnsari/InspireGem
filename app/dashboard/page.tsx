@@ -6,44 +6,56 @@ import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PlansPage from "../plans/page";
-import { checkUserPlanLimit, incrementRequestCount, getPreviousContent } from "@/firebaseFunctions"; // Import Firebase functions
+import { adminDb } from "@/firebaseAdmin"; // Import your Firebase admin configuration
 import { DocumentData } from "firebase/firestore"; // Import DocumentData type from Firebase
 import MarkdownRenderer from "@/components/MarkdownRenderer"; // Import the custom MarkdownRenderer
 import { StarIcon } from "@heroicons/react/24/solid"; // Import StarIcon from Heroicons
+
+// Define plan limits
+//const ENTERPRISE_LIMIT = Infinite;
+const PRO_LIMIT = 500;
+const FREE_LIMIT = 50;
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
-  const [previousContent, setPreviousContent] = useState<DocumentData[]>([]); // Define state as an array of DocumentData
-  const [isLoading, setIsLoading] = useState(false); // Add loading state
+  const [previousContent, setPreviousContent] = useState<DocumentData[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  // Redirect unauthenticated users to sign in page
+  // Redirect unauthenticated users to sign-in page
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth/signin");
     }
   }, [status, router]);
 
-  // Fetch previously generated content when session is ready
+  // Fetch previously generated content when the session is ready
   useEffect(() => {
-  if (session?.user?.email) {
-    const fetchPreviousContent = async () => {
-      try {
-        const { content } = await getPreviousContent(session.user.email as string); // Destructure to get only content
-        setPreviousContent(content); // Set the previously generated content
-      } catch (error) {
-        console.error("Error fetching previous content:", error);
-        toast.error("Failed to load previous content.");
-      }
-    };
+    if (session?.user?.email) {
+      const fetchPreviousContent = async () => {
+        try {
+          const userRef = adminDb.collection("users").doc(session.user.email);
+          const filesSnapshot = await userRef.collection("files").get();
 
-    fetchPreviousContent();
-  }
-}, [session]);
+          const content = filesSnapshot.docs.map((doc) => ({
+            ...doc.data(),
+            id: doc.id,
+          }));
 
-  // Function to generate AI content
+          setPreviousContent(content);
+        } catch (error) {
+          console.error("Error fetching previous content:", error);
+          toast.error("Failed to load previous content.");
+        }
+      };
+
+      fetchPreviousContent();
+    }
+  }, [session]);
+
+  // Function to generate AI content and enforce user limits
   const generateAIContent = async () => {
     if (!input) {
       toast.error("Please enter some text to generate AI content.");
@@ -53,17 +65,38 @@ export default function Dashboard() {
     // Avoid making Firebase API calls on the server side
     if (typeof window === "undefined") return;
 
-    // Check user's plan limits before making the API call
-    const canGenerate = await checkUserPlanLimit(session?.user?.email ?? "");
-
-    if (!canGenerate) {
-      toast.error("You have reached your limit for this month.");
-      return;
-    }
-
-    setIsLoading(true); // Start loading
-
+    // Fetch the user's document and check their membership status
     try {
+      const userRef = adminDb.collection("users").doc(session?.user?.email ?? "");
+      const userDoc = await userRef.get();
+      const isProUser = userDoc.data()?.hasActiveMembership;
+
+      // Reference to the user's chat data
+      const chatRef = userRef.collection("files").doc("default").collection("chat");
+      const chatSnapshot = await chatRef.where("role", "==", "human").get();
+      const userMessagesCount = chatSnapshot.size;
+
+      // Enforce limits based on user plan
+      if (!isProUser && userMessagesCount >= FREE_LIMIT) {
+        toast.error(`You need to upgrade to PRO to ask more than ${FREE_LIMIT} questions.`);
+        return;
+      }
+
+      if (isProUser && userMessagesCount >= PRO_LIMIT) {
+        toast.error(`You've reached the PRO limit of ${PRO_LIMIT} questions.`);
+        return;
+      }
+
+      setIsLoading(true);
+
+      // Add the user's question to the chat
+      await chatRef.add({
+        role: "human",
+        message: input,
+        createdAt: new Date(),
+      });
+
+      // Fetch the AI response (this would need to be your AI API call)
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: {
@@ -77,16 +110,21 @@ export default function Dashboard() {
       if (response.ok) {
         setOutput(data.generatedContent);
         toast.success("AI content generated successfully!");
+
+        // Add the AI response to the chat
+        await chatRef.add({
+          role: "ai",
+          message: data.generatedContent,
+          createdAt: new Date(),
+        });
       } else {
         toast.error("Failed to generate AI content.");
       }
-
-      // Increment the user's request count in Firebase
-      await incrementRequestCount(session?.user?.email ?? "");
     } catch (error) {
+      console.error("Error during AI content generation:", error);
       toast.error("An error occurred while generating AI content.");
     } finally {
-      setIsLoading(false); // End loading
+      setIsLoading(false);
     }
   };
 
@@ -109,10 +147,12 @@ export default function Dashboard() {
         />
         <button
           onClick={generateAIContent}
-          className={`bg-blue-500 text-white px-4 py-2 rounded ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`bg-blue-500 text-white px-4 py-2 rounded ${
+            isLoading ? "opacity-50 cursor-not-allowed" : ""
+          }`}
           disabled={isLoading}
         >
-          {isLoading ? 'Generating...' : 'Generate AI Content'}
+          {isLoading ? "Generating..." : "Generate AI Content"}
         </button>
         {output ? (
           <div className="mt-6 bg-gray-100 p-4 rounded">
