@@ -6,17 +6,21 @@ import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PlansPage from "../plans/page";
-import { checkUserPlanLimit, incrementRequestCount, getPreviousContent, getUserPlan } from "@/firebaseFunctions"; // Import Firebase functions
+import { adminDb } from "@/firebaseAdmin"; // Import Firebase Admin
 import { DocumentData } from "firebase/firestore"; // Import DocumentData type from Firebase
 import MarkdownRenderer from "@/components/MarkdownRenderer"; // Import the custom MarkdownRenderer
 import { StarIcon } from "@heroicons/react/24/solid"; // Import StarIcon from Heroicons
+
+// Request limits
+const PRO_LIMIT = 500;
+const FREE_LIMIT = 50;
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
-  const [previousContent, setPreviousContent] = useState<DocumentData[]>([]); // Define state as an array of DocumentData
-  const [isLoading, setIsLoading] = useState(false); // Add loading state
+  const [previousContent, setPreviousContent] = useState<DocumentData[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   // Redirect unauthenticated users to sign in page
@@ -31,8 +35,15 @@ export default function Dashboard() {
     if (session?.user?.email) {
       const fetchPreviousContent = async () => {
         try {
-          const { content } = await getPreviousContent(session.user.email as string); // Destructure to get only content
-          setPreviousContent(content); // Set the previously generated content
+          const chatRef = adminDb
+            .collection("users")
+            .doc(session.user.email)
+            .collection("content");
+
+          const chatSnapshot = await chatRef.get();
+          const content = chatSnapshot.docs.map((doc) => doc.data());
+
+          setPreviousContent(content);
         } catch (error) {
           console.error("Error fetching previous content:", error);
           toast.error("Failed to load previous content.");
@@ -43,6 +54,49 @@ export default function Dashboard() {
     }
   }, [session]);
 
+  // Check user limits before generating content
+  const checkUserLimits = async () => {
+    try {
+      const userRef = adminDb.collection("users").doc(session?.user?.email);
+      const userDoc = await userRef.get();
+      const userData = userDoc.data();
+
+      if (!userData) {
+        toast.error("User data not found.");
+        return false;
+      }
+
+      const isEnterpriseUser = userData.plan === "Enterprise"; // Check if the user is on the Enterprise plan
+      if (isEnterpriseUser) {
+        return true; // Skip limit check for Enterprise users
+      }
+
+      const isProUser = userData.hasActiveMembership;
+      const userLimit = isProUser ? PRO_LIMIT : FREE_LIMIT;
+
+      // Check current message count
+      const chatRef = userRef.collection("content");
+      const chatSnapshot = await chatRef.get();
+      const userMessages = chatSnapshot.docs.length;
+
+      // Check if user has reached the limit
+      if (userMessages >= userLimit) {
+        toast.error(
+          isProUser
+            ? `You've reached the PRO limit of ${PRO_LIMIT} requests per month.`
+            : `You've reached the FREE limit of ${FREE_LIMIT} requests per month. Upgrade to PRO for more requests!`
+        );
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error checking user limits:", error);
+      toast.error("Failed to verify user limits.");
+      return false;
+    }
+  };
+
   // Function to generate AI content
   const generateAIContent = async () => {
     if (!input) {
@@ -50,25 +104,13 @@ export default function Dashboard() {
       return;
     }
 
-    // Avoid making Firebase API calls on the server side
     if (typeof window === "undefined") return;
 
-    // Fetch user's plan status
-    const userPlan = await getUserPlan(session?.user?.email ?? ""); // Fetch the user's plan info
-    const isEnterpriseUser = userPlan === "Enterprise"; // Check if the user is on the Enterprise plan
+    const canGenerate = await checkUserLimits();
 
-    // Skip limit checks for Enterprise users
-    if (!isEnterpriseUser) {
-      // Check user's plan limits before making the API call for Free and Pro users
-      const canGenerate = await checkUserPlanLimit(session?.user?.email ?? "");
+    if (!canGenerate) return;
 
-      if (!canGenerate) {
-        toast.error("You have reached your limit for this month.");
-        return;
-      }
-    }
-
-    setIsLoading(true); // Start loading
+    setIsLoading(true);
 
     try {
       const response = await fetch("/api/generate", {
@@ -84,29 +126,33 @@ export default function Dashboard() {
       if (response.ok) {
         setOutput(data.generatedContent);
         toast.success("AI content generated successfully!");
+
+        // Save the generated content to Firebase
+        const userRef = adminDb.collection("users").doc(session?.user?.email);
+        await userRef.collection("content").add({
+          role: "ai",
+          message: data.generatedContent,
+          createdAt: new Date(),
+        });
       } else {
         toast.error("Failed to generate AI content.");
-      }
-
-      // Increment the user's request count in Firebase for Free and Pro users
-      if (!isEnterpriseUser) {
-        await incrementRequestCount(session?.user?.email ?? "");
       }
     } catch (error) {
       toast.error("An error occurred while generating AI content.");
     } finally {
-      setIsLoading(false); // End loading
+      setIsLoading(false);
     }
   };
 
-  // If session is still loading
   if (status === "loading") {
     return <div>Loading...</div>;
   }
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Welcome to the Dashboard, {session?.user?.name}</h1>
+      <h1 className="text-3xl font-bold mb-6">
+        Welcome to the Dashboard, {session?.user?.name}
+      </h1>
 
       <div className="mb-6">
         <h2 className="text-xl font-semibold mb-2">AI Content Generator</h2>
@@ -118,15 +164,16 @@ export default function Dashboard() {
         />
         <button
           onClick={generateAIContent}
-          className={`bg-blue-500 text-white px-4 py-2 rounded ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`bg-blue-500 text-white px-4 py-2 rounded ${
+            isLoading ? "opacity-50 cursor-not-allowed" : ""
+          }`}
           disabled={isLoading}
         >
-          {isLoading ? 'Generating...' : 'Generate AI Content'}
+          {isLoading ? "Generating..." : "Generate AI Content"}
         </button>
         {output ? (
           <div className="mt-6 bg-gray-100 p-4 rounded">
             <h3 className="text-lg font-semibold">Generated Content:</h3>
-            {/* Render the output as Markdown using the MarkdownRenderer */}
             <MarkdownRenderer content={output} />
           </div>
         ) : (
@@ -146,7 +193,7 @@ export default function Dashboard() {
           <ul className="list-disc list-inside space-y-2">
             {previousContent.map((content, index) => (
               <li key={index}>
-                <MarkdownRenderer content={content.generatedContent} />
+                <MarkdownRenderer content={content.message} />
               </li>
             ))}
           </ul>
