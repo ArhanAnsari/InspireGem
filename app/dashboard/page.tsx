@@ -17,6 +17,7 @@ export default function Dashboard() {
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
   const [previousContent, setPreviousContent] = useState<DocumentData[]>([]); // Define state as an array of DocumentData
+  const [lastVisible, setLastVisible] = useState<DocumentData | null>(null);
   const [isLoading, setIsLoading] = useState(false); // Add loading state
   const router = useRouter();
 
@@ -41,6 +42,20 @@ export default function Dashboard() {
     };
 
     fetchPreviousContent();
+
+    const fetchMoreContent = async () => {
+    try {
+      const { content, lastVisible: newLastVisible } = await getPreviousContent(
+        session?.user?.email as string,
+        lastVisible
+      );
+      setPreviousContent([...previousContent, ...content]);
+      setLastVisible(newLastVisible);
+    } catch (error) {
+      console.error("Error fetching more content:", error);
+      toast.error("Failed to load more content.");
+    }
+  };
   }
 }, [session]);
 
