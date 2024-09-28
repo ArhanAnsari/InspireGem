@@ -1,12 +1,18 @@
+// /app/dashboard/page.tsx
+
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PlansPage from "../plans/page";
-import { checkUserPlanLimit, incrementRequestCount, getPreviousContent } from "@/firebaseFunctions"; // Import Firebase functions
+import {
+  checkUserPlanLimit,
+  incrementRequestCount,
+  getPreviousContent,
+} from "@/firebaseFunctions"; // Import Firebase functions
 import { DocumentData } from "firebase/firestore"; // Import DocumentData type from Firebase
 import MarkdownRenderer from "@/components/MarkdownRenderer"; // Import the custom MarkdownRenderer
 import { StarIcon } from "@heroicons/react/24/solid"; // Import StarIcon from Heroicons
@@ -17,11 +23,11 @@ export default function Dashboard() {
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
   const [previousContent, setPreviousContent] = useState<DocumentData[]>([]); // Define state as an array of DocumentData
-  const [lastVisible, setLastVisible] = useState<DocumentData | null>(null);
   const [isLoading, setIsLoading] = useState(false); // Add loading state
+  const [lastVisible, setLastVisible] = useState(null); // State to keep track of pagination
   const router = useRouter();
 
-  // Redirect unauthenticated users to sign in page
+  // Redirect unauthenticated users to sign-in page
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth/signin");
@@ -30,34 +36,43 @@ export default function Dashboard() {
 
   // Fetch previously generated content when session is ready
   useEffect(() => {
-  if (session?.user?.email) {
-    const fetchPreviousContent = async () => {
-      try {
-        const { content } = await getPreviousContent(session.user.email as string); // Destructure to get only content
-        setPreviousContent(content); // Set the previously generated content
-      } catch (error) {
-        console.error("Error fetching previous content:", error);
-        toast.error("Failed to load previous content.");
-      }
-    };
+    if (session?.user?.email) {
+      fetchPreviousContent();
+    }
+  }, [session, fetchPreviousContent]);
 
-    fetchPreviousContent();
+  // Function to fetch previously generated content
+  const fetchPreviousContent = useCallback(async () => {
+    if (!session?.user?.email) return;
 
-    const fetchMoreContent = async () => {
     try {
       const { content, lastVisible: newLastVisible } = await getPreviousContent(
-        session?.user?.email as string,
+        session.user.email as string
+      );
+      setPreviousContent(content);
+      setLastVisible(newLastVisible); // Store the last document to manage pagination
+    } catch (error) {
+      console.error("Error fetching previous content:", error);
+      toast.error("Failed to load previous content.");
+    }
+  }, [session?.user?.email]);
+
+  // Function to fetch more content for pagination
+  const fetchMoreContent = async () => {
+    if (!lastVisible || !session?.user?.email) return;
+
+    try {
+      const { content, lastVisible: newLastVisible } = await getPreviousContent(
+        session.user.email as string,
         lastVisible
       );
-      setPreviousContent([...previousContent, ...content]);
+      setPreviousContent((prev) => [...prev, ...content]);
       setLastVisible(newLastVisible);
     } catch (error) {
       console.error("Error fetching more content:", error);
       toast.error("Failed to load more content.");
     }
   };
-  }
-}, [session]);
 
   // Function to generate AI content
   const generateAIContent = async () => {
@@ -113,8 +128,13 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <SEO title="Dashboard - InspireGem" description="Access your AI content generation dashboard, view plans, and review your previously generated content on InspireGem." />
-      <h1 className="text-3xl font-bold mb-6">Welcome to the Dashboard, {session?.user?.name}</h1>
+      <SEO
+        title="Dashboard - InspireGem"
+        description="Access your AI content generation dashboard, view plans, and review your previously generated content on InspireGem."
+      />
+      <h1 className="text-3xl font-bold mb-6">
+        Welcome to the Dashboard, {session?.user?.name}
+      </h1>
 
       <div className="mb-6">
         <h2 className="text-xl font-semibold mb-2">AI Content Generator</h2>
@@ -126,10 +146,12 @@ export default function Dashboard() {
         />
         <button
           onClick={generateAIContent}
-          className={`bg-blue-500 text-white px-4 py-2 rounded ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`bg-blue-500 text-white px-4 py-2 rounded ${
+            isLoading ? "opacity-50 cursor-not-allowed" : ""
+          }`}
           disabled={isLoading}
         >
-          {isLoading ? 'Generating...' : 'Generate AI Content'}
+          {isLoading ? "Generating..." : "Generate AI Content"}
         </button>
         {output ? (
           <div className="mt-6 bg-gray-100 p-4 rounded">
@@ -147,31 +169,29 @@ export default function Dashboard() {
         <PlansPage />
       </div>
 
-      {/* Display previously generated content and "Load More" button */}
-  <div className="mt-6">
-    <h2 className="text-xl font-semibold mb-4">Your Previous Content</h2>
-    {previousContent.length > 0 ? (
-      <>
-        <ul className="list-disc list-inside space-y-2">
-          {previousContent.map((content, index) => (
-            <li key={index}>
-              <MarkdownRenderer content={content.generatedContent} />
-            </li>
-          ))}
-        </ul>
-        {lastVisible && ( // Show "Load More" button if there's more content
+      {/* Display previously generated content */}
+      <div className="mt-6">
+        <h2 className="text-xl font-semibold mb-4">Your Previous Content</h2>
+        {previousContent.length > 0 ? (
+          <ul className="list-disc list-inside space-y-2">
+            {previousContent.map((content, index) => (
+              <li key={index}>
+                <MarkdownRenderer content={content.generatedContent} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-500">No previously generated content found.</p>
+        )}
+        {lastVisible && (
           <button
             onClick={fetchMoreContent}
-            className="bg-blue-500 text-white px-4 py-2 rounded mt-4"
+            className="mt-4 px-4 py-2 bg-gray-200 text-gray-700 rounded"
           >
             Load More
           </button>
         )}
-      </>
-    ) : (
-      <p className="text-gray-500">No previously generated content found.</p>
-    )}
-  </div>
+      </div>
 
       {/* Star us on GitHub Button */}
       <div className="mt-8">
