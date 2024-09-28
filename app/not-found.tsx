@@ -1,14 +1,16 @@
+// app/not-found.tsx
+import SEO from "@/components/SEO"; // Import the SEO component
+
 export default function NotFound() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-white text-gray-800">
-      <h1 className="text-5xl font-bold mb-4">404 - Page Not Found</h1>
-      <p className="text-lg mb-8">The page you are looking for does not exist.</p>
-      <a
-        href="/"
-        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
-      >
-        Go Back Home
-      </a>
-    </div>
+    <>
+      <SEO 
+        title="404 - Page Not Found - InspireGem"
+        description="The page you are looking for does not exist. Return to InspireGem's homepage."
+      />
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <h1 className="text-4xl font-bold text-gray-800">404 - Page Not Found</h1>
+      </div>
+    </>
   );
 }
