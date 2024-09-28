@@ -147,21 +147,31 @@ export default function Dashboard() {
         <PlansPage />
       </div>
 
-      {/* Display previously generated content */}
-      <div className="mt-6">
-        <h2 className="text-xl font-semibold mb-4">Your Previous Content</h2>
-        {previousContent.length > 0 ? (
-          <ul className="list-disc list-inside space-y-2">
-            {previousContent.map((content, index) => (
-              <li key={index}>
-                <MarkdownRenderer content={content.generatedContent} />
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-gray-500">No previously generated content found.</p>
+      {/* Display previously generated content and "Load More" button */}
+  <div className="mt-6">
+    <h2 className="text-xl font-semibold mb-4">Your Previous Content</h2>
+    {previousContent.length > 0 ? (
+      <>
+        <ul className="list-disc list-inside space-y-2">
+          {previousContent.map((content, index) => (
+            <li key={index}>
+              <MarkdownRenderer content={content.generatedContent} />
+            </li>
+          ))}
+        </ul>
+        {lastVisible && ( // Show "Load More" button if there's more content
+          <button
+            onClick={fetchMoreContent}
+            className="bg-blue-500 text-white px-4 py-2 rounded mt-4"
+          >
+            Load More
+          </button>
         )}
-      </div>
+      </>
+    ) : (
+      <p className="text-gray-500">No previously generated content found.</p>
+    )}
+  </div>
 
       {/* Star us on GitHub Button */}
       <div className="mt-8">
