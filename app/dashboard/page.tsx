@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -27,10 +27,9 @@ export default function Dashboard() {
     }
   }, [status, router]);
 
-  // Fetch previously generated content when session is ready
-  useEffect(() => {
-  if (session?.user?.email) {
-    const fetchPreviousContent = async () => {
+  // Function to fetch previously generated content
+  const fetchPreviousContent = useCallback(async () => {
+    if (session?.user?.email) {
       try {
         const { content } = await getPreviousContent(session.user.email as string); // Destructure to get only content
         setPreviousContent(content); // Set the previously generated content
@@ -38,11 +37,13 @@ export default function Dashboard() {
         console.error("Error fetching previous content:", error);
         toast.error("Failed to load previous content.");
       }
-    };
+    }
+  }, [session]);
 
+  // Fetch previously generated content when session is ready
+  useEffect(() => {
     fetchPreviousContent();
-  }
-}, [session]);
+  }, [session, fetchPreviousContent]);
 
   // Function to generate AI content
   const generateAIContent = async () => {

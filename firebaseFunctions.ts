@@ -1,5 +1,21 @@
 import { db } from "./firebaseConfig";
-import { doc, getDoc, updateDoc, setDoc, increment, collection, query, where, getDocs, addDoc, serverTimestamp, limit, startAfter } from "firebase/firestore";
+import { 
+  doc, 
+  getDoc, 
+  updateDoc, 
+  setDoc, 
+  increment, 
+  collection, 
+  query, 
+  where, 
+  getDocs, 
+  addDoc, 
+  serverTimestamp, 
+  limit, 
+  startAfter, 
+  orderBy // Import orderBy from Firebase
+} from "firebase/firestore";
+import { DocumentData } from "firebase/firestore"; // Import DocumentData from Firebase
 
 // Define the allowed plans as a union type
 type Plan = "free" | "pro" | "enterprise";
@@ -111,14 +127,23 @@ export const saveGeneratedContent = async (email: string, generatedContent: stri
   }
 };
 
-// Function to fetch previous AI-generated content for a user with optional pagination
-export const getPreviousContent = async (email: string, lastVisible: any = null, limitVal: number = 10) => {
+// Function to fetch previous AI-generated content for a user with pagination
+export const getPreviousContent = async (
+  email: string,
+  lastVisible: DocumentData | null = null,
+  limitVal: number = 10
+): Promise<{ content: DocumentData[]; lastVisible: DocumentData | null }> => {
   try {
     const contentRef = collection(db, "generatedContent");
-    let q = query(contentRef, where("userEmail", "==", email), limit(limitVal));
+    let q = query(
+      contentRef,
+      where("userEmail", "==", email),
+      orderBy('timestamp', 'desc'), // Order by timestamp descending
+      limit(limitVal)
+    );
 
     if (lastVisible) {
-      q = query(q, startAfter(lastVisible));
+      q = query(q, startAfter(lastVisible.timestamp)); // Use timestamp for accurate ordering
     }
 
     const querySnapshot = await getDocs(q);
@@ -126,7 +151,7 @@ export const getPreviousContent = async (email: string, lastVisible: any = null,
 
     return {
       content: previousContent,
-      lastVisible: querySnapshot.docs[querySnapshot.docs.length - 1], // For pagination
+      lastVisible: querySnapshot.docs.length > 0 ? querySnapshot.docs[querySnapshot.docs.length - 1] : null,
     };
   } catch (error) {
     console.error(`Error fetching previous content for ${email}:`, error);
