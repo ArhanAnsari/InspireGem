@@ -6,7 +6,6 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO"; // Import the SEO component
-
 const RootLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <html lang="en">
@@ -36,6 +35,11 @@ const RootLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       </body>
     </html>
   );
+};
+
+export const metadata: Metadata = {
+  title: "Home - InspireGem",
+  description: "InspireGem is an AI-powered content generation platform that uses Google Gemini to help you create high-quality content effortlessly. Sign in to get started.",
 };
 
 export default RootLayout;
