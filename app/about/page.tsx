@@ -1,7 +1,13 @@
 // app/about/page.tsx
+import type { Metadata } from "next";
 import React from "react";
 import Link from "next/link";
 import SEO from "@/components/SEO"; // Import the SEO component
+
+export const metadata: Metadata = {
+  title: "About - InspireGem",
+  description: "Learn about InspireGem, an AI-powered content generation platform that helps you create high-quality content effortlessly using Google Gemini.",
+};
 
 export default function AboutPage() {
   return (
