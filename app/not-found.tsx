@@ -1,5 +1,11 @@
 // app/not-found.tsx
-import SEO from "@/components/SEO"; // Import the SEO component
+import type { Metadata } from "next";
+import SEO from "@/components/SEO"; // Import the SEO component 
+
+export const metadata: Metadata = {
+  title: "404 - Page Not Found - InspireGem",
+  description: "The page you are looking for does not exist. Return to InspireGem's homepage.",
+};
 
 export default function NotFound() {
   return (
