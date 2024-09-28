@@ -1,5 +1,7 @@
 import { db } from "./firebaseConfig";
 import { doc, getDoc, updateDoc, setDoc, increment, collection, query, where, getDocs, addDoc, serverTimestamp, limit, startAfter } from "firebase/firestore";
+// Ensure you have this import at the top of your file
+import { DocumentData } from "firebase/firestore"; // Import DocumentData from Firebase
 
 // Define the allowed plans as a union type
 type Plan = "free" | "pro" | "enterprise";
