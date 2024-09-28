@@ -10,6 +10,7 @@ import { checkUserPlanLimit, incrementRequestCount, getPreviousContent } from "@
 import { DocumentData } from "firebase/firestore"; // Import DocumentData type from Firebase
 import MarkdownRenderer from "@/components/MarkdownRenderer"; // Import the custom MarkdownRenderer
 import { StarIcon } from "@heroicons/react/24/solid"; // Import StarIcon from Heroicons
+import SEO from "@/components/SEO"; // Import the SEO component
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
@@ -97,6 +98,7 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
+      <SEO title="Dashboard - InspireGem" description="Access your AI content generation dashboard, view plans, and review your previously generated content on InspireGem." />
       <h1 className="text-3xl font-bold mb-6">Welcome to the Dashboard, {session?.user?.name}</h1>
 
       <div className="mb-6">
