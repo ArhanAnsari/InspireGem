@@ -1,7 +1,13 @@
 "use client";
+import type { Metadata } from "next";
 import getStripe from "@/lib/stripe-js";
 import React from "react";
 import SEO from "@/components/SEO"; // Import the SEO component
+
+export const metadata: Metadata = {
+  title: "Plans - InspireGem",
+  description: "Explore the available plans on InspireGem and choose the one that fits your content generation needs.",
+};
 
 export default function PlansPage() {
   const getPriceFn = (plan: string) => {
