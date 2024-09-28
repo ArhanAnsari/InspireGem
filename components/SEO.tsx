@@ -14,7 +14,7 @@ const SEO = ({
   description,
   keywords = "AI, SaaS, content generator",
   image = "/default-image.png",
-  url = "https://yourapp.com",
+  url = "https://inspiregem.vercel.app",
 }: SEOProps) => {
   return (
     <Head>
