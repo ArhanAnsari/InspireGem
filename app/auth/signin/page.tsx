@@ -1,3 +1,4 @@
+// app/auth/signin/page.tsx
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import { signIn, useSession } from "next-auth/react";
@@ -6,6 +7,7 @@ import { useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import { getUserData } from "@/firebaseFunctions"; // Import Firebase function to get user data
 import "react-toastify/dist/ReactToastify.css";
+import SEO from "@/components/SEO"; // Import the SEO component
 
 export default function SignIn() {
   const router = useRouter();
@@ -44,17 +46,23 @@ export default function SignIn() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-gray-800">
-      <h1 className="text-4xl font-bold mb-8">Sign In</h1>
-      <p className="mb-4">Sign in with your Google account.</p>
-      <button
-        onClick={handleSignIn}
-        className={`bg-blue-500 text-white px-4 py-2 rounded ${loading ? "opacity-50" : "hover:bg-blue-600"}`}
-        disabled={loading}
-      >
-        {loading ? "Signing in..." : "Sign in with Google"}
-      </button>
-      <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
-    </div>
+    <>
+      <SEO 
+        title="Sign In - InspireGem"
+        description="Sign in to InspireGem using your Google account to access AI-powered content generation."
+      />
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-gray-800">
+        <h1 className="text-4xl font-bold mb-8">Sign In</h1>
+        <p className="mb-4">Sign in with your Google account.</p>
+        <button
+          onClick={handleSignIn}
+          className={`bg-blue-500 text-white px-4 py-2 rounded ${loading ? "opacity-50" : "hover:bg-blue-600"}`}
+          disabled={loading}
+        >
+          {loading ? "Signing in..." : "Sign in with Google"}
+        </button>
+        <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
+      </div>
+    </>
   );
 }
