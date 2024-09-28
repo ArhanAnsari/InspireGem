@@ -1,5 +1,5 @@
 "use client";
-
+import type { Metadata } from "next";
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -11,6 +11,11 @@ import { DocumentData } from "firebase/firestore"; // Import DocumentData type f
 import MarkdownRenderer from "@/components/MarkdownRenderer"; // Import the custom MarkdownRenderer
 import { StarIcon } from "@heroicons/react/24/solid"; // Import StarIcon from Heroicons
 import SEO from "@/components/SEO"; // Import the SEO component
+
+export const metadata: Metadata = {
+  title: "Dashboard - InspireGem",
+  description: "Access your AI content generation dashboard, view plans, and review your previously generated content on InspireGem.",
+};
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
