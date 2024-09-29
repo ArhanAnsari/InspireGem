@@ -176,7 +176,19 @@ export default function Dashboard() {
           <p>No previous content found.</p>
         )}
       </div>
-
+      {/* Star us on GitHub Button */}
+      <div className="mt-8">
+        <a
+          href="https://github.com/ArhanAnsari/InspireGem"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center bg-gray-800 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-gray-900 transition-colors"
+        >
+          <StarIcon className="w-5 h-5 mr-2 text-yellow-400" />
+          Star us on GitHub
+        </a>
+      </div>
+      
       <ToastContainer />
     </div>
   );
