@@ -82,7 +82,7 @@ export default function Dashboard() {
 
     try {
       // If user is not on the Enterprise plan, check plan limits
-      if (userPlan !== "Enterprise") {
+      if (userPlan !== "enterprise") {
         const canGenerate = await checkUserPlanLimit(session.user.email);
 
         if (!canGenerate) {
