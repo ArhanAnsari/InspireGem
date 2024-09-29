@@ -123,12 +123,12 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-4xl mx-auto p-4 md:p-6"> {/* Adjust padding for mobile and larger screens */}
       <SEO title="Dashboard - InspireGem" description="Access your AI content generation dashboard, view plans, and review your previously generated content on InspireGem." />
-      <h1 className="text-3xl font-bold mb-6">Welcome to the Dashboard, {session?.user?.name}</h1>
+      <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Welcome to the Dashboard, {session?.user?.name}</h1> {/* Text size adjusts for mobile and larger screens */}
 
       <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-2">AI Content Generator</h2>
+        <h2 className="text-lg md:text-xl font-semibold mb-2">AI Content Generator</h2> {/* Text size adjusts for mobile and larger screens */}
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -138,7 +138,7 @@ export default function Dashboard() {
         />
         <button
           onClick={generateAIContent}
-          className={`bg-blue-500 text-white px-4 py-2 rounded ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`bg-blue-500 text-white px-4 py-2 rounded w-full md:w-auto ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
           disabled={isLoading}
         >
           {isLoading ? 'Generating...' : 'Generate AI Content'}
@@ -154,13 +154,13 @@ export default function Dashboard() {
       </div>
 
       <div>
-        <h2 className="text-xl font-semibold mb-4">Available Plans</h2>
+        <h2 className="text-lg md:text-xl font-semibold mb-4">Available Plans</h2>
         <PlansPage />
       </div>
 
       {/* Display previously generated content */}
       <div className="mt-6">
-        <h2 className="text-xl font-semibold mb-4">Previously Generated Content</h2>
+        <h2 className="text-lg md:text-xl font-semibold mb-4">Previously Generated Content</h2>
         {previousContent.length ? (
           <ul className="space-y-4">
             {previousContent.map((content) => (
@@ -177,6 +177,7 @@ export default function Dashboard() {
           <p>No previous content found.</p>
         )}
       </div>
+
       {/* Star us on GitHub Button */}
       <div className="mt-8">
         <a
