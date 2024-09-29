@@ -1,4 +1,3 @@
-// app/page.tsx
 import React from "react";
 import Link from "next/link";
 import { StarIcon } from "@heroicons/react/24/solid";
@@ -17,13 +16,11 @@ export default function HomePage() {
             Welcome to <span className="text-blue-600">InspireGem</span>
           </h1>
           <p className="text-lg text-gray-600 mb-10">
-            Leverage the power of AI with Google Gemini to create amazing content
-            effortlessly. Whether you need help generating stories, articles, or
-            creative ideas, InspireGem is here to assist you.
+            Leverage the power of AI with Google Gemini to create amazing content effortlessly. Whether you need help generating stories, articles, or creative ideas, InspireGem is here to assist you.
           </p>
           <Link
             href="/plans"
-            className="inline-block bg-blue-500 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-600 transition-colors"
+            className="inline-block bg-blue-500 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-600 transition-transform transform hover:scale-105"
           >
             View Plans
           </Link>
@@ -48,9 +45,8 @@ export default function HomePage() {
             href="https://github.com/ArhanAnsari/InspireGem"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center bg-gray-800 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-gray-900 transition-colors"
+            className="inline-flex items-center bg-gray-800 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-gray-900 transition-transform transform hover:scale-105"
           >
-            {/* Star Icon (Heroicons) */}
             <StarIcon className="w-5 h-5 mr-2 text-yellow-400" />
             Star us on GitHub
           </a>
