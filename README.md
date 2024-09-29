@@ -45,15 +45,32 @@ npm install
 ```
 3. Create a ```.env.local``` file in the root directory and add your Firebase and Stripe environment variables:
 ```.env.local
+#Firebase Configuration
 NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_firebase_project_id
 NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_firebase_messaging_sender_id
 NEXT_PUBLIC_FIREBASE_APP_ID=your_firebase_app_id
-NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_google_client_id
-NEXT_PUBLIC_GOOGLE_CLIENT_SECRET=your_google_client_secret
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_firebase_measurement_id
+FIREBASE_SERVICE_ACCOUNT_KEY=your_firebase_service_account_key
+
+#Google Oauth Secrets
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+#You can get your Nextauth Secret at: https://generate-secret.vercel.app/32
+NEXTAUTH_SECRET=your_nextauth_secret
+
+#Stripe Configuration
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
 NEXT_PUBLIC_STRIPE_SECRET_KEY=your_stripe_secret_key
+
+#Google Gemini API Key
+GEMINI_API_KEY=your_gemni_api_key
+
+#API URL for interacting with /api/generate
+NEXT_PUBLIC_API_URL=https://inspiregem.vercel.app
 ```
 4. Run the development server:
 ```bash
