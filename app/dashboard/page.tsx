@@ -133,7 +133,7 @@ export default function Dashboard() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Enter text to generate AI content"
-          className="border p-2 w-full mb-4"
+          className="border p-2 w-full mb-4 resize-none h-32" // Added h-32 to control height
         />
         <button
           onClick={generateAIContent}
@@ -143,7 +143,7 @@ export default function Dashboard() {
           {isLoading ? 'Generating...' : 'Generate AI Content'}
         </button>
         {output ? (
-          <div className="mt-6 bg-gray-100 p-4 rounded">
+          <div className="mt-6 bg-gray-100 p-4 rounded overflow-x-auto"> {/* Added overflow-x-auto */}
             <h3 className="text-lg font-semibold">Generated Content:</h3>
             <MarkdownRenderer content={output} />
           </div>
@@ -163,7 +163,7 @@ export default function Dashboard() {
         {previousContent.length ? (
           <ul className="space-y-4">
             {previousContent.map((content) => (
-              <li key={content.id} className="border p-4 rounded">
+              <li key={content.id} className="border p-4 rounded overflow-x-auto"> {/* Added overflow-x-auto */}
                 <h3 className="font-semibold">{content.question}</h3>
                 <MarkdownRenderer content={content.response} />
                 <p className="text-sm text-gray-500">
@@ -176,6 +176,7 @@ export default function Dashboard() {
           <p>No previous content found.</p>
         )}
       </div>
+      
       {/* Star us on GitHub Button */}
       <div className="mt-8">
         <a
