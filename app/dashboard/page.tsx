@@ -77,12 +77,17 @@ export default function Dashboard() {
       return;
     }
 
+    if (!session || !session.user?.email) {
+      toast.error("User session is not available.");
+      return;
+    }
+
     setIsLoading(true); // Start loading
 
     try {
       // If user is on the Enterprise plan, they have unlimited requests
       if (userPlan !== "Enterprise") {
-        const canGenerate = await checkUserPlanLimit(session?.user?.email ?? "");
+        const canGenerate = await checkUserPlanLimit(session.user.email);
 
         if (!canGenerate) {
           toast.error("You have reached your limit for this month.");
@@ -91,7 +96,7 @@ export default function Dashboard() {
         }
       }
 
-      const result = await askQuestion({ userId: session.user.email as string, question: input });
+      const result = await askQuestion({ userId: session.user.email, question: input });
 
       if (!result.success) {
         toast.error(result.message);
