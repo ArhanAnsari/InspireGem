@@ -53,7 +53,7 @@ export default function Dashboard() {
     if (session?.user?.email) {
       try {
         const content = await fetchGeneratedContent(session.user.email);
-        setPreviousContent(content);
+        setPreviousContent(content); // Update state with serialized content
       } catch (error) {
         console.error("Error fetching previous content:", error);
         toast.error("Failed to load previous content.");
@@ -92,8 +92,11 @@ export default function Dashboard() {
         }
       }
 
-      // Generate AI content using Google Gemini
-      const result = await askQuestion({ userId: session.user.email, question: input });
+      // Generate AI content
+      const result = await askQuestion({
+        userId: session.user.email,
+        question: input,
+      });
 
       if (!result.success) {
         toast.error(result.message);
@@ -156,31 +159,22 @@ export default function Dashboard() {
 
       {/* Display previously generated content */}
       <div className="mt-6">
-        <h2 className="text-xl font-semibold mb-4">Your Previous Content</h2>
-        {previousContent.length > 0 ? (
-          <ul className="list-disc list-inside space-y-2">
+        <h2 className="text-xl font-semibold mb-4">Previously Generated Content</h2>
+        {previousContent.length ? (
+          <ul className="space-y-4">
             {previousContent.map((content) => (
-              <li key={content.id}>
+              <li key={content.id} className="border p-4 rounded">
+                <h3 className="font-semibold">{content.question}</h3>
                 <MarkdownRenderer content={content.response} />
+                <p className="text-sm text-gray-500">
+                  Generated on {new Date(content.createdAt).toLocaleString()}
+                </p>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-gray-500">No previously generated content found.</p>
+          <p>No previous content found.</p>
         )}
-      </div>
-
-      {/* Star us on GitHub Button */}
-      <div className="mt-8">
-        <a
-          href="https://github.com/ArhanAnsari/InspireGem"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center bg-gray-800 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-gray-900 transition-colors"
-        >
-          <StarIcon className="w-5 h-5 mr-2 text-yellow-400" />
-          Star us on GitHub
-        </a>
       </div>
 
       <ToastContainer />
