@@ -1,3 +1,5 @@
+// /dashboard/page.tsx
+
 "use client";
 
 import { useSession } from "next-auth/react";
@@ -6,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PlansPage from "../plans/page";
-import { checkUserPlanLimit, incrementRequestCount, getPreviousContent } from "@/firebaseFunctions"; // Import Firebase functions
+import { askQuestion, fetchGeneratedContent } from "@/actions/askQuestions"; // Import from actions
 import { DocumentData } from "firebase/firestore"; // Import DocumentData type from Firebase
 import MarkdownRenderer from "@/components/MarkdownRenderer"; // Import the custom MarkdownRenderer
 import { StarIcon } from "@heroicons/react/24/solid"; // Import StarIcon from Heroicons
@@ -31,7 +33,7 @@ export default function Dashboard() {
   const fetchPreviousContent = useCallback(async () => {
     if (session?.user?.email) {
       try {
-        const { content } = await getPreviousContent(session.user.email as string); // Destructure to get only content
+        const content = await fetchGeneratedContent(session.user.email as string); // Use fetchGeneratedContent
         setPreviousContent(content); // Set the previously generated content
       } catch (error) {
         console.error("Error fetching previous content:", error);
@@ -52,40 +54,24 @@ export default function Dashboard() {
       return;
     }
 
-    // Avoid making Firebase API calls on the server side
-    if (typeof window === "undefined") return;
-
-    // Check user's plan limits before making the API call
-    const canGenerate = await checkUserPlanLimit(session?.user?.email ?? "");
-
-    if (!canGenerate) {
-      toast.error("You have reached your limit for this month.");
-      return;
-    }
-
     setIsLoading(true); // Start loading
 
     try {
-      const response = await fetch("/api/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ prompt: input }),
-      });
+      const result = await askQuestion({ userId: session.user.email as string, question: input });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setOutput(data.generatedContent);
-        toast.success("AI content generated successfully!");
-      } else {
-        toast.error("Failed to generate AI content.");
+      if (!result.success) {
+        toast.error(result.message);
+        return;
       }
 
-      // Increment the user's request count in Firebase
-      await incrementRequestCount(session?.user?.email ?? "");
+      setOutput(result.message); // Set the generated content
+      toast.success("AI content generated successfully!");
+
+      // Refresh previously generated content after adding a new question
+      await fetchPreviousContent();
+      setInput(""); // Clear input after generation
     } catch (error) {
+      console.error("Error generating AI content:", error);
       toast.error("An error occurred while generating AI content.");
     } finally {
       setIsLoading(false); // End loading
@@ -138,9 +124,9 @@ export default function Dashboard() {
         <h2 className="text-xl font-semibold mb-4">Your Previous Content</h2>
         {previousContent.length > 0 ? (
           <ul className="list-disc list-inside space-y-2">
-            {previousContent.map((content, index) => (
-              <li key={index}>
-                <MarkdownRenderer content={content.generatedContent} />
+            {previousContent.map((content) => (
+              <li key={content.id}>
+                <MarkdownRenderer content={content.response} />
               </li>
             ))}
           </ul>
