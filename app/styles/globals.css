@@ -20,8 +20,13 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Custom Utility Class */
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  .output-responsive {
+    @apply bg-gray-200 p-2 rounded overflow-x-auto max-w-full word-wrap break-word;
   }
 }
