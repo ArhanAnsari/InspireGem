@@ -1,3 +1,4 @@
+//app/dashboard/page.tsx
 "use client";
 
 import { useSession } from "next-auth/react";
@@ -144,18 +145,15 @@ export default function Dashboard() {
           {isLoading ? 'Generating...' : 'Generate AI Content'}
         </button>
         {output ? (
-          <div className="mt-6 bg-gray-100 p-4 rounded">
+          <div className="mt-6 bg-gray-100 p-4 rounded overflow-x-auto"> {/* Added overflow-x-auto */}
             <h3 className="text-lg font-semibold">Generated Content:</h3>
-            <MarkdownRenderer content={output} />
+            <div className="break-words"> {/* Added break-words to avoid overflow */}
+              <MarkdownRenderer content={output} />
+            </div>
           </div>
         ) : (
           <div className="mt-6 text-gray-500">No content generated yet.</div>
         )}
-      </div>
-
-      <div>
-        <h2 className="text-lg md:text-xl font-semibold mb-4">Available Plans</h2>
-        <PlansPage />
       </div>
 
       {/* Display previously generated content */}
@@ -164,8 +162,8 @@ export default function Dashboard() {
         {previousContent.length ? (
           <ul className="space-y-4">
             {previousContent.map((content) => (
-              <li key={content.id} className="border p-4 rounded">
-                <h3 className="font-semibold">{content.question}</h3>
+              <li key={content.id} className="border p-4 rounded overflow-x-auto"> {/* Added overflow-x-auto */}
+                <h3 className="font-semibold break-words">{content.question}</h3> {/* Added break-words */}
                 <MarkdownRenderer content={content.response} />
                 <p className="text-sm text-gray-500">
                   Generated on {new Date(content.createdAt).toLocaleString()}
