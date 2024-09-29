@@ -1,4 +1,4 @@
-//app/dashboard/page.tsx
+// app/dashboard/page.tsx
 "use client";
 
 import { useSession } from "next-auth/react";
@@ -176,13 +176,13 @@ export default function Dashboard() {
       {/* Star us on GitHub Button */}
       <div className="mt-8">
         <a
-          href="https://github.com/ArhanAnsari/InspireGem"
+          href="https://github.com/Arhan001/InspireGem"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center bg-gray-800 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-gray-900 transition-colors"
+          className="flex items-center space-x-2 text-blue-500 hover:text-blue-700"
         >
-          <StarIcon className="w-5 h-5 mr-2 text-yellow-400" />
-          Star us on GitHub
+          <StarIcon className="h-6 w-6 text-yellow-400" />
+          <span>Star us on GitHub!</span>
         </a>
       </div>
 
