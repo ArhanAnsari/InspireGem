@@ -1,3 +1,4 @@
+//app/dashboard/page.tsx
 "use client";
 
 import { useSession } from "next-auth/react";
@@ -6,33 +7,57 @@ import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PlansPage from "../plans/page";
-import { checkUserPlanLimit, incrementRequestCount, getPreviousContent } from "@/firebaseFunctions"; // Import Firebase functions
-import { DocumentData } from "firebase/firestore"; // Import DocumentData type from Firebase
-import MarkdownRenderer from "@/components/MarkdownRenderer"; // Import the custom MarkdownRenderer
-import { StarIcon } from "@heroicons/react/24/solid"; // Import StarIcon from Heroicons
-import SEO from "@/components/SEO"; // Import the SEO component
+import { askQuestion, fetchGeneratedContent } from "@/actions/askQuestions";
+import { checkUserPlanLimit, getUserData } from "@/firebaseFunctions"; // Use getUserData instead of getUserPlan
+import { DocumentData } from "firebase/firestore";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
+import { StarIcon } from "@heroicons/react/24/solid";
+import SEO from "@/components/SEO";
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
-  const [previousContent, setPreviousContent] = useState<DocumentData[]>([]); // Define state as an array of DocumentData
-  const [isLoading, setIsLoading] = useState(false); // Add loading state
+  const [previousContent, setPreviousContent] = useState<DocumentData[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [userPlan, setUserPlan] = useState<string>(""); // State to store the user plan
   const router = useRouter();
 
-  // Redirect unauthenticated users to sign in page
+  // Redirect unauthenticated users to sign-in page
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth/signin");
     }
   }, [status, router]);
 
+  // Fetch user's plan and request count on component mount
+  useEffect(() => {
+    const fetchUserPlan = async () => {
+      if (session?.user?.email) {
+        try {
+          // Fetch the full user data
+          const userData = await getUserData(session.user.email);
+
+          if (userData) {
+            console.log("User Data:", userData); // Log user data to console
+            setUserPlan(userData.plan); // Set the user's plan
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+          toast.error("Failed to load user data.");
+        }
+      }
+    };
+
+    fetchUserPlan();
+  }, [session]);
+
   // Function to fetch previously generated content
   const fetchPreviousContent = useCallback(async () => {
     if (session?.user?.email) {
       try {
-        const { content } = await getPreviousContent(session.user.email as string); // Destructure to get only content
-        setPreviousContent(content); // Set the previously generated content
+        const content = await fetchGeneratedContent(session.user.email);
+        setPreviousContent(content);
       } catch (error) {
         console.error("Error fetching previous content:", error);
         toast.error("Failed to load previous content.");
@@ -52,40 +77,40 @@ export default function Dashboard() {
       return;
     }
 
-    // Avoid making Firebase API calls on the server side
-    if (typeof window === "undefined") return;
-
-    // Check user's plan limits before making the API call
-    const canGenerate = await checkUserPlanLimit(session?.user?.email ?? "");
-
-    if (!canGenerate) {
-      toast.error("You have reached your limit for this month.");
+    if (!session || !session.user?.email) {
+      toast.error("User session is not available.");
       return;
     }
 
     setIsLoading(true); // Start loading
 
     try {
-      const response = await fetch("/api/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ prompt: input }),
-      });
+      // If user is on the Enterprise plan, they have unlimited requests
+      if (userPlan !== "Enterprise") {
+        const canGenerate = await checkUserPlanLimit(session.user.email);
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setOutput(data.generatedContent);
-        toast.success("AI content generated successfully!");
-      } else {
-        toast.error("Failed to generate AI content.");
+        if (!canGenerate) {
+          toast.error("You have reached your limit for this month.");
+          setIsLoading(false);
+          return;
+        }
       }
 
-      // Increment the user's request count in Firebase
-      await incrementRequestCount(session?.user?.email ?? "");
+      const result = await askQuestion({ userId: session.user.email, question: input });
+
+      if (!result.success) {
+        toast.error(result.message);
+        return;
+      }
+
+      setOutput(result.message); // Set the generated content
+      toast.success("AI content generated successfully!");
+
+      // Refresh previously generated content after adding a new question
+      await fetchPreviousContent();
+      setInput(""); // Clear input after generation
     } catch (error) {
+      console.error("Error generating AI content:", error);
       toast.error("An error occurred while generating AI content.");
     } finally {
       setIsLoading(false); // End loading
@@ -120,7 +145,6 @@ export default function Dashboard() {
         {output ? (
           <div className="mt-6 bg-gray-100 p-4 rounded">
             <h3 className="text-lg font-semibold">Generated Content:</h3>
-            {/* Render the output as Markdown using the MarkdownRenderer */}
             <MarkdownRenderer content={output} />
           </div>
         ) : (
@@ -138,9 +162,9 @@ export default function Dashboard() {
         <h2 className="text-xl font-semibold mb-4">Your Previous Content</h2>
         {previousContent.length > 0 ? (
           <ul className="list-disc list-inside space-y-2">
-            {previousContent.map((content, index) => (
-              <li key={index}>
-                <MarkdownRenderer content={content.generatedContent} />
+            {previousContent.map((content) => (
+              <li key={content.id}>
+                <MarkdownRenderer content={content.response} />
               </li>
             ))}
           </ul>
