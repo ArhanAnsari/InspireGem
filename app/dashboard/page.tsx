@@ -1,4 +1,3 @@
-// app/dashboard/page.tsx
 "use client";
 
 import { useSession } from "next-auth/react";
@@ -7,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PlansPage from "../plans/page";
-import { askQuestion, fetchGeneratedContent } from "@/actions/askQuestions";
-import { checkUserPlanLimit, getUserData } from "@/firebaseFunctions"; // Use getUserData instead of getUserPlan
+import { askQuestion, fetchGeneratedContent } from "@/actions/askQuestions"; // Updated import
+import { checkUserPlanLimit, getUserData } from "@/firebaseFunctions"; // Firebase functions
 import { DocumentData } from "firebase/firestore";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { StarIcon } from "@heroicons/react/24/solid";
@@ -35,11 +34,8 @@ export default function Dashboard() {
     const fetchUserPlan = async () => {
       if (session?.user?.email) {
         try {
-          // Fetch the full user data
           const userData = await getUserData(session.user.email);
-
           if (userData) {
-            console.log("User Data:", userData); // Log user data to console
             setUserPlan(userData.plan); // Set the user's plan
           }
         } catch (error) {
@@ -85,7 +81,7 @@ export default function Dashboard() {
     setIsLoading(true); // Start loading
 
     try {
-      // If user is on the Enterprise plan, they have unlimited requests
+      // If user is not on the Enterprise plan, check plan limits
       if (userPlan !== "Enterprise") {
         const canGenerate = await checkUserPlanLimit(session.user.email);
 
@@ -96,6 +92,7 @@ export default function Dashboard() {
         }
       }
 
+      // Generate AI content using Google Gemini
       const result = await askQuestion({ userId: session.user.email, question: input });
 
       if (!result.success) {
@@ -106,7 +103,7 @@ export default function Dashboard() {
       setOutput(result.message); // Set the generated content
       toast.success("AI content generated successfully!");
 
-      // Refresh previously generated content after adding a new question
+      // Refresh previously generated content
       await fetchPreviousContent();
       setInput(""); // Clear input after generation
     } catch (error) {
@@ -176,13 +173,13 @@ export default function Dashboard() {
       {/* Star us on GitHub Button */}
       <div className="mt-8">
         <a
-          href="https://github.com/Arhan001/InspireGem"
+          href="https://github.com/ArhanAnsari/InspireGem"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center space-x-2 text-blue-500 hover:text-blue-700"
+          className="inline-flex items-center bg-gray-800 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-gray-900 transition-colors"
         >
-          <StarIcon className="h-6 w-6 text-yellow-400" />
-          <span>Star us on GitHub!</span>
+          <StarIcon className="w-5 h-5 mr-2 text-yellow-400" />
+          Star us on GitHub
         </a>
       </div>
 
