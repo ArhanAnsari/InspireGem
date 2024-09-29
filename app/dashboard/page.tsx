@@ -1,5 +1,4 @@
-// /dashboard/page.tsx
-
+//app/dashboard/page.tsx
 "use client";
 
 import { useSession } from "next-auth/react";
@@ -8,33 +7,52 @@ import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PlansPage from "../plans/page";
-import { askQuestion, fetchGeneratedContent } from "@/actions/askQuestions"; // Import from actions
-import { DocumentData } from "firebase/firestore"; // Import DocumentData type from Firebase
-import MarkdownRenderer from "@/components/MarkdownRenderer"; // Import the custom MarkdownRenderer
-import { StarIcon } from "@heroicons/react/24/solid"; // Import StarIcon from Heroicons
-import SEO from "@/components/SEO"; // Import the SEO component
+import { askQuestion, fetchGeneratedContent } from "@/actions/askQuestions";
+import { checkUserPlanLimit, getUserPlan } from "@/firebaseFunctions"; // Added getUserPlan to determine the plan
+import { DocumentData } from "firebase/firestore";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
+import { StarIcon } from "@heroicons/react/24/solid";
+import SEO from "@/components/SEO";
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
-  const [previousContent, setPreviousContent] = useState<DocumentData[]>([]); // Define state as an array of DocumentData
-  const [isLoading, setIsLoading] = useState(false); // Add loading state
+  const [previousContent, setPreviousContent] = useState<DocumentData[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [userPlan, setUserPlan] = useState<string>(""); // State to store the user plan
   const router = useRouter();
 
-  // Redirect unauthenticated users to sign in page
+  // Redirect unauthenticated users to sign-in page
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth/signin");
     }
   }, [status, router]);
 
+  // Fetch user's plan on component mount
+  useEffect(() => {
+    const fetchUserPlan = async () => {
+      if (session?.user?.email) {
+        try {
+          const plan = await getUserPlan(session.user.email);
+          setUserPlan(plan); // Set the user's plan (Free, Pro, or Enterprise)
+        } catch (error) {
+          console.error("Error fetching user plan:", error);
+          toast.error("Failed to load user plan.");
+        }
+      }
+    };
+
+    fetchUserPlan();
+  }, [session]);
+
   // Function to fetch previously generated content
   const fetchPreviousContent = useCallback(async () => {
     if (session?.user?.email) {
       try {
-        const content = await fetchGeneratedContent(session.user.email as string); // Use fetchGeneratedContent
-        setPreviousContent(content); // Set the previously generated content
+        const content = await fetchGeneratedContent(session.user.email);
+        setPreviousContent(content);
       } catch (error) {
         console.error("Error fetching previous content:", error);
         toast.error("Failed to load previous content.");
@@ -57,6 +75,17 @@ export default function Dashboard() {
     setIsLoading(true); // Start loading
 
     try {
+      // If user is on the Enterprise plan, they have unlimited requests
+      if (userPlan !== "Enterprise") {
+        const canGenerate = await checkUserPlanLimit(session?.user?.email ?? "");
+
+        if (!canGenerate) {
+          toast.error("You have reached your limit for this month.");
+          setIsLoading(false);
+          return;
+        }
+      }
+
       const result = await askQuestion({ userId: session.user.email as string, question: input });
 
       if (!result.success) {
@@ -106,7 +135,6 @@ export default function Dashboard() {
         {output ? (
           <div className="mt-6 bg-gray-100 p-4 rounded">
             <h3 className="text-lg font-semibold">Generated Content:</h3>
-            {/* Render the output as Markdown using the MarkdownRenderer */}
             <MarkdownRenderer content={output} />
           </div>
         ) : (
