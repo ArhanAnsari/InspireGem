@@ -1,5 +1,3 @@
-// /actions/askQuestions.ts
-
 "use server";
 
 import { adminDb } from "@/firebaseAdmin";
@@ -8,7 +6,7 @@ import { adminDb } from "@/firebaseAdmin";
 const PRO_LIMIT = 500;
 const FREE_LIMIT = 50;
 
-// Function to handle storing questions and answers
+// Function to handle storing questions and generating AI content
 export async function askQuestion({
   userId,
   question,
@@ -29,6 +27,7 @@ export async function askQuestion({
   const userRef = await adminDb.collection("users").doc(userId).get();
   const userData = userRef.data();
 
+  // Enforce limits for free and PRO users
   if (!userData?.hasActiveMembership && userMessages.length >= FREE_LIMIT) {
     return {
       success: false,
@@ -43,17 +42,39 @@ export async function askQuestion({
     };
   }
 
-  // Generate a mock AI response
-  const reply = `Mock response to: "${question}"`;
+  // Generate AI content via /api/generate
+  try {
+    const response = await fetch("/api/generate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ prompt: question }),
+    });
 
-  // Save the question and response to generatedContent
-  await generatedContentRef.add({
-    question,
-    response: reply,
-    createdAt: new Date(),
-  });
+    if (!response.ok) {
+      const errorData = await response.json();
+      return {
+        success: false,
+        message: errorData.error || "Error generating AI content.",
+      };
+    }
 
-  return { success: true, message: reply };
+    const data = await response.json();
+    const reply = data.generatedContent; // AI-generated content from Google Gemini
+
+    // Save the question and AI-generated response to Firestore
+    await generatedContentRef.add({
+      question,
+      response: reply,
+      createdAt: new Date(),
+    });
+
+    return { success: true, message: reply };
+  } catch (error) {
+    console.error("Error generating AI content:", error);
+    return { success: false, message: "Error generating AI content." };
+  }
 }
 
 // Function to fetch previously generated content
