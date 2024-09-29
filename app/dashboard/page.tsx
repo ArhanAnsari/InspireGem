@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import PlansPage from "../plans/page";
+import PlansPage from "../plans/page"; // Import PlansPage
 import { askQuestion, fetchGeneratedContent } from "@/actions/askQuestions"; // Updated import
 import { checkUserPlanLimit, getUserData } from "@/firebaseFunctions"; // Firebase functions
 import { DocumentData } from "firebase/firestore";
@@ -175,6 +175,9 @@ export default function Dashboard() {
           <p>No previous content found.</p>
         )}
       </div>
+
+      {/* Show Plans Page based on user plan */}
+      {userPlan && <PlansPage userPlan={userPlan} />} {/* Pass userPlan prop to PlansPage */}
 
       {/* Star us on GitHub Button */}
       <div className="mt-8">
