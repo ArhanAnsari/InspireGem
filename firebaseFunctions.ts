@@ -18,7 +18,7 @@ import {
 import { DocumentData } from "firebase/firestore"; // Import DocumentData from Firebase
 
 // Define the allowed plans as a union type
-type Plan = "free" | "pro" | "enterprise";
+type Plan = "Free" | "Pro" | "Enterprise";
 
 // Define an interface for the user data
 interface UserData {
