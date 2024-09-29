@@ -8,7 +8,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PlansPage from "../plans/page";
 import { askQuestion, fetchGeneratedContent } from "@/actions/askQuestions";
-import { checkUserPlanLimit, getUserPlan } from "@/firebaseFunctions"; // Added getUserPlan to determine the plan
+import { checkUserPlanLimit, getUserData } from "@/firebaseFunctions"; // Use getUserData instead of getUserPlan
 import { DocumentData } from "firebase/firestore";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { StarIcon } from "@heroicons/react/24/solid";
@@ -30,16 +30,21 @@ export default function Dashboard() {
     }
   }, [status, router]);
 
-  // Fetch user's plan on component mount
+  // Fetch user's plan and request count on component mount
   useEffect(() => {
     const fetchUserPlan = async () => {
       if (session?.user?.email) {
         try {
-          const plan = await getUserPlan(session.user.email);
-          setUserPlan(plan); // Set the user's plan (Free, Pro, or Enterprise)
+          // Fetch the full user data
+          const userData = await getUserData(session.user.email);
+
+          if (userData) {
+            console.log("User Data:", userData); // Log user data to console
+            setUserPlan(userData.plan); // Set the user's plan
+          }
         } catch (error) {
-          console.error("Error fetching user plan:", error);
-          toast.error("Failed to load user plan.");
+          console.error("Error fetching user data:", error);
+          toast.error("Failed to load user data.");
         }
       }
     };
