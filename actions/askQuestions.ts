@@ -5,8 +5,8 @@
 import { adminDb } from "@/firebaseAdmin";
 
 // Define limits for users based on their plan type
-const PRO_LIMIT = 200;
-const FREE_LIMIT = 20;
+const PRO_LIMIT = 500;
+const FREE_LIMIT = 50;
 
 // Function to handle storing questions and answers
 export async function askQuestion({
