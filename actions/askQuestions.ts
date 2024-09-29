@@ -42,9 +42,9 @@ export async function askQuestion({
     };
   }
 
-  // Generate AI content via /api/generate
+  // Generate AI content via absolute URL for /api/generate
   try {
-    const response = await fetch("/api/generate", {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/generate`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
