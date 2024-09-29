@@ -24,7 +24,7 @@ export default function AboutPage() {
             </h2>
             <ul className="text-left space-y-2 sm:space-y-4 text-gray-600">
               <li>
-                <strong>AI-Powered Content Creation:</strong> Leverage Google Gemini's capabilities to generate accurate, creative content effortlessly.
+                <strong>AI-Powered Content Creation:</strong> Leverage Google Gemini&#39;s capabilities to generate accurate, creative content effortlessly.
               </li>
               <li>
                 <strong>Markdown Support:</strong> Format your generated content using Markdown for seamless integration into blogs, websites, and other platforms.
