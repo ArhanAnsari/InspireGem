@@ -53,7 +53,7 @@ export default function AboutPage() {
               </li>
               <li>
                 <strong>History &amp; Reuse:</strong> View and reuse previously
-                generated content (coming soon).
+                generated content.
               </li>
             </ul>
           </div>
