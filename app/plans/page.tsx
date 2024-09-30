@@ -3,7 +3,12 @@ import getStripe from "@/lib/stripe-js";
 import React from "react";
 import SEO from "@/components/SEO"; // Import the SEO component
 
-export default function PlansPage() {
+// Define the type for userPlan prop
+interface PlansPageProps {
+  userPlan: string;
+}
+
+export default function PlansPage({ userPlan }: PlansPageProps) { // Accept userPlan as prop
   const getPriceFn = (plan: string) => {
     fetch("/api/checkout?plan=" + plan)
       .then((data) => data.json())
@@ -17,7 +22,10 @@ export default function PlansPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
       {/* Add SEO Component */}
-      <SEO title="Plans - InspireGem" description="Explore the available plans on InspireGem and choose the one that fits your content generation needs." />
+      <SEO
+        title="Plans - InspireGem"
+        description="Explore the available plans on InspireGem and choose the one that fits your content generation needs."
+      />
 
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Free Plan */}
