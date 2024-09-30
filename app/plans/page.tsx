@@ -3,12 +3,10 @@ import getStripe from "@/lib/stripe-js";
 import React from "react";
 import SEO from "@/components/SEO"; // Import the SEO component
 
-// Define the type for userPlan prop and make it optional
-interface PlansPageProps {
-  userPlan?: string; // Optional prop
-}
+// Simplified, without explicit interface export for props
+export default function PlansPage({ userPlan }: { userPlan?: string }) { 
+  const currentPlan = userPlan || "free"; // Default to "free" if userPlan is not provided
 
-export default function PlansPage({ userPlan = "free" }: PlansPageProps) { // Default to "free" if not provided
   const getPriceFn = (plan: string) => {
     fetch("/api/checkout?plan=" + plan)
       .then((data) => data.json())
@@ -19,7 +17,7 @@ export default function PlansPage({ userPlan = "free" }: PlansPageProps) { // De
       });
   };
 
-  const isCurrentPlan = (plan: string) => userPlan === plan; // Helper function to check if the plan is active
+  const isCurrentPlan = (plan: string) => currentPlan === plan; // Helper function to check current plan
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
