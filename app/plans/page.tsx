@@ -3,12 +3,12 @@ import getStripe from "@/lib/stripe-js";
 import React from "react";
 import SEO from "@/components/SEO"; // Import the SEO component
 
-// Define the type for userPlan prop
+// Define the type for userPlan prop and make it optional
 interface PlansPageProps {
-  userPlan: string;
+  userPlan?: string; // Mark it as optional
 }
 
-export default function PlansPage({ userPlan }: PlansPageProps) { // Accept userPlan as prop
+export default function PlansPage({ userPlan = "free" }: PlansPageProps) { // Default to "free" if not provided
   const getPriceFn = (plan: string) => {
     fetch("/api/checkout?plan=" + plan)
       .then((data) => data.json())
