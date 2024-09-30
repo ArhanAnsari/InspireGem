@@ -5,7 +5,7 @@ import SEO from "@/components/SEO"; // Import the SEO component
 
 // Define the type for userPlan prop and make it optional
 interface PlansPageProps {
-  userPlan?: string; // Mark it as optional
+  userPlan?: string; // Optional prop
 }
 
 export default function PlansPage({ userPlan = "free" }: PlansPageProps) { // Default to "free" if not provided
@@ -19,20 +19,19 @@ export default function PlansPage({ userPlan = "free" }: PlansPageProps) { // De
       });
   };
 
-  const isCurrentPlan = (plan: string) => userPlan === plan;
+  const isCurrentPlan = (plan: string) => userPlan === plan; // Helper function to check if the plan is active
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
       {/* Add SEO Component */}
-      <SEO
-        title="Plans - InspireGem"
-        description="Explore the available plans on InspireGem and choose the one that fits your content generation needs."
-      />
+      <SEO title="Plans - InspireGem" description="Explore the available plans on InspireGem and choose the one that fits your content generation needs." />
 
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Free Plan */}
         <div
-          className={`bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 transform hover:scale-105 ${isCurrentPlan("free") ? "border-4 border-blue-600" : ""}`}
+          className={`bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 transform hover:scale-105 ${
+            isCurrentPlan("free") ? "border-4 border-blue-600" : ""
+          }`}
         >
           <h2 className="text-3xl font-bold text-blue-600 mb-4">Free Plan</h2>
           <p className="text-gray-600 mb-4">Up to 50 requests per month.</p>
@@ -53,7 +52,9 @@ export default function PlansPage({ userPlan = "free" }: PlansPageProps) { // De
 
         {/* Pro Plan */}
         <div
-          className={`bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 transform hover:scale-105 ${isCurrentPlan("pro") ? "border-4 border-green-600" : ""}`}
+          className={`bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 transform hover:scale-105 ${
+            isCurrentPlan("pro") ? "border-4 border-green-600" : ""
+          }`}
         >
           <h2 className="text-3xl font-bold text-green-600 mb-4">Pro Plan</h2>
           <p className="text-gray-600 mb-4">500 requests per month.</p>
@@ -74,7 +75,9 @@ export default function PlansPage({ userPlan = "free" }: PlansPageProps) { // De
 
         {/* Enterprise Plan */}
         <div
-          className={`bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 transform hover:scale-105 ${isCurrentPlan("enterprise") ? "border-4 border-red-600" : ""}`}
+          className={`bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 transform hover:scale-105 ${
+            isCurrentPlan("enterprise") ? "border-4 border-red-600" : ""
+          }`}
         >
           <h2 className="text-3xl font-bold text-red-600 mb-4">Enterprise Plan</h2>
           <p className="text-gray-600 mb-4">Unlimited requests.</p>
