@@ -6,9 +6,9 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import PlansPage from "../plans/page"; // Import PlansPage
-import { askQuestion, fetchGeneratedContent } from "@/actions/askQuestions"; // Updated import
-import { checkUserPlanLimit, getUserData } from "@/firebaseFunctions"; // Firebase functions
+import PlansPage from "../plans/page";
+import { askQuestion, fetchGeneratedContent } from "@/actions/askQuestions";
+import { checkUserPlanLimit, getUserData } from "@/firebaseFunctions";
 import { DocumentData } from "firebase/firestore";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { StarIcon } from "@heroicons/react/24/solid";
@@ -20,24 +20,22 @@ export default function Dashboard() {
   const [output, setOutput] = useState("");
   const [previousContent, setPreviousContent] = useState<DocumentData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [userPlan, setUserPlan] = useState<string>(""); // State to store the user plan
+  const [userPlan, setUserPlan] = useState<string>("");
   const router = useRouter();
 
-  // Redirect unauthenticated users to sign-in page
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth/signin");
     }
   }, [status, router]);
 
-  // Fetch user's plan and request count on component mount
   useEffect(() => {
     const fetchUserPlan = async () => {
       if (session?.user?.email) {
         try {
           const userData = await getUserData(session.user.email);
           if (userData) {
-            setUserPlan(userData.plan); // Set the user's plan
+            setUserPlan(userData.plan);
           }
         } catch (error) {
           console.error("Error fetching user data:", error);
@@ -49,12 +47,11 @@ export default function Dashboard() {
     fetchUserPlan();
   }, [session]);
 
-  // Function to fetch previously generated content
   const fetchPreviousContent = useCallback(async () => {
     if (session?.user?.email) {
       try {
         const content = await fetchGeneratedContent(session.user.email);
-        setPreviousContent(content); // Update state with serialized content
+        setPreviousContent(content);
       } catch (error) {
         console.error("Error fetching previous content:", error);
         toast.error("Failed to load previous content.");
@@ -62,12 +59,10 @@ export default function Dashboard() {
     }
   }, [session]);
 
-  // Fetch previously generated content when session is ready
   useEffect(() => {
     fetchPreviousContent();
   }, [session, fetchPreviousContent]);
 
-  // Function to generate AI content
   const generateAIContent = async () => {
     if (!input) {
       toast.error("Please enter some text to generate AI content.");
@@ -79,10 +74,9 @@ export default function Dashboard() {
       return;
     }
 
-    setIsLoading(true); // Start loading
+    setIsLoading(true);
 
     try {
-      // If user is not on the Enterprise plan, check plan limits
       if (userPlan !== "enterprise") {
         const canGenerate = await checkUserPlanLimit(session.user.email);
 
@@ -93,7 +87,6 @@ export default function Dashboard() {
         }
       }
 
-      // Generate AI content
       const result = await askQuestion({
         userId: session.user.email,
         question: input,
@@ -104,38 +97,36 @@ export default function Dashboard() {
         return;
       }
 
-      setOutput(result.message); // Set the generated content
+      setOutput(result.message);
       toast.success("AI content generated successfully!");
 
-      // Refresh previously generated content
       await fetchPreviousContent();
-      setInput(""); // Clear input after generation
+      setInput("");
     } catch (error) {
       console.error("Error generating AI content:", error);
       toast.error("An error occurred while generating AI content.");
     } finally {
-      setIsLoading(false); // End loading
+      setIsLoading(false);
     }
   };
 
-  // If session is still loading
   if (status === "loading") {
     return <div>Loading...</div>;
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-6"> {/* Adjust padding for mobile and larger screens */}
+    <div className="max-w-4xl mx-auto p-4 md:p-6">
       <SEO title="Dashboard - InspireGem" description="Access your AI content generation dashboard, view plans, and review your previously generated content on InspireGem." />
-      <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Welcome to the Dashboard, {session?.user?.name}</h1> {/* Text size adjusts for mobile and larger screens */}
+      <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Welcome to the Dashboard, {session?.user?.name}</h1>
 
       <div className="mb-6">
-        <h2 className="text-lg md:text-xl font-semibold mb-2">AI Content Generator</h2> {/* Text size adjusts for mobile and larger screens */}
+        <h2 className="text-lg md:text-xl font-semibold mb-2">AI Content Generator</h2>
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Enter text to generate AI content"
           className="border p-2 w-full mb-4 rounded resize-none"
-          rows={4} // Set rows to control height
+          rows={4}
         />
         <button
           onClick={generateAIContent}
@@ -145,39 +136,39 @@ export default function Dashboard() {
           {isLoading ? 'Generating...' : 'Generate AI Content'}
         </button>
         {output ? (
-          <div className="mt-6 bg-gray-100 p-4 rounded overflow-x-auto"> {/* Added overflow-x-auto */}
+          <div className="mt-6 bg-gray-100 p-4 rounded">
             <h3 className="text-lg font-semibold">Generated Content:</h3>
-            <div className="break-words"> {/* Added break-words to avoid overflow */}
-              <MarkdownRenderer content={output} />
-            </div>
+            <MarkdownRenderer content={output} />
           </div>
         ) : (
           <div className="mt-6 text-gray-500">No content generated yet.</div>
         )}
       </div>
 
+      <div>
+        <h2 className="text-lg md:text-xl font-semibold mb-4">Available Plans</h2>
+        <PlansPage />
+      </div>
+
       {/* Display previously generated content */}
       <div className="mt-6">
         <h2 className="text-lg md:text-xl font-semibold mb-4">Previously Generated Content</h2>
         {previousContent.length ? (
-          <ul className="space-y-4">
+          <div className="flex flex-col space-y-4">
             {previousContent.map((content) => (
-              <li key={content.id} className="border p-4 rounded overflow-x-auto"> {/* Added overflow-x-auto */}
-                <h3 className="font-semibold break-words">{content.question}</h3> {/* Added break-words */}
+              <div key={content.id} className="border p-4 rounded break-words">
+                <h3 className="font-semibold">{content.question}</h3>
                 <MarkdownRenderer content={content.response} />
                 <p className="text-sm text-gray-500">
                   Generated on {new Date(content.createdAt).toLocaleString()}
                 </p>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         ) : (
           <p>No previous content found.</p>
         )}
       </div>
-
-      {/* Show Plans Page based on user plan */}
-      {userPlan && <PlansPage userPlan={userPlan} />} {/* Pass userPlan prop to PlansPage */}
 
       {/* Star us on GitHub Button */}
       <div className="mt-8">
@@ -191,7 +182,7 @@ export default function Dashboard() {
           Star us on GitHub
         </a>
       </div>
-      
+
       <ToastContainer />
     </div>
   );
