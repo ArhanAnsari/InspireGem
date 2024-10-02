@@ -116,18 +116,11 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-6">
-      <SEO
-        title="Dashboard - InspireGem"
-        description="Access your AI content generation dashboard, view plans, and review your previously generated content on InspireGem."
-      />
-      <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">
-        Welcome to the Dashboard, {session?.user?.name}
-      </h1>
+      <SEO title="Dashboard - InspireGem" description="Access your AI content generation dashboard, view plans, and review your previously generated content on InspireGem." />
+      <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Welcome to the Dashboard, {session?.user?.name}</h1>
 
       <div className="mb-6">
-        <h2 className="text-lg md:text-xl font-semibold mb-2">
-          AI Content Generator
-        </h2>
+        <h2 className="text-lg md:text-xl font-semibold mb-2">AI Content Generator</h2>
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -137,15 +130,13 @@ export default function Dashboard() {
         />
         <button
           onClick={generateAIContent}
-          className={`bg-blue-500 text-white px-4 py-2 rounded w-full md:w-auto ${
-            isLoading ? "opacity-50 cursor-not-allowed" : ""
-          }`}
+          className={`bg-blue-500 text-white px-4 py-2 rounded w-full md:w-auto ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
           disabled={isLoading}
         >
-          {isLoading ? "Generating..." : "Generate AI Content"}
+          {isLoading ? 'Generating...' : 'Generate AI Content'}
         </button>
         {output ? (
-          <div className="mt-6 bg-gray-100 p-4 rounded max-h-[50vh] overflow-y-auto">
+          <div className="mt-6 bg-gray-100 p-4 rounded">
             <h3 className="text-lg font-semibold">Generated Content:</h3>
             <MarkdownRenderer content={output} />
           </div>
@@ -161,16 +152,11 @@ export default function Dashboard() {
 
       {/* Display previously generated content */}
       <div className="mt-6">
-        <h2 className="text-lg md:text-xl font-semibold mb-4">
-          Previously Generated Content
-        </h2>
+        <h2 className="text-lg md:text-xl font-semibold mb-4">Previously Generated Content</h2>
         {previousContent.length ? (
-          <div className="flex flex-col space-y-4 max-h-[50vh] overflow-y-auto">
+          <div className="flex flex-col space-y-4">
             {previousContent.map((content) => (
-              <div
-                key={content.id}
-                className="border p-4 rounded break-words max-w-full"
-              >
+              <div key={content.id} className="border p-4 rounded break-words">
                 <h3 className="font-semibold">{content.question}</h3>
                 <MarkdownRenderer content={content.response} />
                 <p className="text-sm text-gray-500">
