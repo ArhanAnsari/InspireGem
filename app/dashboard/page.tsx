@@ -136,7 +136,7 @@ export default function Dashboard() {
           {isLoading ? 'Generating...' : 'Generate AI Content'}
         </button>
         {output ? (
-          <div className="mt-6 bg-gray-100 p-4 rounded">
+          <div className="mt-6 bg-gray-100 p-4 rounded overflow-x-auto">
             <h3 className="text-lg font-semibold">Generated Content:</h3>
             <MarkdownRenderer content={output} />
           </div>
@@ -150,13 +150,12 @@ export default function Dashboard() {
         <PlansPage />
       </div>
 
-      {/* Display previously generated content */}
       <div className="mt-6">
         <h2 className="text-lg md:text-xl font-semibold mb-4">Previously Generated Content</h2>
         {previousContent.length ? (
           <div className="flex flex-col space-y-4">
             {previousContent.map((content) => (
-              <div key={content.id} className="border p-4 rounded break-words">
+              <div key={content.id} className="border p-4 rounded break-words overflow-x-auto">
                 <h3 className="font-semibold">{content.question}</h3>
                 <MarkdownRenderer content={content.response} />
                 <p className="text-sm text-gray-500">
@@ -170,7 +169,6 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Star us on GitHub Button */}
       <div className="mt-8">
         <a
           href="https://github.com/ArhanAnsari/InspireGem"
