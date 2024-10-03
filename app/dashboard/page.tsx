@@ -115,7 +115,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-6">
+    <div className="max-w-full mx-auto p-4 md:p-6 overflow-hidden">
       <SEO title="Dashboard - InspireGem" description="Access your AI content generation dashboard, view plans, and review your previously generated content on InspireGem." />
       <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Welcome to the Dashboard, {session?.user?.name}</h1>
 
