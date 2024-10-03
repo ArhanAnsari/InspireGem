@@ -145,11 +145,13 @@ export default function Dashboard() {
         )}
       </div>
 
+      {/* Display Plans */}
       <div>
         <h2 className="text-lg md:text-xl font-semibold mb-4">Available Plans</h2>
         <PlansPage />
       </div>
 
+      {/* Display previously generated content */}
       <div className="mt-6">
         <h2 className="text-lg md:text-xl font-semibold mb-4">Previously Generated Content</h2>
         {previousContent.length ? (
@@ -169,6 +171,7 @@ export default function Dashboard() {
         )}
       </div>
 
+      {/* Star us on GitHub Button */}
       <div className="mt-8">
         <a
           href="https://github.com/ArhanAnsari/InspireGem"
