@@ -2,30 +2,48 @@
 
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
+import { useState } from "react";
 
 export default function Header() {
   const { data: session } = useSession();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <nav className="bg-gray-800 p-4">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
+        {/* Logo */}
         <div className="text-white text-xl">InspireGem</div>
-        <ul className="flex space-x-4">
-          <li>
-            <Link href="/" className="text-white">Home</Link>
+
+        {/* Menu Toggle for Mobile */}
+        <div className="block md:hidden">
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="text-white focus:outline-none"
+          >
+            {/* Hamburger Icon */}
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Links */}
+        <ul className={`md:flex md:space-x-4 ${menuOpen ? "block" : "hidden"} md:block`}>
+          <li className="mt-4 md:mt-0">
+            <Link href="/" className="text-white block px-3 py-2">Home</Link>
           </li>
-          <li>
-            <Link href="/about" className="text-white">About Us</Link>
+          <li className="mt-4 md:mt-0">
+            <Link href="/about" className="text-white block px-3 py-2">About Us</Link>
           </li>
           {session ? (
             <>
-              <li>
-                <Link href="/dashboard" className="text-white">Dashboard</Link>
+              <li className="mt-4 md:mt-0">
+                <Link href="/dashboard" className="text-white block px-3 py-2">Dashboard</Link>
               </li>
-              <li>
+              <li className="mt-4 md:mt-0">
                 <button
                   onClick={() => signOut()}
-                  className="text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
+                  className="text-white bg-red-500 hover:bg-red-600 block px-3 py-2 rounded"
                 >
                   Sign Out
                 </button>
@@ -33,11 +51,11 @@ export default function Header() {
             </>
           ) : (
             <>
-              <li>
-                <Link href="/auth/signin" className="text-white">Sign In</Link>
+              <li className="mt-4 md:mt-0">
+                <Link href="/auth/signin" className="text-white block px-3 py-2">Sign In</Link>
               </li>
-              <li>
-                <Link href="/auth/signup" className="text-white">Sign Up</Link>
+              <li className="mt-4 md:mt-0">
+                <Link href="/auth/signup" className="text-white block px-3 py-2">Sign Up</Link>
               </li>
             </>
           )}
