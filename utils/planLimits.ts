@@ -1,5 +1,6 @@
-//utils/planLimits.ts
-import { firestore } from "@/firebaseConfig"; // Adjust the path according to your project setup
+// utils/planLimits.ts
+import { db } from "@/firebaseConfig"; // Import the correct db instance
+import { doc, getDoc } from "firebase/firestore"; // Import necessary Firestore functions
 
 const planLimits = {
   free: 50,
@@ -31,8 +32,8 @@ export async function checkUserPlanLimit(email: string | null) {
 // Fetch the user's plan based on their email from Firebase Firestore
 async function getUserPlanByEmail(email: string) {
   try {
-    const userDocRef = firestore.collection("users").doc(email);
-    const userDoc = await userDocRef.get();
+    const userDocRef = doc(db, "users", email); // Use Firestore document reference
+    const userDoc = await getDoc(userDocRef);
 
     if (userDoc.exists) {
       const userData = userDoc.data();
@@ -49,8 +50,8 @@ async function getUserPlanByEmail(email: string) {
 // Fetch the number of API requests the user has made from Firebase Firestore
 async function getUserRequestsMade(email: string) {
   try {
-    const requestsDocRef = firestore.collection("requests").doc(email);
-    const requestsDoc = await requestsDocRef.get();
+    const requestsDocRef = doc(db, "requests", email); // Firestore document reference for user requests
+    const requestsDoc = await getDoc(requestsDocRef);
 
     if (requestsDoc.exists) {
       const requestData = requestsDoc.data();
