@@ -1,15 +1,14 @@
 "use client";
-import { signIn, useSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
-import { getUserData } from "@/firebaseFunctions";
 import "react-toastify/dist/ReactToastify.css";
 import SEO from "@/components/SEO";
+import { getUserData } from "@/firebaseFunctions";
 
 export default function SignIn() {
   const router = useRouter();
-  const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
 
   const handleSignIn = async () => {
@@ -21,8 +20,8 @@ export default function SignIn() {
         throw new Error(result.error);
       }
 
-      const userEmail = session?.user?.email;
-
+      // Wait for session to be available
+      const userEmail = result?.user?.email;
       if (userEmail) {
         const userData = await getUserData(userEmail);
         if (userData) {
@@ -30,6 +29,7 @@ export default function SignIn() {
         }
       }
 
+      // Redirect to dashboard
       router.push("/dashboard");
     } catch (error) {
       toast.error("Sign-in failed. Please try again.");
