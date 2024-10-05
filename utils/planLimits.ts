@@ -32,14 +32,14 @@ export async function checkUserPlanLimit(email: string | null) {
 // Fetch the user's plan based on their email from Firebase Firestore
 async function getUserPlanByEmail(email: string) {
   try {
-    const userDocRef = doc(db, "users", email); // Use Firestore document reference
+    const userDocRef = doc(db, "users", email); // Firestore document reference for user
     const userDoc = await getDoc(userDocRef);
 
-    if (userDoc.exists) {
+    if (userDoc.exists()) { // Call exists() as a method
       const userData = userDoc.data();
       return userData?.plan || "free"; // Default to 'free' if no plan is found
     } else {
-      return "free"; // Default to 'free' if user does not exist
+      return "free"; // Default to 'free' if user document does not exist
     }
   } catch (error) {
     console.error("Error fetching user plan:", error);
