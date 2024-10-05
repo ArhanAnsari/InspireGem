@@ -1,4 +1,4 @@
-// utils/planLimits.ts
+//utils/planLimits.ts
 const planLimits = {
   free: 50,
   pro: 500,
@@ -11,23 +11,30 @@ export async function checkUserPlanLimit(email: string | null) {
   // Fetch user's plan from your database
   const userPlan = await getUserPlanByEmail(email);
 
-  // Ensure the plan is one of the valid plan types
-  const plan = userPlan as keyof typeof planLimits;
+  // Ensure the plan is one of the valid plan types, with fallback to free plan
+  const plan = planLimits.hasOwnProperty(userPlan) ? userPlan : "free";
 
   // Fetch the number of requests the user has already made
   const requestsMade = await getUserRequestsMade(email);
 
   // Check if the user has exceeded their plan's limit
-  return requestsMade < planLimits[plan];
+  return requestsMade < planLimits[plan as keyof typeof planLimits];
 }
 
 async function getUserPlanByEmail(email: string) {
-  // Fetch user plan logic (replace this with actual logic)
-  // Example: return "pro" for pro plan
+  // Replace with actual logic to fetch user's plan from the database
+  // Example: return "pro" for pro plan or "free" for free plan
+  // Example query logic:
+  // const user = await db.collection('users').findOne({ email });
+  // return user ? user.plan : 'free';
   return "pro"; // Replace with real implementation
 }
 
 async function getUserRequestsMade(email: string) {
-  // Fetch the number of requests user has made (replace this with actual logic)
+  // Replace with actual logic to fetch user's requests made from the database
+  // Example: return number of requests made by the user
+  // Example query logic:
+  // const usage = await db.collection('requests').findOne({ email });
+  // return usage ? usage.requestsMade : 0;
   return 100; // Replace with real implementation
 }
