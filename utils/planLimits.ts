@@ -1,7 +1,7 @@
 // utils/planLimits.ts
 const planLimits = {
-  free: 20,
-  pro: 200,
+  free: 50,
+  pro: 500,
   enterprise: Infinity, // Unlimited requests for enterprise
 };
 
