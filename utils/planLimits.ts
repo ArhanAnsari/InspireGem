@@ -50,14 +50,14 @@ async function getUserPlanByEmail(email: string) {
 // Fetch the number of API requests the user has made from Firebase Firestore
 async function getUserRequestsMade(email: string) {
   try {
-    const requestsDocRef = doc(db, "requests", email); // Firestore document reference for user requests
+    const requestsDocRef = doc(db, "userRequests", email); // Firestore document reference for user requests
     const requestsDoc = await getDoc(requestsDocRef);
 
-    if (requestsDoc.exists) {
+    if (requestsDoc.exists()) { // Call exists() as a method
       const requestData = requestsDoc.data();
       return requestData?.requestsMade || 0; // Default to 0 if no data is found
     } else {
-      return 0; // Default to 0 if user has not made any requests
+      return 0; // Default to 0 if document does not exist
     }
   } catch (error) {
     console.error("Error fetching user requests:", error);
