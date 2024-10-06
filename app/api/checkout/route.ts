@@ -30,6 +30,9 @@ export async function GET(req: NextRequest) {
       mode: "subscription",
       success_url: `${req.nextUrl.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.nextUrl.origin}/dashboard/upgrade`,
+      metadata: {
+        plan, // Pass the plan as metadata for easier tracking
+      },
     });
 
     return NextResponse.json({ sessionId: session.id });
