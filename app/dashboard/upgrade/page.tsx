@@ -1,16 +1,16 @@
 //app/dashboard/upgrade/page.tsx
 "use client";
 import React, { useEffect, useState } from "react";
-import getStripe from "@/lib/stripe-js";
-import SEO from "@/components/SEO";
-import { getUserData } from "@/firebaseFunctions";
-import { useRouter } from "next/router";
-import { useSession } from "next-auth/react"; // If you're using next-auth for session management
+import getStripe from "@/lib/stripe-js"; // Ensure this utility is set up correctly
+import SEO from "@/components/SEO"; // Importing SEO component
+import { getUserData } from "@/firebaseFunctions"; // Import the function to fetch user data
+import { useSession } from "next-auth/react"; // For session management
+import { useRouter } from "next/navigation"; // Import Next.js router for redirecting
 
 const UpgradePage: React.FC = () => {
-  const [currentPlan, setCurrentPlan] = useState<string>(""); // Updated variable
-  const router = useRouter();
-  const { data: session } = useSession(); // Make sure session is managed correctly
+  const [userPlan, setUserPlan] = useState<string>("free"); // State to hold the user's current plan
+  const { data: session, status } = useSession(); // Get session from NextAuth
+  const router = useRouter(); // Router instance for redirecting
 
   useEffect(() => {
     const fetchUserPlan = async () => {
@@ -18,7 +18,7 @@ const UpgradePage: React.FC = () => {
         try {
           const userData = await getUserData(session.user.email);
           if (userData) {
-            setCurrentPlan(userData.plan); // Use setCurrentPlan
+            setUserPlan(userData.plan); // Update the state with the user's plan
           }
         } catch (error) {
           console.error("Error fetching user data:", error);
@@ -26,11 +26,14 @@ const UpgradePage: React.FC = () => {
       }
     };
 
-    fetchUserPlan();
-  }, []); // Removed session from dependency array
+    if (session) {
+      fetchUserPlan();
+    }
+  }, [session]);
 
   const getPriceFn = (plan: string) => {
     if (plan === "free") {
+      // Redirect to dashboard if user selects the Free plan
       router.push("/dashboard");
       return;
     }
@@ -44,7 +47,18 @@ const UpgradePage: React.FC = () => {
       });
   };
 
-  const isCurrentPlan = (plan: string) => currentPlan === plan;
+  const isCurrentPlan = (plan: string) => userPlan === plan; // Helper function to check if the user is on the current plan
+
+  // If session is loading, display loading state
+  if (status === "loading") {
+    return <div>Loading...</div>;
+  }
+
+  // If session is null (user not logged in), redirect to login page
+  if (!session) {
+    router.push("/auth/signin");
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
@@ -53,6 +67,7 @@ const UpgradePage: React.FC = () => {
         description="Upgrade to a higher plan on InspireGem and unlock advanced AI content generation features."
       />
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Free Plan */}
         <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 transform hover:scale-105">
           <h2 className="text-3xl font-bold text-blue-600 mb-4">Free Plan</h2>
           <p className="text-gray-600 mb-4">Up to 50 requests per month.</p>
@@ -102,7 +117,9 @@ const UpgradePage: React.FC = () => {
             onClick={() => getPriceFn("enterprise")}
             disabled={isCurrentPlan("enterprise")}
           >
-            {isCurrentPlan("enterprise") ? "You are on this plan" : "Upgrade to Enterprise - ₹1,999/month"}
+            {isCurrentPlan("enterprise")
+              ? "You are on this plan"
+              : "Upgrade to Enterprise - ₹1,999/month"}
           </button>
         </div>
       </div>
