@@ -23,7 +23,7 @@ export const createCheckoutSession = async (userEmail: string, plan: string) => 
     // first check if the user already has a stripeCustomerId
   let stripeCustomerId;
 
-  const user = await adminDb.collection("users").doc(userId).get();
+  const user = await adminDb.collection("users").doc(user).get();
   stripeCustomerId = user.data()?.stripeCustomerId;
 
   if (!stripeCustomerId) {
