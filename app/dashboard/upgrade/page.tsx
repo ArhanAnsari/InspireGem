@@ -11,11 +11,22 @@ const UpgradePage: React.FC = () => {
   const router = useRouter(); // Router instance for redirecting
 
   useEffect(() => {
-    // Fetch user data to get the current plan
-    getUserData().then((userData) => {
-      setCurrentPlan(userData.plan); // Assuming userData.plan contains the current plan
-    });
-  }, []);
+        const fetchUserPlan = async () => {
+            if (session?.user?.email) {
+                try {
+                    const userData = await getUserData(session.user.email);
+                    if (userData) {
+                        setUserPlan(userData.plan);
+                    }
+                } catch (error) {
+                    console.error("Error fetching user data:", error);
+                    toast.error("Failed to load user data.");
+                }
+            }
+        };
+
+        fetchUserPlan();
+    }, [session]);
 
   const getPriceFn = (plan: string) => {
     if (plan === "free") {
