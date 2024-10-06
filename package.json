@@ -12,6 +12,7 @@
     "axios": "^1.7.7",
     "bcryptjs": "^2.4.3",
     "classnames": "^2.5.1",
+    "@clerk/nextjs": "^5.2.6",
     "dotenv": "^16.4.5",
     "firebase": "^10.12.4",
     "firebase-admin": "^11.4.1",
