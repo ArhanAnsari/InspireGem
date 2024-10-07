@@ -1,31 +1,23 @@
 import React from "react";
-import { Pie } from "react-chartjs-2";
+import { Chart } from "react-chartjs-2"; // Assuming you are using Chart.js
 
-type PlanChartProps = {
-  currentPlan: string;
-  requestUsage: number;
-  maxRequests: number;
-};
+interface PlanChartProps {
+  userPlan: string;
+}
 
-const PlanChart: React.FC<PlanChartProps> = ({ currentPlan, requestUsage, maxRequests }) => {
-  const data = {
-    labels: ["Requests Used", "Requests Remaining"],
+const PlanChart: React.FC<PlanChartProps> = ({ userPlan }) => {
+  const chartData = {
+    labels: ['Free Plan', 'Pro Plan', 'Enterprise Plan'],
     datasets: [
       {
-        label: "Request Usage",
-        data: [requestUsage, maxRequests - requestUsage],
-        backgroundColor: ["#FF6384", "#36A2EB"],
-        hoverBackgroundColor: ["#FF6384", "#36A2EB"],
+        label: 'Your Plan',
+        data: userPlan === 'Free' ? [50, 0, 0] : userPlan === 'Pro' ? [50, 500, 0] : [50, 500, 1000],
+        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
       },
     ],
   };
 
-  return (
-    <div className="max-w-md mx-auto mt-6">
-      <h3 className="text-xl font-semibold mb-4">Plan Usage for {currentPlan} Plan</h3>
-      <Pie data={data} />
-    </div>
-  );
+  return <Chart type="bar" data={chartData} />;
 };
 
 export default PlanChart;
