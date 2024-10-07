@@ -12,6 +12,7 @@ import { checkUserPlanLimit, getUserData, incrementRequestCount } from "@/fireba
 import { DocumentData } from "firebase/firestore";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { StarIcon } from "@heroicons/react/24/solid";
+import { BadgeCheckIcon } from "@heroicons/react/24/outline";  // Plan badge icons
 import SEO from "@/components/SEO";
 
 export default function Dashboard() {
@@ -120,8 +121,19 @@ export default function Dashboard() {
     return (
         <div className="max-w-full mx-auto p-4 md:p-6 overflow-hidden">
             <SEO title="Dashboard - InspireGem" description="Access your AI content generation dashboard, view plans, and review your previously generated content on InspireGem." />
-            <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Welcome to the Dashboard, {session?.user?.name}</h1>
+            
+            {/* Personalized Greeting with Plan Badge */}
+            <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">
+                Welcome to the Dashboard, {session?.user?.name}
+            </h1>
+            <div className="flex items-center mb-6">
+                <BadgeCheckIcon className="w-6 h-6 mr-2 text-blue-500" />
+                <span className="text-lg font-semibold text-gray-600">
+                    Your current plan: {userPlan === "free" ? "Free Plan" : userPlan === "pro" ? "Pro Plan" : "Enterprise Plan"}
+                </span>
+            </div>
 
+            {/* AI Content Generator Section */}
             <div className="mb-6">
                 <h2 className="text-lg md:text-xl font-semibold mb-2">AI Content Generator</h2>
                 <textarea
@@ -133,7 +145,7 @@ export default function Dashboard() {
                 />
                 <button
                     onClick={generateAIContent}
-                    className={`bg-blue-500 text-white px-4 py-2 rounded w-full md:w-auto ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`bg-blue-500 text-white px-4 py-2 rounded w-full md:w-auto ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600 transition-transform transform hover:scale-105'}`}  // Button animation
                     disabled={isLoading}
                 >
                     {isLoading ? 'Generating...' : 'Generate AI Content'}
