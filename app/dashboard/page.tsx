@@ -12,7 +12,7 @@ import { checkUserPlanLimit, getUserData, incrementRequestCount } from "@/fireba
 import { DocumentData } from "firebase/firestore";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { StarIcon } from "@heroicons/react/24/solid";
-import { BadgeCheckIcon } from "@heroicons/react/24/solid";  // Plan badge icons
+import { CheckBadgeIcon } from "@heroicons/react/24/outline";  // Plan badge icons
 import SEO from "@/components/SEO";
 
 export default function Dashboard() {
@@ -127,7 +127,7 @@ export default function Dashboard() {
                 Welcome to the Dashboard, {session?.user?.name}
             </h1>
             <div className="flex items-center mb-6">
-                <BadgeCheckIcon className="w-6 h-6 mr-2 text-blue-500" />
+                <CheckBadgeIcon className="w-6 h-6 mr-2 text-blue-500" />
                 <span className="text-lg font-semibold text-gray-600">
                     Your current plan: {userPlan === "free" ? "Free Plan" : userPlan === "pro" ? "Pro Plan" : "Enterprise Plan"}
                 </span>
