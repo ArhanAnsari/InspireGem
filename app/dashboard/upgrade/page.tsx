@@ -6,6 +6,10 @@ import SEO from "@/components/SEO"; // Importing SEO component
 import { getUserData } from "@/firebaseFunctions"; // Import the function to fetch user data
 import { useSession } from "next-auth/react"; // For session management
 import { useRouter } from "next/navigation"; // Import Next.js router for redirecting
+import Tooltip from "@/components/Tooltip"; // Tooltip component for fun tooltips
+import PlanBadge from "@/components/PlanBadge"; // Plan Badge component for progressive badges
+import CountdownTimer from "@/components/CountdownTimer"; // Countdown Timer for time-sensitive offers
+import PlanChart from "@/components/PlanChart"; // Chart to visualize plan benefits
 
 const UpgradePage: React.FC = () => {
   const [userPlan, setUserPlan] = useState<string>("free"); // State to hold the user's current plan
@@ -70,9 +74,12 @@ const UpgradePage: React.FC = () => {
         {/* Free Plan */}
         <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 transform hover:scale-105">
           <h2 className="text-3xl font-bold text-blue-600 mb-4">Free Plan</h2>
-          <p className="text-gray-600 mb-4">Up to 50 requests per month.</p>
+          <Tooltip content="This plan includes basic features for starters.">
+            <p className="text-gray-600 mb-4">Up to 50 requests per month.</p>
+          </Tooltip>
           <p className="text-gray-600 mb-4">Basic AI content generation.</p>
           <p className="text-gray-600 mb-6">Community support.</p>
+          <PlanBadge plan="free" /> {/* Progressive badge for the plan */}
           <button
             type="button"
             className={`w-full text-center text-white ${
@@ -88,9 +95,12 @@ const UpgradePage: React.FC = () => {
         {/* Pro Plan */}
         <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 transform hover:scale-105">
           <h2 className="text-3xl font-bold text-green-600 mb-4">Pro Plan</h2>
-          <p className="text-gray-600 mb-4">500 requests per month.</p>
+          <Tooltip content="Unlock more requests and advanced features.">
+            <p className="text-gray-600 mb-4">500 requests per month.</p>
+          </Tooltip>
           <p className="text-gray-600 mb-4">Advanced AI content generation.</p>
           <p className="text-gray-600 mb-6">Priority email support.</p>
+          <PlanBadge plan="pro" />
           <button
             type="button"
             className={`w-full text-center text-white ${
@@ -106,9 +116,13 @@ const UpgradePage: React.FC = () => {
         {/* Enterprise Plan */}
         <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 transform hover:scale-105">
           <h2 className="text-3xl font-bold text-red-600 mb-4">Enterprise Plan</h2>
-          <p className="text-gray-600 mb-4">Unlimited requests.</p>
+          <Tooltip content="Unlimited requests and premium features.">
+            <p className="text-gray-600 mb-4">Unlimited requests.</p>
+          </Tooltip>
           <p className="text-gray-600 mb-4">Access to all AI features.</p>
           <p className="text-gray-600 mb-6">24/7 premium support.</p>
+          <PlanBadge plan="enterprise" />
+          <CountdownTimer offerEndDate="2024-12-31" /> {/* Countdown timer */}
           <button
             type="button"
             className={`w-full text-center text-white ${
@@ -122,6 +136,11 @@ const UpgradePage: React.FC = () => {
               : "Upgrade to Enterprise - ₹1,999/month"}
           </button>
         </div>
+      </div>
+      
+      {/* Plan Benefits Visualization */}
+      <div className="mt-10">
+        <PlanChart userPlan={userPlan} />
       </div>
     </div>
   );
