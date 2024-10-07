@@ -74,7 +74,7 @@ const UpgradePage: React.FC = () => {
         {/* Free Plan */}
         <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 transform hover:scale-105">
           <h2 className="text-3xl font-bold text-blue-600 mb-4">Free Plan</h2>
-          <Tooltip content="This plan includes basic features for starters.">
+          <Tooltip id="free-plan" text="This plan includes basic features for starters.">
             <p className="text-gray-600 mb-4">Up to 50 requests per month.</p>
           </Tooltip>
           <p className="text-gray-600 mb-4">Basic AI content generation.</p>
@@ -95,7 +95,7 @@ const UpgradePage: React.FC = () => {
         {/* Pro Plan */}
         <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 transform hover:scale-105">
           <h2 className="text-3xl font-bold text-green-600 mb-4">Pro Plan</h2>
-          <Tooltip content="Unlock more requests and advanced features.">
+          <Tooltip id="pro-plan" text="Unlock more requests and advanced features.">
             <p className="text-gray-600 mb-4">500 requests per month.</p>
           </Tooltip>
           <p className="text-gray-600 mb-4">Advanced AI content generation.</p>
@@ -116,7 +116,7 @@ const UpgradePage: React.FC = () => {
         {/* Enterprise Plan */}
         <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 transform hover:scale-105">
           <h2 className="text-3xl font-bold text-red-600 mb-4">Enterprise Plan</h2>
-          <Tooltip content="Unlimited requests and premium features.">
+          <Tooltip id="enterprise-plan" text="Unlimited requests and premium features.">
             <p className="text-gray-600 mb-4">Unlimited requests.</p>
           </Tooltip>
           <p className="text-gray-600 mb-4">Access to all AI features.</p>
