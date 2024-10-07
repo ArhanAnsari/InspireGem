@@ -1,3 +1,4 @@
+//app/webhook/route.ts
 import { adminDb } from "@/firebaseAdmin";
 import stripe from "@/lib/stripe";
 import { headers } from "next/headers";
@@ -49,10 +50,9 @@ export async function POST(req: NextRequest) {
 
   // Handling different event types
   switch (event.type) {
-    case "checkout.session.completed":
-    case "payment_intent.succeeded": {
-      const invoice = event.data.object as Stripe.PaymentIntent;
-      const customerId = invoice.customer as string;
+    case "checkout.session.completed": {
+      const session = event.data.object as Stripe.Checkout.Session;
+      const customerId = session.customer as string;
 
       const userDetails = await getUserDetails(customerId);
       if (!userDetails?.id) {
@@ -60,10 +60,13 @@ export async function POST(req: NextRequest) {
         return new NextResponse("User not found", { status: 404 });
       }
 
-      // Update the user's membership status
+      // Get the plan from metadata
+      const purchasedPlan = session.metadata?.plan || "pro"; // default to pro if metadata not found
+
+      // Update the user's membership status based on the purchased plan
       await adminDb.collection("users").doc(userDetails.id).update({
         hasActiveMembership: true,
-        plan: "pro", // Assuming they are on the Pro plan after payment
+        plan: purchasedPlan, // Update to the correct plan from metadata
       });
 
       break;
