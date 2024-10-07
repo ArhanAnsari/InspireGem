@@ -12,7 +12,7 @@ import { checkUserPlanLimit, getUserData, incrementRequestCount } from "@/fireba
 import { DocumentData } from "firebase/firestore";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { StarIcon } from "@heroicons/react/24/solid";
-import { BadgeCheckIcon } from "@heroicons/react/24/outline";  // Plan badge icons
+import { BadgeCheckIcon } from "@heroicons/react/24/solid";  // Plan badge icons
 import SEO from "@/components/SEO";
 
 export default function Dashboard() {
