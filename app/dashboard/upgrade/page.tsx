@@ -23,9 +23,11 @@ const UpgradePage: React.FC = () => {
           const userData = await getUserData(session.user.email);
           if (userData) {
             setUserPlan(userData.plan); // Update the state with the user's plan
+          } else {
+            throw new Error("User data not found");
           }
         } catch (error) {
-          console.error("Error fetching user data:", error);
+          console.error("Error fetching user data:", error); // Log the error to the console
         }
       }
     };
@@ -35,21 +37,38 @@ const UpgradePage: React.FC = () => {
     }
   }, [session]);
 
-  const getPriceFn = (plan: string) => {
-    if (plan === "free") {
-      // Redirect to dashboard if user selects the Free plan
-      router.push("/dashboard");
-      return;
+  const getPriceFn = async (plan: string) => {
+  if (plan === "free") {
+    // Redirect to dashboard if user selects the Free plan
+    router.push("/dashboard");
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/checkout?plan=${plan}`);
+    if (!response.ok) {
+      throw new Error(`Failed to initiate checkout for plan: ${plan}`);
+    }
+    const body = await response.json();
+    const sessionId = body.sessionId;
+
+    const stripe = await getStripe();
+    if (!stripe) {
+      throw new Error("Stripe initialization failed");
     }
 
-    fetch(`/api/checkout?plan=${plan}`)
-      .then((data) => data.json())
-      .then(async (body) => {
-        const sessionId = body.sessionId;
-        const stripe = await getStripe();
-        await stripe?.redirectToCheckout({ sessionId });
-      });
-  };
+    await stripe.redirectToCheckout({ sessionId });
+  } catch (error) {
+    // Check if the error is an instance of Error
+    if (error instanceof Error) {
+      console.error("Error during checkout process:", error); // Log the error to the console
+      alert(`Error during checkout process: ${error.message}`); // Show the error to the user
+    } else {
+      console.error("Unknown error during checkout process:", error); // Log unknown error
+      alert("An unknown error occurred during checkout.");
+    }
+  }
+};
 
   const isCurrentPlan = (plan: string) => userPlan === plan; // Helper function to check if the user is on the current plan
 
