@@ -1,4 +1,3 @@
-// /firebaseFunctions.ts
 import { db } from "./firebaseConfig";
 import { 
   doc, 
@@ -25,7 +24,6 @@ type Plan = "free" | "pro" | "enterprise";
 interface UserData {
   plan: Plan;
   requestCount: number;
-  usage: number; // Add the usage field to track usage
 }
 
 // Define allowed plans and request limits
@@ -44,7 +42,6 @@ export const initializeUserData = async (email: string): Promise<void> => {
     await setDoc(userDocRef, {
       plan: "free", // Default to the free plan
       requestCount: 0, // Start with 0 requests
-      usage: 0, // Initialize usage to 0
     });
   }
 };
@@ -60,13 +57,7 @@ export const getUserData = async (email: string): Promise<UserData | null> => {
       return await getUserData(email); // Fetch the newly created data
     }
 
-    const data = userDoc.data() as UserData;
-
-    // Ensure 'usage' is returned (can be handled if missing)
-    return {
-      ...data,
-      usage: data.usage ?? 0, // Fallback to 0 if usage is undefined
-    };
+    return userDoc.data() as UserData;
   } catch (error) {
     console.error(`Error fetching user data for ${email}:`, error);
     return null; // Return null if an error occurs
@@ -105,20 +96,6 @@ export const incrementRequestCount = async (email: string): Promise<void> => {
   }
 };
 
-// Function to increment both request count and usage
-export const incrementRequestAndUsage = async (email: string): Promise<void> => {
-  try {
-    const userDocRef = doc(db, "users", email);
-    await updateDoc(userDocRef, {
-      requestCount: increment(1),
-      usage: increment(1), // Increment usage by 1
-    });
-  } catch (error) {
-    console.error(`Error incrementing request count and usage for ${email}:`, error);
-    throw new Error("Unable to increment request count and usage.");
-  }
-};
-
 // Function to handle content generation and limit checking
 export const handleContentGeneration = async (email: string, generatedContent: string): Promise<void> => {
   const canGenerate = await checkUserPlanLimit(email);
@@ -127,8 +104,8 @@ export const handleContentGeneration = async (email: string, generatedContent: s
     throw new Error("You have reached your content generation limit for this month.");
   }
 
-  // If user is allowed to generate content, increment both request count and usage
-  await incrementRequestAndUsage(email);
+  // If user is allowed to generate content, increment request count
+  await incrementRequestCount(email);
   
   // Save the newly generated content
   await saveGeneratedContent(email, generatedContent);
