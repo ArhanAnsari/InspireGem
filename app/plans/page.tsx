@@ -12,6 +12,8 @@ export default function PlansPage() {
   const [userPlan, setUserPlan] = useState<string>("free"); // State to hold user's current plan
   const { data: session, status } = useSession(); // Get session from NextAuth
   const router = useRouter(); // Router instance for redirecting
+  // Temporarily disable eslint warning for unused variables
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [usageData, setUsageData] = useState<number>(0); // User's current usage
 
   useEffect(() => {
@@ -142,7 +144,7 @@ export default function PlansPage() {
         {/* Testimonials Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white p-6 shadow-md rounded-lg">
-            <p>"The Pro Plan gave my content a boost, worth every penny!"</p>
+            <p>&quot;The Pro Plan gave my content a boost, worth every penny!&quot;</p>
             <span className="block mt-2 text-gray-600">- John Doe</span>
           </div>
           {/* Add more testimonials */}
