@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { Chart } from "react-chartjs-2"; // Assuming you are using Chart.js
 
@@ -11,7 +13,7 @@ const PlanChart: React.FC<PlanChartProps> = ({ userPlan }) => {
     datasets: [
       {
         label: 'Your Plan',
-        data: userPlan === 'Free' ? [50, 0, 0] : userPlan === 'Pro' ? [50, 500, 0] : [50, 500, 1000],
+        data: userPlan === 'Free' ? [50, 0, 0] : userPlan === 'Pro' ? [50, 500, 0] : [50, 500, Infinity],
         backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
       },
     ],
