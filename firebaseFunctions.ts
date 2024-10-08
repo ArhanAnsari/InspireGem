@@ -56,13 +56,12 @@ export const getUserData = async (email: string): Promise<UserData | null> => {
     const userDoc = await getDoc(userDocRef);
 
     if (!userDoc.exists()) {
-      await initializeUserData(email); // Initialize the user data if it doesn't exist
-      return await getUserData(email); // Fetch the newly created data
+      await initializeUserData(email);
+      return await getUserData(email);
     }
 
     const data = userDoc.data() as UserData;
 
-    // Ensure 'usage' is returned (can be handled if missing)
     return {
       ...data,
       usage: data.usage ?? 0, // Fallback to 0 if usage is undefined
