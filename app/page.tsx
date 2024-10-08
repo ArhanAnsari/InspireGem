@@ -19,7 +19,7 @@ export default function HomePage() {
             Leverage the power of AI with Google Gemini to create amazing content effortlessly. Whether you need help generating stories, articles, or creative ideas, InspireGem is here to assist you.
           </p>
           <Link
-            href="/plans"
+            href="/dashboard/upgrade"
             className="inline-block bg-blue-500 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-600 transition-transform transform hover:scale-105"
           >
             View Plans

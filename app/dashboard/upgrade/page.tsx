@@ -1,3 +1,4 @@
+//app/dashboard/upgrade/page.tsx
 "use client";
 import React, { useEffect, useState } from "react";
 import getStripe from "@/lib/stripe-js"; // Ensure this utility is set up correctly
@@ -37,37 +38,37 @@ const UpgradePage: React.FC = () => {
   }, [session]);
 
   const getPriceFn = async (plan: string) => {
-    if (plan === "free") {
-      // Redirect to dashboard if user selects the Free plan
-      router.push("/dashboard");
-      return;
+  if (plan === "free") {
+    // Redirect to dashboard if user selects the Free plan
+    router.push("/dashboard");
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/checkout?plan=${plan}`);
+    if (!response.ok) {
+      throw new Error(`Failed to initiate checkout for plan: ${plan}`);
+    }
+    const body = await response.json();
+    const sessionId = body.sessionId;
+
+    const stripe = await getStripe();
+    if (!stripe) {
+      throw new Error("Stripe initialization failed");
     }
 
-    try {
-      const response = await fetch(`/api/checkout?plan=${plan}`);
-      if (!response.ok) {
-        throw new Error(`Failed to initiate checkout for plan: ${plan}`);
-      }
-      const body = await response.json();
-      const sessionId = body.sessionId;
-
-      const stripe = await getStripe();
-      if (!stripe) {
-        throw new Error("Stripe initialization failed");
-      }
-
-      await stripe.redirectToCheckout({ sessionId });
-    } catch (error) {
-      // Check if the error is an instance of Error
-      if (error instanceof Error) {
-        console.error("Error during checkout process:", error); // Log the error to the console
-        alert(`Error during checkout process: ${error.message}`); // Show the error to the user
-      } else {
-        console.error("Unknown error during checkout process:", error); // Log unknown error
-        alert("An unknown error occurred during checkout.");
-      }
+    await stripe.redirectToCheckout({ sessionId });
+  } catch (error) {
+    // Check if the error is an instance of Error
+    if (error instanceof Error) {
+      console.error("Error during checkout process:", error); // Log the error to the console
+      alert(`Error during checkout process: ${error.message}`); // Show the error to the user
+    } else {
+      console.error("Unknown error during checkout process:", error); // Log unknown error
+      alert("An unknown error occurred during checkout.");
     }
-  };
+  }
+};
 
   const isCurrentPlan = (plan: string) => userPlan === plan; // Helper function to check if the user is on the current plan
 
