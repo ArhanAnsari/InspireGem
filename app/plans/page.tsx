@@ -1,35 +1,28 @@
 //app/plans/page.tsx
-
 "use client";
 import React, { useEffect, useState } from "react";
 import getStripe from "@/lib/stripe-js";
-import SEO from "@/components/SEO";
+import SEO from "@/components/SEO"; // Import the SEO component
 import { getUserData } from "@/firebaseFunctions"; // Import function to fetch user data
 import { useSession } from "next-auth/react"; // Session management
 import { useRouter } from "next/navigation"; // Router for redirection
 import { Chart } from "react-chartjs-2"; // Chart.js for plan benefits
 import { Tooltip } from "react-tooltip"; // Tooltips
 
-type UserData = {
-  email: string;
-  plan: string;
-  usage: number; // Ensure the 'usage' field is part of the user data type
-};
-
 export default function PlansPage() {
-  const [userPlan, setUserPlan] = useState<string>("free");
-  const [usageData, setUsageData] = useState<number>(0); // State for usage data
-  const { data: session, status } = useSession();
-  const router = useRouter();
+  const [userPlan, setUserPlan] = useState<string>("free"); // State to hold user's current plan
+  const { data: session, status } = useSession(); // Get session from NextAuth
+  const router = useRouter(); // Router instance for redirecting
+  const [usageData, setUsageData] = useState<number>(0); // User's current usage
 
   useEffect(() => {
     const fetchUserPlan = async () => {
       if (session?.user?.email) {
         try {
-          const userData: UserData | null = await getUserData(session.user.email);
+          const userData = await getUserData(session.user.email);
           if (userData) {
-            setUserPlan(userData.plan);
-            setUsageData(userData.usage); // Ensure 'usage' is set correctly
+            setUserPlan(userData.plan); // Update state with the user's plan
+            setUsageData(userData.usage); // Fetch usage data
           }
         } catch (error) {
           console.error("Error fetching user data:", error);
@@ -42,22 +35,21 @@ export default function PlansPage() {
     }
   }, [session]);
 
-  const getPriceFn = async (plan: string) => {
+  const getPriceFn = (plan: string) => {
     if (plan === userPlan) {
-      return;
+      return; // If the selected plan is already the user's plan, do nothing
     }
 
-    try {
-      const response = await fetch("/api/checkout?plan=" + plan);
-      const { sessionId } = await response.json();
-      const stripe = await getStripe();
-      await stripe?.redirectToCheckout({ sessionId });
-    } catch (error) {
-      console.error("Error during checkout:", error);
-    }
+    fetch("/api/checkout?plan=" + plan)
+      .then((data) => data.json())
+      .then(async (body) => {
+        const sessionId = body.sessionId;
+        const stripe = await getStripe();
+        await stripe?.redirectToCheckout({ sessionId });
+      });
   };
 
-  const isCurrentPlan = (plan: string) => userPlan === plan;
+  const isCurrentPlan = (plan: string) => userPlan === plan; // Helper function to check if the user is on the current plan
 
   if (status === "loading") {
     return <div>Loading...</div>;
@@ -77,6 +69,10 @@ export default function PlansPage() {
       <h1 className="text-4xl font-bold text-center mb-10">
         Welcome {session?.user?.name}!
       </h1>
+
+      <div className="text-center mb-8">
+        <p className="text-lg text-gray-600">Your current usage: {usageData} requests.</p>
+      </div>
 
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Free Plan */}
