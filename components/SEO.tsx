@@ -1,4 +1,6 @@
 // components/SEO.tsx
+"use client";
+
 import Head from "next/head";
 
 interface SEOProps {
