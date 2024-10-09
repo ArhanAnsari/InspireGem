@@ -6,6 +6,7 @@ import SEO from "@/components/SEO"; // Import the SEO component
 import { getUserData } from "@/firebaseFunctions"; // Import function to fetch user data
 import { useSession } from "next-auth/react"; // Session management
 import { useRouter } from "next/navigation"; // Router for redirection
+import PlanBadge from "@/components/PlanBadge"; // Import PlanBadge component
 
 export default function PlansPage() {
   const [userPlan, setUserPlan] = useState<string>("free"); // State to hold user's current plan
@@ -68,8 +69,13 @@ export default function PlansPage() {
       />
 
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Display the Plan Badge */}
+        <div className="col-span-full">
+          <PlanBadge email={session.user?.email || ''} />
+        </div>
+
         {/* Free Plan */}
-        <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 transform hover:scale-105">
+        <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 transform hover:scale-105 relative">
           <h2 className="text-3xl font-bold text-blue-600 mb-4">Free Plan</h2>
           <p className="text-gray-600 mb-4">Up to 50 requests per month.</p>
           <p className="text-gray-600 mb-4">Basic AI content generation.</p>
@@ -87,7 +93,7 @@ export default function PlansPage() {
         </div>
 
         {/* Pro Plan */}
-        <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 transform hover:scale-105">
+        <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 transform hover:scale-105 relative">
           <h2 className="text-3xl font-bold text-green-600 mb-4">Pro Plan</h2>
           <p className="text-gray-600 mb-4">500 requests per month.</p>
           <p className="text-gray-600 mb-4">Advanced AI content generation.</p>
@@ -105,7 +111,7 @@ export default function PlansPage() {
         </div>
 
         {/* Enterprise Plan */}
-        <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 transform hover:scale-105">
+        <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 transform hover:scale-105 relative">
           <h2 className="text-3xl font-bold text-red-600 mb-4">Enterprise Plan</h2>
           <p className="text-gray-600 mb-4">Unlimited requests.</p>
           <p className="text-gray-600 mb-4">Access to all AI features.</p>
