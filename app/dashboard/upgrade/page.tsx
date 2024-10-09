@@ -1,20 +1,20 @@
 //app/dashboard/upgrade/page.tsx
 "use client";
 import React, { useEffect, useState } from "react";
-import getStripe from "@/lib/stripe-js"; // Ensure this utility is set up correctly
-import SEO from "@/components/SEO"; // Importing SEO component
-import { getUserData } from "@/firebaseFunctions"; // Import the function to fetch user data
-import { useSession } from "next-auth/react"; // For session management
-import { useRouter } from "next/navigation"; // Import Next.js router for redirecting
-import Tooltip from "@/components/Tooltip"; // Tooltip component for fun tooltips
-import PlanBadge from "@/components/PlanBadge"; // Plan Badge component for progressive badges
-import CountdownTimer from "@/components/CountdownTimer"; // Countdown Timer for time-sensitive offers
-import PlanChart from "@/components/PlanChart"; // Chart to visualize plan benefits
+import getStripe from "@/lib/stripe-js";
+import SEO from "@/components/SEO";
+import { getUserData } from "@/firebaseFunctions";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import Tooltip from "@/components/Tooltip";
+import CountdownTimer from "@/components/CountdownTimer";
+import PlanChart from "@/components/PlanChart";
+import PlanBadge from "@/components/PlanBadge"; // Moving PlanBadge here
 
 const UpgradePage: React.FC = () => {
-  const [userPlan, setUserPlan] = useState<string>("free"); // State to hold the user's current plan
-  const { data: session, status } = useSession(); // Get session from NextAuth
-  const router = useRouter(); // Router instance for redirecting
+  const [userPlan, setUserPlan] = useState<string>("free");
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchUserPlan = async () => {
@@ -22,12 +22,12 @@ const UpgradePage: React.FC = () => {
         try {
           const userData = await getUserData(session.user.email);
           if (userData) {
-            setUserPlan(userData.plan); // Update the state with the user's plan
+            setUserPlan(userData.plan);
           } else {
             throw new Error("User data not found");
           }
         } catch (error) {
-          console.error("Error fetching user data:", error); // Log the error to the console
+          console.error("Error fetching user data:", error);
         }
       }
     };
@@ -38,46 +38,42 @@ const UpgradePage: React.FC = () => {
   }, [session]);
 
   const getPriceFn = async (plan: string) => {
-  if (plan === "free") {
-    // Redirect to dashboard if user selects the Free plan
-    router.push("/dashboard");
-    return;
-  }
-
-  try {
-    const response = await fetch(`/api/checkout?plan=${plan}`);
-    if (!response.ok) {
-      throw new Error(`Failed to initiate checkout for plan: ${plan}`);
-    }
-    const body = await response.json();
-    const sessionId = body.sessionId;
-
-    const stripe = await getStripe();
-    if (!stripe) {
-      throw new Error("Stripe initialization failed");
+    if (plan === "free") {
+      router.push("/dashboard");
+      return;
     }
 
-    await stripe.redirectToCheckout({ sessionId });
-  } catch (error) {
-    // Check if the error is an instance of Error
-    if (error instanceof Error) {
-      console.error("Error during checkout process:", error); // Log the error to the console
-      alert(`Error during checkout process: ${error.message}`); // Show the error to the user
-    } else {
-      console.error("Unknown error during checkout process:", error); // Log unknown error
-      alert("An unknown error occurred during checkout.");
+    try {
+      const response = await fetch(`/api/checkout?plan=${plan}`);
+      if (!response.ok) {
+        throw new Error(`Failed to initiate checkout for plan: ${plan}`);
+      }
+      const body = await response.json();
+      const sessionId = body.sessionId;
+
+      const stripe = await getStripe();
+      if (!stripe) {
+        throw new Error("Stripe initialization failed");
+      }
+
+      await stripe.redirectToCheckout({ sessionId });
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("Error during checkout process:", error);
+        alert(`Error during checkout process: ${error.message}`);
+      } else {
+        console.error("Unknown error during checkout process:", error);
+        alert("An unknown error occurred during checkout.");
+      }
     }
-  }
-};
+  };
 
-  const isCurrentPlan = (plan: string) => userPlan === plan; // Helper function to check if the user is on the current plan
+  const isCurrentPlan = (plan: string) => userPlan === plan;
 
-  // If session is loading, display loading state
   if (status === "loading") {
     return <div>Loading...</div>;
   }
 
-  // If session is null (user not logged in), redirect to login page
   if (!session) {
     router.push("/auth/signin");
     return null;
@@ -89,6 +85,12 @@ const UpgradePage: React.FC = () => {
         title="Upgrade Your Plan - InspireGem"
         description="Upgrade to a higher plan on InspireGem and unlock advanced AI content generation features."
       />
+
+      {/* Plan Badge Displayed Once at the Top */}
+      <div className="flex justify-center mb-6">
+        <PlanBadge email={session?.user?.email || ""} />
+      </div>
+
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Free Plan */}
         <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 transform hover:scale-105">
@@ -98,7 +100,6 @@ const UpgradePage: React.FC = () => {
           </Tooltip>
           <p className="text-gray-600 mb-4">Basic AI content generation.</p>
           <p className="text-gray-600 mb-6">Community support.</p>
-          <PlanBadge email={session?.user?.email || ""} /> {/* Progressive badge for the plan */}
           <button
             type="button"
             className={`w-full text-center text-white ${
@@ -119,7 +120,6 @@ const UpgradePage: React.FC = () => {
           </Tooltip>
           <p className="text-gray-600 mb-4">Advanced AI content generation.</p>
           <p className="text-gray-600 mb-6">Priority email support.</p>
-          <PlanBadge email={session?.user?.email || ""} />
           <button
             type="button"
             className={`w-full text-center text-white ${
@@ -140,8 +140,7 @@ const UpgradePage: React.FC = () => {
           </Tooltip>
           <p className="text-gray-600 mb-4">Access to all AI features.</p>
           <p className="text-gray-600 mb-6">24/7 premium support.</p>
-          <PlanBadge email={session?.user?.email || ""} />
-          <CountdownTimer offerEndDate="2024-12-31" /> {/* Countdown timer */}
+          <CountdownTimer offerEndDate="2024-12-31" />
           <button
             type="button"
             className={`w-full text-center text-white ${
@@ -156,7 +155,7 @@ const UpgradePage: React.FC = () => {
           </button>
         </div>
       </div>
-      
+
       {/* Plan Benefits Visualization */}
       <div className="mt-10">
         <PlanChart userPlan={userPlan} />
