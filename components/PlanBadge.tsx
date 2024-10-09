@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getUserData } from '../firebaseFunctions'; // Import getUserData from firebaseFunctions
+import { getUserData } from '@/firebaseFunctions'; // Import getUserData from firebaseFunctions
 
 interface PlanBadgeProps {
   email: string;
@@ -27,7 +27,8 @@ const PlanBadge = ({ email }: PlanBadgeProps) => {
     enterprise: { text: 'Enterprise Plan', color: 'green' },
   };
 
-  const { text, color } = planConfig[userData.plan] || planConfig['free'];
+  // Use type assertion to ensure TypeScript recognizes userData.plan as a valid key
+  const { text, color } = planConfig[userData.plan as keyof typeof planConfig] || planConfig['free'];
 
   return (
     <div style={{ backgroundColor: color, padding: '10px', borderRadius: '5px' }}>
