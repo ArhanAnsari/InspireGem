@@ -75,10 +75,10 @@ export default function PlansPage() {
 
   // If session is null (user not logged in), redirect to login page
   //Temporary Comment, will remove after testing. 
-  /*if (!session) {
+  if (!session) {
     router.push("/auth/signin");
     return null;
-  }*/
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
