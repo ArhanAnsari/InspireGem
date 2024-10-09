@@ -98,7 +98,7 @@ const UpgradePage: React.FC = () => {
           </Tooltip>
           <p className="text-gray-600 mb-4">Basic AI content generation.</p>
           <p className="text-gray-600 mb-6">Community support.</p>
-          <PlanBadge plan="free" /> {/* Progressive badge for the plan */}
+          <PlanBadge email={session?.user?.email || ""} /> {/* Progressive badge for the plan */}
           <button
             type="button"
             className={`w-full text-center text-white ${
@@ -119,7 +119,7 @@ const UpgradePage: React.FC = () => {
           </Tooltip>
           <p className="text-gray-600 mb-4">Advanced AI content generation.</p>
           <p className="text-gray-600 mb-6">Priority email support.</p>
-          <PlanBadge plan="pro" />
+          <PlanBadge email={session?.user?.email || ""} />
           <button
             type="button"
             className={`w-full text-center text-white ${
@@ -140,7 +140,7 @@ const UpgradePage: React.FC = () => {
           </Tooltip>
           <p className="text-gray-600 mb-4">Access to all AI features.</p>
           <p className="text-gray-600 mb-6">24/7 premium support.</p>
-          <PlanBadge plan="enterprise" />
+          <PlanBadge email={session?.user?.email || ""} />
           <CountdownTimer offerEndDate="2024-12-31" /> {/* Countdown timer */}
           <button
             type="button"
