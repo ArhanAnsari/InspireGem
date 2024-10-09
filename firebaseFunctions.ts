@@ -21,9 +21,11 @@ import { DocumentData } from "firebase/firestore"; // Import DocumentData from F
 type Plan = "free" | "pro" | "enterprise";
 
 // Define an interface for the user data
+// Update the UserData interface to include 'usage'
 interface UserData {
   plan: Plan;
   requestCount: number;
+  usage: number; // Alias for requestCount
 }
 
 // Define allowed plans and request limits
@@ -47,6 +49,7 @@ export const initializeUserData = async (email: string): Promise<void> => {
 };
 
 // Function to get user data from Firestore
+// Modify the getUserData function to return usage
 export const getUserData = async (email: string): Promise<UserData | null> => {
   try {
     const userDocRef = doc(db, "users", email);
@@ -57,7 +60,12 @@ export const getUserData = async (email: string): Promise<UserData | null> => {
       return await getUserData(email); // Fetch the newly created data
     }
 
-    return userDoc.data() as UserData;
+    const data = userDoc.data() as UserData;
+
+    return {
+      ...data,
+      usage: data.requestCount, // Set usage equal to requestCount
+    };
   } catch (error) {
     console.error(`Error fetching user data for ${email}:`, error);
     return null; // Return null if an error occurs
