@@ -3,17 +3,22 @@
 import React, { useState, useEffect } from "react";
 
 type CountdownTimerProps = {
-  offerEndDate: string; // Pass a valid date string, e.g., "2024-12-31"
+  offerEndDate: string;
 };
 
 const CountdownTimer: React.FC<CountdownTimerProps> = ({ offerEndDate }) => {
-  const [timeLeft, setTimeLeft] = useState("");
+  const [timeLeft, setTimeLeft] = useState<string>("");
 
   useEffect(() => {
     const calculateTimeLeft = () => {
       const end = new Date(offerEndDate).getTime();
       const now = new Date().getTime();
       const difference = end - now;
+
+      if (isNaN(end)) {
+        setTimeLeft("Invalid date!");
+        return;
+      }
 
       if (difference > 0) {
         const days = Math.floor(difference / (1000 * 60 * 60 * 24));
@@ -29,11 +34,7 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({ offerEndDate }) => {
     return () => clearInterval(timer); // Cleanup interval on component unmount
   }, [offerEndDate]);
 
-  return (
-    <div className="text-lg font-bold text-red-600 mt-4">
-      {timeLeft ? `Limited Time Offer: ${timeLeft}` : "Offer expired!"}
-    </div>
-  );
+  return <div className="text-lg font-bold text-red-600 mt-4">{timeLeft}</div>;
 };
 
 export default CountdownTimer;
