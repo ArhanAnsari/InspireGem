@@ -1,36 +1,39 @@
-"use client";
+import { useEffect, useState } from 'react';
+import { getUserData } from '@/firebaseFunctions'; // Import getUserData from firebaseFunctions
 
-import React from "react";
+interface PlanBadgeProps {
+  email: string;
+}
 
-type PlanBadgeProps = {
-  plan: string;
-};
+const PlanBadge = ({ email }: PlanBadgeProps) => {
+  const [userData, setUserData] = useState<{ plan: string; usage: number } | null>(null);
 
-const PlanBadge: React.FC<PlanBadgeProps> = ({ plan }) => {
-  let badgeText = "";
-  let badgeColor = "";
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const data = await getUserData(email);
+      setUserData(data);
+    };
 
-  switch (plan) {
-    case "free":
-      badgeText = "Starter";
-      badgeColor = "bg-gray-500";
-      break;
-    case "pro":
-      badgeText = "Pro User";
-      badgeColor = "bg-green-500";
-      break;
-    case "enterprise":
-      badgeText = "AI Enthusiast";
-      badgeColor = "bg-red-500";
-      break;
-    default:
-      badgeText = "Free";
-      badgeColor = "bg-gray-500";
+    fetchUserData();
+  }, [email]);
+
+  if (!userData) {
+    return <div>Loading...</div>;
   }
 
+  const planConfig = {
+    free: { text: 'Free Plan', color: 'gray' },
+    pro: { text: 'Pro Plan', color: 'blue' },
+    enterprise: { text: 'Enterprise Plan', color: 'green' },
+  };
+
+  // Use type assertion to ensure TypeScript recognizes userData.plan as a valid key
+  const { text, color } = planConfig[userData.plan as keyof typeof planConfig] || planConfig['free'];
+
   return (
-    <div className={`inline-block px-4 py-2 rounded-full text-white ${badgeColor}`}>
-      {badgeText}
+    <div style={{ backgroundColor: color, padding: '10px', borderRadius: '5px' }}>
+      <strong>{text}</strong>
+      <p>Usage: {userData.usage}</p>
     </div>
   );
 };

@@ -3,9 +3,15 @@
 import React from "react";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 
-const Tooltip: React.FC<{ id: string; text: string; children: React.ReactNode }> = ({ id, text, children }) => (
+interface TooltipProps {
+  id: string;
+  text: string;
+  children: React.ReactNode;
+}
+
+const Tooltip: React.FC<TooltipProps> = ({ id, text, children }) => (
   <>
-    <span className="relative cursor-pointer underline" data-tooltip-id={id} data-tooltip-content={text}>
+    <span className="relative cursor-pointer underline" data-tooltip-id={id} data-tooltip-content={text} aria-label={text}>
       {children}
     </span>
     <ReactTooltip id={id} />
