@@ -6,10 +6,7 @@ import SEO from "@/components/SEO"; // Import the SEO component
 import { getUserData } from "@/firebaseFunctions"; // Import function to fetch user data
 import { useSession } from "next-auth/react"; // Session management
 import { useRouter } from "next/navigation"; // Router for redirection
-import Tooltip from "@/components/Tooltip"; // Tooltip component for fun tooltips
-import PlanBadge from "@/components/PlanBadge"; // Plan Badge component for progressive badges
-import CountdownTimer from "@/components/CountdownTimer"; // Countdown Timer for time-sensitive offers
-import PlanChart from "@/components/PlanChart"; // Chart to visualize plan benefits
+import PlanBadge from "@/components/PlanBadge"; // Import PlanBadge component
 
 export default function PlansPage() {
   const [userPlan, setUserPlan] = useState<string>("free"); // State to hold user's current plan
@@ -35,38 +32,22 @@ export default function PlansPage() {
     }
   }, [session]);
 
-  const getPriceFn = async (plan: string) => {
-    if (plan === "free") {
-      router.push("/dashboard");
+  const getPriceFn = (plan: string) => {
+    if (plan === userPlan) {
+      // If the selected plan is already the user's plan, do nothing
       return;
     }
 
-    try {
-      const response = await fetch(`/api/checkout?plan=${plan}`);
-      if (!response.ok) {
-        throw new Error(`Failed to initiate checkout for plan: ${plan}`);
-      }
-      const body = await response.json();
-      const sessionId = body.sessionId;
-
-      const stripe = await getStripe();
-      if (!stripe) {
-        throw new Error("Stripe initialization failed");
-      }
-
-      await stripe.redirectToCheckout({ sessionId });
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error("Error during checkout process:", error);
-        alert(`Error during checkout process: ${error.message}`);
-      } else {
-        console.error("Unknown error during checkout process:", error);
-        alert("An unknown error occurred during checkout.");
-      }
-    }
+    fetch("/api/checkout?plan=" + plan)
+      .then((data) => data.json())
+      .then(async (body) => {
+        const sessionId = body.sessionId;
+        const stripe = await getStripe();
+        await stripe?.redirectToCheckout({ sessionId });
+      });
   };
 
-  const isCurrentPlan = (plan: string) => userPlan === plan;
+  const isCurrentPlan = (plan: string) => userPlan === plan; // Helper function to check if the user is on the current plan
 
   // Display loading state if session is being fetched
   if (status === "loading") {
@@ -74,7 +55,6 @@ export default function PlansPage() {
   }
 
   // If session is null (user not logged in), redirect to login page
-  //Temporary Comment, will remove after testing. 
   if (!session) {
     router.push("/auth/signin");
     return null;
@@ -97,9 +77,7 @@ export default function PlansPage() {
         {/* Free Plan */}
         <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 transform hover:scale-105 relative">
           <h2 className="text-3xl font-bold text-blue-600 mb-4">Free Plan</h2>
-          <Tooltip id="free-plan" text="This plan includes basic features for starters.">
-            <p className="text-gray-600 mb-4">Up to 50 requests per month.</p>
-          </Tooltip>
+          <p className="text-gray-600 mb-4">Up to 50 requests per month.</p>
           <p className="text-gray-600 mb-4">Basic AI content generation.</p>
           <p className="text-gray-600 mb-6">Community support.</p>
           <button
@@ -117,9 +95,7 @@ export default function PlansPage() {
         {/* Pro Plan */}
         <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 transform hover:scale-105 relative">
           <h2 className="text-3xl font-bold text-green-600 mb-4">Pro Plan</h2>
-          <Tooltip id="pro-plan" text="Unlock more requests and advanced features.">
-            <p className="text-gray-600 mb-4">500 requests per month.</p>
-          </Tooltip>
+          <p className="text-gray-600 mb-4">500 requests per month.</p>
           <p className="text-gray-600 mb-4">Advanced AI content generation.</p>
           <p className="text-gray-600 mb-6">Priority email support.</p>
           <button
@@ -137,12 +113,9 @@ export default function PlansPage() {
         {/* Enterprise Plan */}
         <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 transform hover:scale-105 relative">
           <h2 className="text-3xl font-bold text-red-600 mb-4">Enterprise Plan</h2>
-          <Tooltip id="enterprise-plan" text="Unlimited requests and premium features.">
-            <p className="text-gray-600 mb-4">Unlimited requests.</p>
-          </Tooltip>
+          <p className="text-gray-600 mb-4">Unlimited requests.</p>
           <p className="text-gray-600 mb-4">Access to all AI features.</p>
           <p className="text-gray-600 mb-6">24/7 premium support.</p>
-          <CountdownTimer offerEndDate="2024-12-31" /> {/* Countdown timer */}
           <button
             type="button"
             className={`w-full text-center text-white ${
@@ -156,11 +129,6 @@ export default function PlansPage() {
               : "Subscribe for ₹1,999/month"}
           </button>
         </div>
-      </div>
-
-      {/* Plan Benefits Visualization */}
-      <div className="mt-10">
-        <PlanChart userPlan={userPlan} />
       </div>
     </div>
   );
