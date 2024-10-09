@@ -1,7 +1,10 @@
 "use client";
 
 import React from "react";
-import { Chart } from "react-chartjs-2";
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
+import { Bar } from "react-chartjs-2";
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 interface PlanChartProps {
   userPlan: string;
@@ -30,7 +33,20 @@ const PlanChart: React.FC<PlanChartProps> = ({ userPlan }) => {
     ],
   };
 
-  return <Chart type="bar" data={chartData} />;
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+      },
+      title: {
+        display: true,
+        text: 'Plan Comparison',
+      },
+    },
+  };
+
+  return <Bar data={chartData} options={options} />;
 };
 
 export default PlanChart;
