@@ -1,4 +1,3 @@
-// components/SEO.tsx
 "use client";
 
 import Head from "next/head";
@@ -11,13 +10,21 @@ interface SEOProps {
   url?: string;
 }
 
-const SEO = ({
+const SEO: React.FC<SEOProps> = ({
   title,
   description,
   keywords = "AI, SaaS, content generator",
   image = "/default-image.png",
   url = "https://inspiregem.vercel.app",
-}: SEOProps) => {
+}) => {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "url": url,
+    "name": title,
+    "description": description,
+  };
+
   return (
     <Head>
       <title>{title}</title>
@@ -42,18 +49,7 @@ const SEO = ({
       <link rel="canonical" href={url} />
 
       {/* JSON-LD Structured Data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "WebSite",
-            "url": url,
-            "name": title,
-            "description": description,
-          }),
-        }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     </Head>
   );
 };
