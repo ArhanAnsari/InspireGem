@@ -2,28 +2,27 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import getStripe from "@/lib/stripe-js";
-import SEO from "@/components/SEO"; // SEO component
-import { getUserData } from "@/firebaseFunctions"; // Function to fetch user data from Firebase
-import { useSession } from "next-auth/react"; // Session management from NextAuth
+import SEO from "@/components/SEO"; // Import the SEO component
+import { getUserData } from "@/firebaseFunctions"; // Import function to fetch user data
+import { useSession } from "next-auth/react"; // Session management
 import { useRouter } from "next/navigation"; // Router for redirection
-import Tooltip from "@/components/Tooltip"; // Tooltip component
-import PlanBadge from "@/components/PlanBadge"; // Plan Badge component
-import CountdownTimer from "@/components/CountdownTimer"; // Countdown Timer for offers
-import PlanChart from "@/components/PlanChart"; // Plan benefits visualization chart
+import Tooltip from "@/components/Tooltip"; // Tooltip component for fun tooltips
+import PlanBadge from "@/components/PlanBadge"; // Plan Badge component for progressive badges
+import CountdownTimer from "@/components/CountdownTimer"; // Countdown Timer for time-sensitive offers
+import PlanChart from "@/components/PlanChart"; // Chart to visualize plan benefits
 
 export default function PlansPage() {
-  const [userPlan, setUserPlan] = useState<string>("free"); // State to track the user's plan
-  const { data: session, status } = useSession(); // Get session data from NextAuth
-  const router = useRouter(); // Router for navigation
+  const [userPlan, setUserPlan] = useState<string>("free"); // State to hold user's current plan
+  const { data: session, status } = useSession(); // Get session from NextAuth
+  const router = useRouter(); // Router instance for redirecting
 
   useEffect(() => {
-    // Fetch the user's plan from Firebase
     const fetchUserPlan = async () => {
       if (session?.user?.email) {
         try {
           const userData = await getUserData(session.user.email);
           if (userData) {
-            setUserPlan(userData.plan); // Set user's plan in state
+            setUserPlan(userData.plan); // Update state with the user's plan
           }
         } catch (error) {
           console.error("Error fetching user data:", error);
@@ -57,19 +56,24 @@ export default function PlansPage() {
 
       await stripe.redirectToCheckout({ sessionId });
     } catch (error) {
-      console.error("Error during checkout process:", error);
-      alert(`Error during checkout process: ${error.message}`);
+      if (error instanceof Error) {
+        console.error("Error during checkout process:", error);
+        alert(`Error during checkout process: ${error.message}`);
+      } else {
+        console.error("Unknown error during checkout process:", error);
+        alert("An unknown error occurred during checkout.");
+      }
     }
   };
 
   const isCurrentPlan = (plan: string) => userPlan === plan;
 
-  // If session is being fetched, show a loading state
+  // Display loading state if session is being fetched
   if (status === "loading") {
     return <div>Loading...</div>;
   }
 
-  // If no session, redirect to the sign-in page
+  // If session is null (user not logged in), redirect to login page
   if (!session) {
     router.push("/auth/signin");
     return null;
@@ -77,7 +81,7 @@ export default function PlansPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
-      {/* SEO Component */}
+      {/* Add SEO Component */}
       <SEO
         title="Plans - InspireGem"
         description="Explore the available plans on InspireGem and choose the one that fits your content generation needs."
@@ -86,7 +90,7 @@ export default function PlansPage() {
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Display the Plan Badge */}
         <div className="col-span-full">
-          <PlanBadge email={session.user?.email || ""} />
+          <PlanBadge email={session.user?.email || ''} />
         </div>
 
         {/* Free Plan */}
@@ -137,7 +141,7 @@ export default function PlansPage() {
           </Tooltip>
           <p className="text-gray-600 mb-4">Access to all AI features.</p>
           <p className="text-gray-600 mb-6">24/7 premium support.</p>
-          <CountdownTimer offerEndDate="2024-12-31" />
+          <CountdownTimer offerEndDate="2024-12-31" /> {/* Countdown timer */}
           <button
             type="button"
             className={`w-full text-center text-white ${
@@ -153,7 +157,7 @@ export default function PlansPage() {
         </div>
       </div>
 
-      {/* Plan Benefits Chart */}
+      {/* Plan Benefits Visualization */}
       <div className="mt-10">
         <PlanChart userPlan={userPlan} />
       </div>
