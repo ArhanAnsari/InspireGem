@@ -2,21 +2,23 @@
 
 import React from "react";
 
-type PlanBadgeProps = {
-  plan: string;
-};
+type PlanType = 'free' | 'pro' | 'enterprise';
 
-const PlanBadge: React.FC<PlanBadgeProps> = ({ plan }) => {
-  const planConfig = {
-    free: { text: "Starter", color: "bg-gray-500" },
-    pro: { text: "Pro User", color: "bg-green-500" },
-    enterprise: { text: "AI Enthusiast", color: "bg-red-500" },
+interface PlanConfig {
+  [key: string]: { text: string; color: string };
+}
+
+const PlanBadge = ({ plan }: { plan: PlanType }) => {
+  const planConfig: PlanConfig = {
+    free: { text: 'Free Plan', color: 'gray' },
+    pro: { text: 'Pro Plan', color: 'blue' },
+    enterprise: { text: 'Enterprise Plan', color: 'green' },
   };
 
-  const { text, color } = planConfig[plan] || planConfig.free;
+  const { text, color } = planConfig[plan] || planConfig['free'];
 
   return (
-    <div className={`inline-block px-4 py-2 rounded-full text-white ${color}`}>
+    <div style={{ backgroundColor: color }}>
       {text}
     </div>
   );
