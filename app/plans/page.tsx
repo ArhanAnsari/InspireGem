@@ -161,6 +161,7 @@ export default function PlansPage() {
       <div className="mt-10">
         <PlanChart userPlan={userPlan} />
       </div>
+      </div>
     </div>
   );
 }
