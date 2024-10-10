@@ -14,6 +14,7 @@ import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { StarIcon } from "@heroicons/react/24/solid";
 import { CheckBadgeIcon } from "@heroicons/react/24/outline";  // Plan badge icons
 import SEO from "@/components/SEO";
+import Footer from "@/components/Footer"; // Import the Footer component 
 
 export default function Dashboard() {
     const { data: session, status } = useSession();
@@ -198,7 +199,8 @@ export default function Dashboard() {
                     Star us on GitHub
                 </a>
             </div>
-
+            {/* Footer */}
+            <Footer />
             <ToastContainer />
         </div>
     );
