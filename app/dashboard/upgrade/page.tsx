@@ -10,6 +10,7 @@ import Tooltip from "@/components/Tooltip";
 import CountdownTimer from "@/components/CountdownTimer";
 import PlanChart from "@/components/PlanChart";
 import PlanBadge from "@/components/PlanBadge"; // Moving PlanBadge here
+import Footer from "@/components/Footer"; // Import the Footer component
 
 const UpgradePage: React.FC = () => {
   const [userPlan, setUserPlan] = useState<string>("free");
@@ -160,6 +161,8 @@ const UpgradePage: React.FC = () => {
       <div className="mt-10">
         <PlanChart userPlan={userPlan} />
       </div>
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };

@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { StarIcon } from "@heroicons/react/24/solid";
 import SEO from "@/components/SEO"; // Import the SEO component
+import Footer from "@/components/Footer"; // Import the Footer component
 
 export default function HomePage() {
   return (
@@ -52,6 +53,9 @@ export default function HomePage() {
           </a>
         </div>
       </div>
+
+      {/* Footer */}
+      <Footer />
     </>
   );
 }

@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import SEO from "@/components/SEO"; // Import the SEO component
+import Footer from "@/components/Footer"; // Import the Footer component
 
 export default function AboutPage() {
   return (
@@ -51,6 +52,8 @@ export default function AboutPage() {
           </div>
         </div>
       </div>
+      {/* Footer */}
+      <Footer />
     </>
   );
 }
