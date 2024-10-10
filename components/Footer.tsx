@@ -3,7 +3,7 @@ import Link from "next/link"; // Importing Link from Next.js
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-gray-900 text-gray-300 py-8">
+    <footer className="w-full bg-gray-900 text-gray-300 py-8">
       <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
         {/* Left Section: Links */}
         <div className="mb-4 md:mb-0">
@@ -26,7 +26,12 @@ const Footer: React.FC = () => {
             <Link href="/dashboard/upgrade" className="hover:underline">
               Upgrade
             </Link>
-            <Link href="https://arhanansari.vercel.app" target="_blank" rel="noopener noreferrer" className="hover:underline">
+            <Link
+              href="https://arhanansari.vercel.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:underline"
+            >
               Portfolio
             </Link>
           </nav>
@@ -34,7 +39,16 @@ const Footer: React.FC = () => {
 
         {/* Right Section: Credits */}
         <div className="text-center">
-          <p>Developed by <Link href="https://arhanansari.vercel.app" target="_blank" className="text-blue-500 hover:underline">Arhan Ansari</Link></p>
+          <p>
+            Developed by{" "}
+            <Link
+              href="https://arhanansari.vercel.app"
+              target="_blank"
+              className="text-blue-500 hover:underline"
+            >
+              Arhan Ansari
+            </Link>
+          </p>
         </div>
       </div>
     </footer>
