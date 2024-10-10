@@ -199,9 +199,9 @@ export default function Dashboard() {
                     Star us on GitHub
                 </a>
             </div>
-            {/* Footer */}
-            <Footer />
             <ToastContainer />
         </div>
+        {/* Footer */}
+    <Footer />
     );
 }
