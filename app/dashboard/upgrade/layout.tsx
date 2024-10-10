@@ -1,6 +1,6 @@
 // app/dashboard/upgrade/layout.tsx
 import React from "react";
-//import Header from "@/components/Header";
+import Header from "@/components/Header";
 import Layout from "@/components/Layout"; // Import your Layout
 import SEO from "@/components/SEO";
 import { ToastContainer } from "react-toastify"; // Import ToastContainer for notifications
@@ -20,7 +20,7 @@ const DashboardUpgradeLayout: React.FC<{ children: React.ReactNode }> = ({ child
       <body className="bg-gray-100 text-gray-900 antialiased">
         <Layout>
           {/* Render the Header and Main Content */}
-          {/*<Header />*/}
+          <Header />
           <main className="min-h-screen flex-1 overflow-y-auto p-8">
             {children}
           </main>
