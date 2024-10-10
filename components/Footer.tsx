@@ -8,6 +8,18 @@ const Footer: React.FC = () => {
         {/* Left Section: Links */}
         <div className="mb-4 md:mb-0">
           <nav className="flex flex-col md:flex-row gap-4">
+            <Link href="/" className="hover:underline">
+              Home
+            </Link>
+            <Link href="/auth/signin" className="hover:underline">
+              Sign In
+            </Link>
+            <Link href="/auth/signup" className="hover:underline">
+              Sign Up
+            </Link>
+            <Link href="/about" className="hover:underline">
+              About Us
+            </Link>
             <Link href="/dashboard" className="hover:underline">
               Dashboard
             </Link>
