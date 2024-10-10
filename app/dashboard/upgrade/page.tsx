@@ -160,10 +160,10 @@ const UpgradePage: React.FC = () => {
       {/* Plan Benefits Visualization */}
       <div className="mt-10">
         <PlanChart userPlan={userPlan} />
-      </div>
-      {/* Footer */}
-      <Footer />
+      </div>      
     </div>
+    {/* Footer */}
+  <Footer />
   );
 };
 
