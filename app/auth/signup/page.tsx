@@ -76,7 +76,7 @@ export default function SignUp() {
         </button>
         {showFallbackLink && (
           <p className="mt-4 text-blue-500">
-            Still don't get redirected to the dashboard?{" "}
+            Still don&apos;t get redirected to the dashboard?{" "}
             <a href="/dashboard" className="underline">
               Click here.
             </a>
