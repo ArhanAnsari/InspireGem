@@ -1,7 +1,8 @@
+//app/auth/signup/page.tsx
 "use client";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import { getUserData } from "@/firebaseFunctions";
 import "react-toastify/dist/ReactToastify.css";
@@ -11,6 +12,7 @@ export default function SignUp() {
   const router = useRouter();
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
+  const [showFallbackLink, setShowFallbackLink] = useState(false);
 
   const handleSignUp = async () => {
     setLoading(true);
@@ -38,9 +40,27 @@ export default function SignUp() {
     }
   };
 
+  // Effect to handle automatic redirection
+  useEffect(() => {
+    if (session) {
+      const timer = setTimeout(() => {
+        router.push("/dashboard");
+      }, 2000);
+
+      const fallbackTimer = setTimeout(() => {
+        setShowFallbackLink(true);
+      }, 5000);
+
+      return () => {
+        clearTimeout(timer);
+        clearTimeout(fallbackTimer);
+      };
+    }
+  }, [session, router]);
+
   return (
     <>
-      <SEO 
+      <SEO
         title="Sign Up - InspireGem"
         description="Sign up for InspireGem using your Google account to start creating AI-powered content."
       />
@@ -54,6 +74,14 @@ export default function SignUp() {
         >
           {loading ? "Signing up..." : "Sign up with Google"}
         </button>
+        {showFallbackLink && (
+          <p className="mt-4 text-blue-500">
+            Still don't get redirected to the dashboard?{" "}
+            <a href="/dashboard" className="underline">
+              Click here.
+            </a>
+          </p>
+        )}
         <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
       </div>
     </>
