@@ -13,7 +13,7 @@ interface SEOProps {
 const SEO: React.FC<SEOProps> = ({
   title,
   description,
-  keywords = "AI, SaaS, content generator",
+  keywords = "AI, SaaS, content generator, InspireGem, inspiregem",
   image = "/default-image.png",
   url = "https://inspiregem.vercel.app",
 }) => {
