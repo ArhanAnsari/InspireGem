@@ -1,3 +1,4 @@
+//actions/askQuestions.ts
 "use server";
 
 import { adminDb } from "@/firebaseAdmin";
@@ -27,18 +28,34 @@ export async function askQuestion({
   const userRef = await adminDb.collection("users").doc(userId).get();
   const userData = userRef.data();
 
-  if (!userData?.hasActiveMembership && userMessages.length >= FREE_LIMIT) {
+  if (!userData) {
     return {
       success: false,
-      message: `You'll need to upgrade to PRO to ask more than ${FREE_LIMIT} questions! 😢`,
+      message: "User data not found. Please try again.",
     };
   }
 
-  if (userData?.hasActiveMembership && userMessages.length >= PRO_LIMIT) {
+  const { hasActiveMembership, isEnterprise } = userData;
+
+  // Free plan limit check
+  if (!hasActiveMembership && userMessages.length >= FREE_LIMIT) {
     return {
       success: false,
-      message: `You've reached the PRO limit of ${PRO_LIMIT} questions! 😢`,
+      message: `You'll need to upgrade to PRO or Enterprise to ask more than ${FREE_LIMIT} questions! 😢`,
     };
+  }
+
+  // PRO plan limit check
+  if (hasActiveMembership && !isEnterprise && userMessages.length >= PRO_LIMIT) {
+    return {
+      success: false,
+      message: `You've reached the PRO limit of ${PRO_LIMIT} questions! 😢 Upgrade to Enterprise for unlimited access.`,
+    };
+  }
+
+  // No limit for Enterprise users
+  if (isEnterprise) {
+    // Enterprise users can proceed without any limit check
   }
 
   // Call the API to generate the response from Google Gemini
