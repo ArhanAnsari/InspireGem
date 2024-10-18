@@ -1,5 +1,5 @@
 // app/api/auth/[...nextauth]/route.ts
-import NextAuth, { NextAuthOptions, User } from "next-auth";
+import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import { FirestoreAdapter } from "@next-auth/firebase-adapter";
@@ -18,7 +18,7 @@ const authOptions: NextAuthOptions = {
   ],
   adapter: FirestoreAdapter(adminDb),
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       const userEmail = user.email;
 
       if (!userEmail) {
@@ -56,12 +56,14 @@ const authOptions: NextAuthOptions = {
 
       return true; // Allow sign-in
     },
-    async session({ session, user }) {
-      // You can add more data to the session object here if needed
+    async session({ session }) {
+      // Log the session information
+      console.log("Session created:", session);
       return session;
     },
-    async redirect({ url, baseUrl }) {
+    async redirect({ baseUrl }) {
       // Redirect to the dashboard after sign-in
+      console.log("Redirecting to:", `${baseUrl}/dashboard`);
       return `${baseUrl}/dashboard`;
     },
   },
