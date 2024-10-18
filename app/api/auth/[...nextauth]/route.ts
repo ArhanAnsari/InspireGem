@@ -18,8 +18,9 @@ const authOptions: NextAuthOptions = {
   ],
   adapter: FirestoreAdapter(adminDb),
   callbacks: {
-    async signIn({ user, account }) {
+    async signIn({ user, account, profile }) {
       const userEmail = user.email;
+      const provider = account?.provider;
 
       if (!userEmail) {
         console.error("No email found for user");
@@ -36,7 +37,7 @@ const authOptions: NextAuthOptions = {
           email: userEmail,
           plan: userData?.plan,
           requestCount: userData?.requestCount,
-          provider: account?.provider,
+          provider: provider,
         });
       } else {
         // New user, create a default entry in Firestore
@@ -44,24 +45,25 @@ const authOptions: NextAuthOptions = {
           plan: "free", // Default plan
           requestCount: 0, // Default request count
           email: userEmail,
+          provider: provider,
         };
         await userDocRef.set(newUser);
         console.log("New user created and signed in successfully:", {
           email: userEmail,
           plan: "free",
           requestCount: 0,
-          provider: account?.provider,
+          provider: provider,
         });
       }
 
       return true; // Allow sign-in
     },
-    async session({ session }) {
+    async session({ session, token, user }) {
       // Log the session information
       console.log("Session created:", session);
       return session;
     },
-    async redirect({ baseUrl }) {
+    async redirect({ url, baseUrl }) {
       // Redirect to the dashboard after sign-in
       console.log("Redirecting to:", `${baseUrl}/dashboard`);
       return `${baseUrl}/dashboard`;
