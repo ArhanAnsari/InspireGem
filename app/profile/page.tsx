@@ -77,8 +77,7 @@ export default function ProfilePage() {
             type="text"
             name="plan"
             value={userData?.plan || ""}
-            onChange={handleInputChange}
-            disabled
+            readOnly // Make the plan field read-only
           />
         </label>
         <button onClick={handleUpdateProfile}>Update Profile</button>
