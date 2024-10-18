@@ -3,7 +3,7 @@ import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import { FirestoreAdapter } from "@next-auth/firebase-adapter";
-import { adminDb } from "@/firebaseAdmin";
+import { adminDb } from "@/firebaseAdmin"; // Import Firestore Admin instance
 
 const authOptions: NextAuthOptions = {
   providers: [
@@ -16,59 +16,52 @@ const authOptions: NextAuthOptions = {
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
     }),
   ],
-  adapter: FirestoreAdapter(adminDb),
+  adapter: FirestoreAdapter(adminDb), // Use the Firebase Admin Firestore instance
   callbacks: {
     async signIn({ user, account }) {
-      const userEmail = user.email;
-      const provider = account?.provider;
-
-      if (!userEmail) {
+      if (!user.email) {
         console.error("No email found for user");
-        return false; // Block sign-in if no email
+        return false;
       }
 
-      const userDocRef = adminDb.collection("users").doc(userEmail);
+      const userDocRef = adminDb.collection("users").doc(user.email);
       const userDoc = await userDocRef.get();
 
       if (userDoc.exists) {
-        // Log the user data for verification
         const userData = userDoc.data();
-        console.log("User signed in successfully:", {
-          email: userEmail,
-          plan: userData?.plan,
-          requestCount: userData?.requestCount,
-          provider: provider,
-        });
+        console.log("User Plan:", userData?.plan);
+        console.log("Request Count:", userData?.requestCount);
       } else {
-        // New user, create a default entry in Firestore
         const newUser = {
           plan: "free", // Default plan
           requestCount: 0, // Default request count
-          email: userEmail,
-          provider: provider,
         };
         await userDocRef.set(newUser);
-        console.log("New user created and signed in successfully:", {
-          email: userEmail,
-          plan: "free",
-          requestCount: 0,
-          provider: provider,
-        });
+        console.log("New user created with Free plan and 0 request count.");
       }
 
       return true; // Allow sign-in
     },
     async session({ session }) {
-      // Log the session information
-      console.log("Session created:", session);
+      if (session.user.email) {
+        const userDoc = await adminDb.collection("users").doc(session.user.email).get();
+        const userData = userDoc.data();
+        if (userData) {
+          session.user.plan = userData.plan;
+          session.user.requestCount = userData.requestCount;
+        }
+      }
       return session;
     },
-    async redirect({ baseUrl }) {
-      // Redirect to the dashboard after sign-in
-      console.log("Redirecting to:", `${baseUrl}/dashboard`);
-      return `${baseUrl}/dashboard`;
+    async redirect({ url, baseUrl }) {
+      return baseUrl + "/dashboard";
     },
   },
+  pages: {
+    signIn: "/auth/signin",
+    error: "/auth/error", // Error page to show for account linking issues
+  },
+  debug: true, // Enable debug mode for detailed logs
 };
 
 const handler = NextAuth(authOptions);
