@@ -1,4 +1,4 @@
-//app/auth/signup/page.tsx
+// app/auth/signup/page.tsx
 "use client";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -7,6 +7,7 @@ import { ToastContainer, toast } from "react-toastify";
 import { getUserData } from "@/firebaseFunctions";
 import "react-toastify/dist/ReactToastify.css";
 import SEO from "@/components/SEO";
+import { FaGoogle, FaGithub } from "react-icons/fa";
 
 export default function SignUp() {
   const router = useRouter();
@@ -14,10 +15,10 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
   const [showFallbackLink, setShowFallbackLink] = useState(false);
 
-  const handleSignUp = async () => {
+  const handleSignUp = async (provider: string) => {
     setLoading(true);
     try {
-      const result = await signIn("google", { redirect: false });
+      const result = await signIn(provider, { redirect: false });
 
       if (result?.error) {
         throw new Error(result.error);
@@ -40,7 +41,6 @@ export default function SignUp() {
     }
   };
 
-  // Effect to handle automatic redirection
   useEffect(() => {
     if (session) {
       const timer = setTimeout(() => {
@@ -62,18 +62,29 @@ export default function SignUp() {
     <>
       <SEO
         title="Sign Up - InspireGem"
-        description="Sign up for InspireGem using your Google account to start creating AI-powered content."
+        description="Sign up for InspireGem using your Google or GitHub account to start creating AI-powered content."
       />
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-gray-800 py-6 px-4">
         <h1 className="text-3xl sm:text-4xl font-bold mb-6">Sign Up</h1>
-        <p className="text-base sm:text-lg mb-4">Sign up with your Google account.</p>
-        <button
-          onClick={handleSignUp}
-          className={`bg-blue-500 text-white px-4 py-2 rounded ${loading ? "opacity-50" : "hover:bg-blue-600"}`}
-          disabled={loading}
-        >
-          {loading ? "Signing up..." : "Sign up with Google"}
-        </button>
+        <p className="text-base sm:text-lg mb-4">Sign up with your preferred method.</p>
+        <div className="flex gap-4">
+          <button
+            onClick={() => handleSignUp("google")}
+            className={`flex items-center bg-red-500 text-white px-4 py-2 rounded ${loading ? "opacity-50" : "hover:bg-red-600"}`}
+            disabled={loading}
+          >
+            <FaGoogle className="mr-2" />
+            {loading ? "Signing up..." : "Sign up with Google"}
+          </button>
+          <button
+            onClick={() => handleSignUp("github")}
+            className={`flex items-center bg-gray-800 text-white px-4 py-2 rounded ${loading ? "opacity-50" : "hover:bg-gray-900"}`}
+            disabled={loading}
+          >
+            <FaGithub className="mr-2" />
+            {loading ? "Signing up..." : "Sign up with GitHub"}
+          </button>
+        </div>
         {showFallbackLink && (
           <p className="mt-4 text-blue-500">
             Still don&apos;t get redirected to the dashboard?{" "}
