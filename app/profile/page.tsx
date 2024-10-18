@@ -5,9 +5,18 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getUserData, updateUserData } from "@/firebaseFunctions";
 
+// Define UserData interface based on the structure returned from getUserData
+interface UserData {
+  name: string;
+  email: string;
+  plan: "free" | "pro" | "enterprise"; // Adjust these based on your actual plan structure
+  requestCount: number;
+  usage: number; // This may or may not be needed based on your structure
+}
+
 export default function ProfilePage() {
   const { data: session, status } = useSession();
-  const [userData, setUserData] = useState<any>(null);
+  const [userData, setUserData] = useState<UserData | null>(null); // Use UserData instead of any
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
@@ -29,13 +38,13 @@ export default function ProfilePage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setUserData((prevData) => ({ ...prevData, [name]: value }));
+    setUserData((prevData) => ({ ...prevData!, [name]: value })); // Use non-null assertion since userData is checked to be not null
   };
 
   const handleUpdateProfile = async () => {
     if (session?.user?.email) {
       try {
-        await updateUserData(session.user.email, userData);
+        await updateUserData(session.user.email, userData!); // Use non-null assertion since userData is checked to be not null
         alert("Profile updated successfully!");
       } catch (error) {
         console.error("Failed to update profile:", error);
