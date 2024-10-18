@@ -1,5 +1,5 @@
 // app/api/auth/[...nextauth]/route.ts
-import NextAuth, { NextAuthOptions, User } from "next-auth";
+import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import { FirestoreAdapter } from "@next-auth/firebase-adapter";
@@ -18,38 +18,56 @@ const authOptions: NextAuthOptions = {
   ],
   adapter: FirestoreAdapter(adminDb),
   callbacks: {
-    async signIn({ user }: { user: User }) {
+    async signIn({ user, account }) {
       const userEmail = user.email;
 
       if (!userEmail) {
         console.error("No email found for user");
-        return false;
+        return false; // Block sign-in if no email
       }
 
       const userDocRef = adminDb.collection("users").doc(userEmail);
       const userDoc = await userDocRef.get();
 
       if (userDoc.exists) {
+        // User already exists, log the user data for verification
         const userData = userDoc.data();
-        console.log("User Plan:", userData?.plan);
-        console.log("Request Count:", userData?.requestCount);
+        console.log("User signed in successfully:", {
+          email: userEmail,
+          plan: userData?.plan,
+          requestCount: userData?.requestCount,
+          provider: account?.provider,
+        });
       } else {
+        // New user, create a default entry in Firestore
         const newUser = {
-          plan: "free",
-          requestCount: 0,
+          plan: "free", // Default plan
+          requestCount: 0, // Default request count
+          email: userEmail,
         };
         await userDocRef.set(newUser);
-        console.log("New user created with Free plan and 0 request count.");
+        console.log("New user created and signed in successfully:", {
+          email: userEmail,
+          plan: "free",
+          requestCount: 0,
+          provider: account?.provider,
+        });
       }
 
-      return true;
+      return true; // Allow sign-in
     },
     async session({ session }) {
+      // Log the session information
+      console.log("Session created:", session);
       return session;
+    },
+    async redirect({ baseUrl }) {
+      // Redirect to the dashboard after sign-in
+      console.log("Redirecting to:", `${baseUrl}/dashboard`);
+      return `${baseUrl}/dashboard`;
     },
   },
 };
 
 const handler = NextAuth(authOptions);
-
 export { handler as GET, handler as POST };
