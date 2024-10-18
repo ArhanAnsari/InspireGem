@@ -18,7 +18,7 @@ const authOptions: NextAuthOptions = {
   ],
   adapter: FirestoreAdapter(adminDb),
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       const userEmail = user.email;
       const provider = account?.provider;
 
@@ -31,7 +31,7 @@ const authOptions: NextAuthOptions = {
       const userDoc = await userDocRef.get();
 
       if (userDoc.exists) {
-        // User already exists, log the user data for verification
+        // Log the user data for verification
         const userData = userDoc.data();
         console.log("User signed in successfully:", {
           email: userEmail,
@@ -58,12 +58,12 @@ const authOptions: NextAuthOptions = {
 
       return true; // Allow sign-in
     },
-    async session({ session, token, user }) {
+    async session({ session }) {
       // Log the session information
       console.log("Session created:", session);
       return session;
     },
-    async redirect({ url, baseUrl }) {
+    async redirect({ baseUrl }) {
       // Redirect to the dashboard after sign-in
       console.log("Redirecting to:", `${baseUrl}/dashboard`);
       return `${baseUrl}/dashboard`;
