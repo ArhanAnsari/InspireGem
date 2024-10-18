@@ -20,6 +20,7 @@ const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user, account }) {
       const userEmail = user.email;
+      const provider = account?.provider;
 
       if (!userEmail) {
         console.error("No email found for user");
@@ -30,13 +31,13 @@ const authOptions: NextAuthOptions = {
       const userDoc = await userDocRef.get();
 
       if (userDoc.exists) {
-        // User already exists, log the user data for verification
+        // Log the user data for verification
         const userData = userDoc.data();
         console.log("User signed in successfully:", {
           email: userEmail,
           plan: userData?.plan,
           requestCount: userData?.requestCount,
-          provider: account?.provider,
+          provider: provider,
         });
       } else {
         // New user, create a default entry in Firestore
@@ -44,13 +45,14 @@ const authOptions: NextAuthOptions = {
           plan: "free", // Default plan
           requestCount: 0, // Default request count
           email: userEmail,
+          provider: provider,
         };
         await userDocRef.set(newUser);
         console.log("New user created and signed in successfully:", {
           email: userEmail,
           plan: "free",
           requestCount: 0,
-          provider: account?.provider,
+          provider: provider,
         });
       }
 
