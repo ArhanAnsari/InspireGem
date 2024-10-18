@@ -10,13 +10,13 @@ interface UserData {
   name: string;
   email: string;
   plan: "free" | "pro" | "enterprise"; // Adjust these based on your actual plan structure
-  requestCount: number;
+  requestCount: number; // Include other properties as per your structure
   usage: number; // This may or may not be needed based on your structure
 }
 
 export default function ProfilePage() {
   const { data: session, status } = useSession();
-  const [userData, setUserData] = useState<UserData | null>(null); // Use UserData instead of any
+  const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
@@ -24,7 +24,13 @@ export default function ProfilePage() {
     const fetchUserData = async () => {
       if (session?.user?.email) {
         const data = await getUserData(session.user.email);
-        setUserData(data);
+        if (data) {
+          // Check if data is valid before setting userData
+          setUserData(data);
+        } else {
+          // Handle case where no data is returned
+          console.error("No user data found");
+        }
         setIsLoading(false);
       }
     };
@@ -38,13 +44,15 @@ export default function ProfilePage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setUserData((prevData) => ({ ...prevData!, [name]: value })); // Use non-null assertion since userData is checked to be not null
+    if (userData) {
+      setUserData((prevData) => ({ ...prevData, [name]: value }));
+    }
   };
 
   const handleUpdateProfile = async () => {
-    if (session?.user?.email) {
+    if (session?.user?.email && userData) {
       try {
-        await updateUserData(session.user.email, userData!); // Use non-null assertion since userData is checked to be not null
+        await updateUserData(session.user.email, userData); // Only call if userData is not null
         alert("Profile updated successfully!");
       } catch (error) {
         console.error("Failed to update profile:", error);
