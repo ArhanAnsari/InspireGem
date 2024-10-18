@@ -1,5 +1,5 @@
 // app/api/auth/[...nextauth]/route.ts
-import NextAuth, { NextAuthOptions, User, Account, Profile } from "next-auth";
+import NextAuth, { NextAuthOptions, User } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import { FirestoreAdapter } from "@next-auth/firebase-adapter";
@@ -18,7 +18,7 @@ const authOptions: NextAuthOptions = {
   ],
   adapter: FirestoreAdapter(adminDb),
   callbacks: {
-    async signIn({ account, user }) {
+    async signIn({ user, account, profile }) {
       const userEmail = user.email;
 
       if (!userEmail) {
@@ -30,8 +30,14 @@ const authOptions: NextAuthOptions = {
       const userDoc = await userDocRef.get();
 
       if (userDoc.exists) {
-        // User already exists, allow sign-in
-        return true;
+        // User already exists, log the user data for verification
+        const userData = userDoc.data();
+        console.log("User signed in successfully:", {
+          email: userEmail,
+          plan: userData?.plan,
+          requestCount: userData?.requestCount,
+          provider: account?.provider,
+        });
       } else {
         // New user, create a default entry in Firestore
         const newUser = {
@@ -40,14 +46,22 @@ const authOptions: NextAuthOptions = {
           email: userEmail,
         };
         await userDocRef.set(newUser);
-        return true; // Allow sign-in
+        console.log("New user created and signed in successfully:", {
+          email: userEmail,
+          plan: "free",
+          requestCount: 0,
+          provider: account?.provider,
+        });
       }
+
+      return true; // Allow sign-in
     },
     async session({ session, user }) {
-      return session; // Return the session as is
+      // You can add more data to the session object here if needed
+      return session;
     },
     async redirect({ url, baseUrl }) {
-      // Always redirect to dashboard after sign-in
+      // Redirect to the dashboard after sign-in
       return `${baseUrl}/dashboard`;
     },
   },
