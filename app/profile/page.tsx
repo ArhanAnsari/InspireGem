@@ -1,18 +1,17 @@
 // app/profile/page.tsx
-"use client";
+
 import { useSession, signOut, signIn } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getUserData, updateUserData } from "@/firebaseFunctions";
-import { Plan } from "@/firebaseFunctions"; // Adjust this import based on your file structure
+import { getUserData, updateUserData, Plan } from "@/firebaseFunctions"; // Import Plan here
 
 // Define UserData interface based on the structure returned from getUserData
 interface UserData {
   name: string;
   email: string;
   plan: Plan; // Use Plan type here
-  requestCount: number; // Include other properties as per your structure
-  usage: number; // This may or may not be needed based on your structure
+  requestCount: number;
+  usage: number;
 }
 
 export default function ProfilePage() {
