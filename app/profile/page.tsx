@@ -1,4 +1,5 @@
 // app/profile/page.tsx
+"use client";
 
 import { useSession, signOut, signIn } from "next-auth/react";
 import { useState, useEffect } from "react";
