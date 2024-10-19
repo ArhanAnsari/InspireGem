@@ -4,12 +4,13 @@ import { useSession, signOut, signIn } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getUserData, updateUserData } from "@/firebaseFunctions";
+import { Plan } from "@/firebaseFunctions"; // Adjust this import based on your file structure
 
 // Define UserData interface based on the structure returned from getUserData
 interface UserData {
   name: string;
   email: string;
-  plan: "free" | "pro" | "enterprise"; // Adjust these based on your actual plan structure
+  plan: Plan; // Use Plan type here
   requestCount: number; // Include other properties as per your structure
   usage: number; // This may or may not be needed based on your structure
 }
