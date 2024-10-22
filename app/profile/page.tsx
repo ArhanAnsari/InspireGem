@@ -1,121 +1,74 @@
 // app/profile/page.tsx
+
 "use client";
 
-import { useSession, signOut, signIn } from "next-auth/react";
-import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getUserData, updateUserData, Plan } from "@/firebaseFunctions";
+import { getUserData, updateUserData, Plan } from "@/firebaseFunctions"; 
+import { UserData } from "@/types";
 
-// Define UserData interface based on the structure returned from getUserData
-interface UserData {
-  name: string;
-  email: string;
-  plan: Plan;
-  requestCount: number;
-  usage: number;
-}
-
-export default function ProfilePage() {
+const ProfilePage = () => {
   const { data: session } = useSession();
   const router = useRouter();
   const [userData, setUserData] = useState<UserData | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [updatedUserData, setUpdatedUserData] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchData() {
-      if (!session?.user?.email) {
-        return;
-      }
-      const data = await getUserData(session.user.email);
-      // Check if all required fields are present
-      if (data && data.name && data.email) {
+    if (!session) {
+      // Redirect unauthenticated users to the signin page
+      router.push("/auth/signin");
+      return;
+    }
+
+    const fetchData = async () => {
+      const userEmail = session.user?.email || "";
+      const data = await getUserData(userEmail);
+      if (data) {
         setUserData(data);
       } else {
-        console.error("Incomplete user data");
+        console.error("No user data found");
       }
-    }
+      setLoading(false);
+    };
+
     fetchData();
-  }, [session]);
+  }, [session, router]);
 
-  const handleEditClick = () => {
-    setIsEditing(true);
-    setUpdatedUserData(userData);
-  };
-
-  const handleSaveClick = async () => {
-    if (!updatedUserData) return;
-
-    try {
-      await updateUserData(updatedUserData);
-      setUserData(updatedUserData);
-      setIsEditing(false);
-    } catch (error) {
-      console.error("Failed to update user data", error);
-    }
-  };
-
-  const handleCancelClick = () => {
-    setIsEditing(false);
-    setUpdatedUserData(null);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!updatedUserData) return;
-
-    const { name, value } = e.target;
-    setUpdatedUserData({
-      ...updatedUserData,
-      [name]: value,
-    });
-  };
-
-  if (!session) {
-    return (
-      <div>
-        <p>Please sign in to view your profile.</p>
-        <button onClick={() => signIn()}>Sign In</button>
-      </div>
-    );
+  if (loading) {
+    return <div>Loading...</div>;
   }
 
+  if (!userData) {
+    return <div>Error loading user data.</div>;
+  }
+
+  // Calculate usage percentage
+  const { requestCount, plan } = userData;
+  const planLimit = plan === "free" ? 50 : plan === "pro" ? 500 : null;
+  const usagePercentage = planLimit ? (requestCount / planLimit) * 100 : "Unlimited";
+
   return (
-    <div>
-      <h1>Profile Page</h1>
-      {userData ? (
-        <div>
-          {isEditing ? (
-            <div>
-              <input
-                type="text"
-                name="name"
-                value={updatedUserData?.name || ""}
-                onChange={handleChange}
-              />
-              <input
-                type="email"
-                name="email"
-                value={updatedUserData?.email || ""}
-                onChange={handleChange}
-              />
-              <button onClick={handleSaveClick}>Save</button>
-              <button onClick={handleCancelClick}>Cancel</button>
-            </div>
-          ) : (
-            <div>
-              <p>Name: {userData.name}</p>
-              <p>Email: {userData.email}</p>
-              <p>Plan: {userData.plan}</p>
-              <p>Request Count: {userData.requestCount}</p>
-              <p>Usage: {userData.usage}</p>
-              <button onClick={handleEditClick}>Edit Profile</button>
-            </div>
-          )}
-          <button onClick={() => signOut()}>Sign Out</button>
-        </div>
-      ) : (
-        <p>Loading user data...</p>
-      )}
+    <div className="p-8 max-w-2xl mx-auto bg-white rounded-lg shadow-md">
+      <h1 className="text-2xl font-bold mb-4">Profile</h1>
+      <div className="mb-4">
+        <strong>Name:</strong> {userData.name}
+      </div>
+      <div className="mb-4">
+        <strong>Email:</strong> {userData.email}
+      </div>
+      <div className="mb-4">
+        <strong>Plan:</strong> {plan.charAt(0).toUpperCase() + plan.slice(1)}
+      </div>
+      <div className="mb-4">
+        <strong>Request Count:</strong> {requestCount}
+      </div>
+      <div className="mb-4">
+        <strong>Usage:</strong>{" "}
+        {typeof usagePercentage === "string" ? usagePercentage : `${usagePercentage.toFixed(2)}%`}
+      </div>
     </div>
   );
-}
+};
+
+export default ProfilePage;
