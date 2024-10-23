@@ -28,7 +28,7 @@ const ProfilePage = () => {
       const data = await getUserData(userEmail);
 
       // Ensure the fetched data has all necessary fields
-      if (data && data.name && data.email && data.plan && typeof data.requestCount === "number") {
+      if (data && "name" in data && "email" in data && "plan" in data && "requestCount" in data) {
         setUserData(data);
         setFormState({ name: data.name, email: data.email });
       } else {
