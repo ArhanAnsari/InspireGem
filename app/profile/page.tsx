@@ -5,7 +5,7 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getUserData, updateUserData } from "@/firebaseFunctions";
+import { getUserData, updateUserData } from "@/firebaseFunctions"; 
 import { UserData } from "@/types";
 
 const ProfilePage = () => {
@@ -26,13 +26,13 @@ const ProfilePage = () => {
     const fetchData = async () => {
       const userEmail = session.user?.email || "";
       const data = await getUserData(userEmail);
-      
-      // Validate that the data has required fields
-      if (data && data.name && data.email) {
+
+      // Ensure the fetched data has all necessary fields
+      if (data && data.name && data.email && data.plan && typeof data.requestCount === "number") {
         setUserData(data);
         setFormState({ name: data.name, email: data.email });
       } else {
-        console.error("Invalid user data or missing fields");
+        console.error("Incomplete or no user data found");
       }
       setLoading(false);
     };
