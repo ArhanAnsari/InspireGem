@@ -3,7 +3,7 @@
 export interface UserData {
   name: string;
   email: string;
-  plan: Plan;
+  plan: "free" | "pro" | "enterprise";
   requestCount: number;
 }
 
