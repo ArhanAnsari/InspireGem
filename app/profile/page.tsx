@@ -1,138 +1,105 @@
-// app/profile/page.tsx
+//app/profile/page.tsx
 
 "use client";
 
-import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { getUserData, updateUserData } from "@/firebaseFunctions"; 
-import { UserData } from "@/types";
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import { getUserData, updateUserData, connectProvider, getConnectedProviders } from "../../firebaseFunctions";
+import { auth } from "../../firebaseConfig";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { adminStorage } from "../../firebaseAdmin";
 
-const ProfilePage = () => {
-  const { data: session } = useSession();
+const ProfilePage: React.FC = () => {
+  const [user, setUser] = useState<any>(null);
+  const [userData, setUserData] = useState<any>(null);
+  const [connectedProviders, setConnectedProviders] = useState<string[]>([]);
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  const [newProfilePhoto, setNewProfilePhoto] = useState<File | null>(null);
   const router = useRouter();
-  const [userData, setUserData] = useState<UserData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [editMode, setEditMode] = useState(false);
-  const [formState, setFormState] = useState({ name: "", email: "" });
 
   useEffect(() => {
-    if (!session) {
-      // Redirect unauthenticated users to the signin page
-      router.push("/auth/signin");
-      return;
-    }
-
-    const fetchData = async () => {
-      const userEmail = session.user?.email || "";
-      const data = await getUserData(userEmail);
-
-      // Ensure the fetched data has all necessary fields
-      if (data && "name" in data && "email" in data && "plan" in data && "requestCount" in data) {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        const data = await getUserData(currentUser.email!);
         setUserData(data);
-        setFormState({ name: data.name, email: data.email });
+        const providers = await getConnectedProviders(currentUser.email!);
+        setConnectedProviders(providers);
+        // Fetch profile photo URL
+        const storageRef = adminStorage.bucket().file(`profile_photos/${currentUser.uid}`);
+        storageRef.getSignedUrl({ action: 'read', expires: '03-17-2025' })
+          .then(urls => setProfilePhoto(urls[0]))
+          .catch(error => console.error("Error fetching profile photo:", error));
       } else {
-        console.error("Incomplete or no user data found");
+        router.push("/auth/signin");
       }
-      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [router]);
+
+  const handleProfilePhotoUpload = async () => {
+    if (!newProfilePhoto || !user) return;
+
+    const storageRef = adminStorage.bucket().file(`profile_photos/${user.uid}`);
+    const metadata = {
+      contentType: newProfilePhoto.type,
     };
 
-    fetchData();
-  }, [session, router]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormState(prevState => ({ ...prevState, [name]: value }));
-  };
-
-  const handleSave = async () => {
-    if (userData) {
-      const updatedData = { ...userData, ...formState };
-      await updateUserData(updatedData);
-      setUserData(updatedData);
-      setEditMode(false);
+    try {
+      await storageRef.save(newProfilePhoto, metadata);
+      const url = await storageRef.getSignedUrl({ action: 'read', expires: '03-17-2025' });
+      setProfilePhoto(url[0]);
+    } catch (error) {
+      console.error("Error uploading profile photo:", error);
     }
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  const handleProviderConnect = async (provider: string) => {
+    if (user) {
+      try {
+        await connectProvider(user.email!, provider);
+        setConnectedProviders([...connectedProviders, provider]);
+      } catch (error) {
+        console.error(`Error connecting ${provider}:`, error);
+      }
+    }
+  };
 
-  if (!userData) {
-    return <div>Error loading user data.</div>;
-  }
-
-  // Calculate usage percentage
-  const { requestCount, plan } = userData;
-  const planLimit = plan === "free" ? 50 : plan === "pro" ? 500 : null;
-  const usagePercentage = planLimit ? (requestCount / planLimit) * 100 : "Unlimited";
+  const handleSignOut = () => {
+    signOut(auth)
+      .then(() => router.push("/auth/signin"))
+      .catch((error) => console.error("Error signing out:", error));
+  };
 
   return (
-    <div className="p-8 max-w-2xl mx-auto bg-white rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold mb-4">Profile</h1>
-      <div className="mb-4">
-        <strong>Name:</strong>
-        {editMode ? (
-          <input
-            type="text"
-            name="name"
-            value={formState.name}
-            onChange={handleInputChange}
-            className="ml-2 p-1 border rounded"
-          />
-        ) : (
-          <span className="ml-2">{userData.name}</span>
-        )}
-      </div>
-      <div className="mb-4">
-        <strong>Email:</strong>
-        {editMode ? (
-          <input
-            type="email"
-            name="email"
-            value={formState.email}
-            onChange={handleInputChange}
-            className="ml-2 p-1 border rounded"
-          />
-        ) : (
-          <span className="ml-2">{userData.email}</span>
-        )}
-      </div>
-      <div className="mb-4">
-        <strong>Plan:</strong> {plan.charAt(0).toUpperCase() + plan.slice(1)}
-      </div>
-      <div className="mb-4">
-        <strong>Request Count:</strong> {requestCount}
-      </div>
-      <div className="mb-4">
-        <strong>Usage:</strong>{" "}
-        {typeof usagePercentage === "string" ? usagePercentage : `${usagePercentage.toFixed(2)}%`}
-      </div>
-      <div className="mt-4">
-        {editMode ? (
-          <>
-            <button
-              onClick={handleSave}
-              className="mr-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              Save
-            </button>
-            <button
-              onClick={() => setEditMode(false)}
-              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-            >
-              Cancel
-            </button>
-          </>
-        ) : (
-          <button
-            onClick={() => setEditMode(true)}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            Edit
-          </button>
-        )}
-      </div>
+    <div className="profile-page">
+      <h1>Profile Page</h1>
+      {user && (
+        <div>
+          <div className="profile-photo-section">
+            <img src={profilePhoto || "/default-profile.png"} alt="Profile" width={150} height={150} />
+            <input type="file" accept="image/*" onChange={(e) => setNewProfilePhoto(e.target.files?.[0] || null)} />
+            <button onClick={handleProfilePhotoUpload}>Upload New Photo</button>
+          </div>
+          <div className="user-info">
+            <p>Email: {user.email}</p>
+            <p>Request Count: {userData?.requestCount || 0}</p>
+            <p>Usage: {userData?.usage || 0}%</p>
+          </div>
+          <div className="connected-providers">
+            <h3>Connected Providers</h3>
+            <ul>
+              {connectedProviders.map((provider, index) => (
+                <li key={index}>{provider}</li>
+              ))}
+            </ul>
+            <button onClick={() => handleProviderConnect("google")}>Connect to Google</button>
+            <button onClick={() => handleProviderConnect("github")}>Connect to GitHub</button>
+          </div>
+          <button onClick={handleSignOut}>Sign Out</button>
+        </div>
+      )}
     </div>
   );
 };
