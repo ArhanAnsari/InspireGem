@@ -1,9 +1,22 @@
-//app/profile/page.tsx
+// app/profile/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
-import { getAuth, signOut, updateProfile, User, linkWithPopup, GoogleAuthProvider, GithubAuthProvider } from "firebase/auth";
-import { getUserData, updateUserData, connectProvider, getConnectedProviders } from "@/firebaseFunctions";
+import {
+  getAuth,
+  signOut,
+  updateProfile,
+  User,
+  linkWithPopup,
+  GoogleAuthProvider,
+  GithubAuthProvider,
+} from "firebase/auth";
+import {
+  getUserData,
+  updateUserData,
+  connectProvider,
+  getConnectedProviders,
+} from "@/firebaseFunctions";
 import { useSession, signIn } from "next-auth/react";
 
 interface UserData {
@@ -33,7 +46,8 @@ const ProfilePage = () => {
 
         try {
           const data = await getUserData(currentUser.email!);
-          setUserData(data as UserData);
+           // If data is null, initialize with default values
+          setUserData(data ? data : { plan: "free", requestCount: 0, name: currentUser.displayName || "" });
 
           // Fetch connected providers from Firestore
           const providers = await getConnectedProviders(currentUser.email!);
@@ -78,15 +92,27 @@ const ProfilePage = () => {
   const handleProviderLink = async (provider: "google" | "github") => {
     if (!user) return;
 
-    const providerInstance = provider === "google" ? new GoogleAuthProvider() : new GithubAuthProvider();
+    const providerInstance =
+      provider === "google"
+        ? new GoogleAuthProvider()
+        : new GithubAuthProvider();
 
     try {
       await linkWithPopup(user, providerInstance);
       await connectProvider(user.email!, provider);
-      alert(`${provider.charAt(0).toUpperCase() + provider.slice(1)} has been successfully linked to your account.`);
+      alert(
+        `${
+          provider.charAt(0).toUpperCase() + provider.slice(1)
+        } has been successfully linked to your account.`
+      );
       setConnectedProviders((prev) => [...prev, provider]);
     } catch (error: unknown) {
-      if (typeof error === "object" && error !== null && "code" in error && error.code === "auth/credential-already-in-use") {
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "code" in error &&
+        error.code === "auth/credential-already-in-use"
+      ) {
         alert("This account is already linked to your current profile.");
       } else {
         console.error("Error linking provider:", error);
@@ -122,7 +148,11 @@ const ProfilePage = () => {
           <strong>Request Count:</strong> {userData?.requestCount}
         </p>
         <p>
-          <strong>Usage:</strong> {calculateUsage(userData?.requestCount || 0, userData?.plan || "free")}
+          <strong>Usage:</strong>{" "}
+          {calculateUsage(
+            userData?.requestCount || 0,
+            userData?.plan || "free"
+          )}
         </p>
         <div className="name-edit">
           <strong>Name:</strong>
@@ -150,13 +180,17 @@ const ProfilePage = () => {
             onClick={() => handleProviderLink("google")}
             disabled={connectedProviders.includes("google")}
           >
-            {connectedProviders.includes("google") ? "Google (Connected)" : "Connect Google"}
+            {connectedProviders.includes("google")
+              ? "Google (Connected)"
+              : "Connect Google"}
           </button>
           <button
             onClick={() => handleProviderLink("github")}
             disabled={connectedProviders.includes("github")}
           >
-            {connectedProviders.includes("github") ? "GitHub (Connected)" : "Connect GitHub"}
+            {connectedProviders.includes("github")
+              ? "GitHub (Connected)"
+              : "Connect GitHub"}
           </button>
         </div>
       </div>
