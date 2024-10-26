@@ -1,4 +1,4 @@
-// app/profile/page.tsx
+//app/profile/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -23,7 +23,7 @@ import { useSession, signIn } from "next-auth/react";
 interface UserData {
   plan: "free" | "pro" | "enterprise";
   requestCount: number;
-  name?: string; // Made optional to handle cases where name might not be available
+  name?: string; // Optional name property
 }
 
 const ProfilePage = () => {
@@ -73,19 +73,19 @@ const ProfilePage = () => {
   };
 
   const handleNameChange = async () => {
-  if (!user) return;
+    if (!user) return;
 
-  try {
-    await updateProfile(user, { displayName: name });
-    // Ensure name is updated in Firestore under userData
-    await updateUserData(user.email!, { ...(userData || {}), name }); 
-    setNameEditMode(false);
-    alert("Name updated successfully!");
-  } catch (error) {
-    console.error("Error updating name:", error);
-    alert("Failed to update name. Please try again.");
-  }
-};
+    try {
+      await updateProfile(user, { displayName: name });
+      // Update name in Firestore as part of the userData object
+      await updateUserData(user.email!, { ...userData, name } as UserData); 
+      setNameEditMode(false);
+      alert("Name updated successfully!");
+    } catch (error) {
+      console.error("Error updating name:", error);
+      alert("Failed to update name. Please try again.");
+    }
+  };
 
   const handleSignOut = () => {
     signOut(auth).catch((error) => console.error("Sign out error:", error));
