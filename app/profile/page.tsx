@@ -45,7 +45,7 @@ const ProfilePage = () => {
         setName(currentUser.displayName || "");
 
         try {
-          const data = await getUser Data(currentUser.email!);
+          const data = await getUserData(currentUser.email!);
           setUser Data(data ?? { plan: "free", requestCount: 0, name: currentUser.displayName || "" });
 
           const providers = await getConnectedProviders(currentUser .email!);
