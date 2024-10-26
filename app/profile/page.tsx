@@ -12,8 +12,8 @@ import {
   GithubAuthProvider,
 } from "firebase/auth";
 import {
-  getUser Data,
-  updateUser Data,
+  getUserData,
+  updateUserData,
   connectProvider,
   getConnectedProviders,
 } from "@/firebaseFunctions"; // Ensure these functions are set up correctly for Firestore
@@ -28,7 +28,7 @@ interface UserData {
 const ProfilePage = () => {
   const { data: session } = useSession();
   const [user, setUser ] = useState<User | null>(null);
-  const [userData, setUser Data] = useState<UserData | null>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [name, setName] = useState<string>("");
   const [nameEditMode, setNameEditMode] = useState<boolean>(false);
@@ -36,7 +36,7 @@ const ProfilePage = () => {
   const auth = getAuth();
 
   useEffect(() => {
-    const fetchUser Data = async () => {
+    const fetchUserData = async () => {
       if (!session) return;
 
       const currentUser  = auth.currentUser ;
@@ -45,8 +45,8 @@ const ProfilePage = () => {
         setName(currentUser .displayName || "");
 
         try {
-          const data = await getUser Data(currentUser .email!);
-          setUser Data(data ?? { plan: "free", requestCount: 0, name: currentUser .displayName || "" });
+          const data = await getUserData(currentUser.email!);
+          setUserData(data ?? { plan: "free", requestCount: 0, name: currentUser .displayName || "" });
 
           const providers = await getConnectedProviders(currentUser .email!);
           setConnectedProviders(providers);
@@ -57,7 +57,7 @@ const ProfilePage = () => {
       setLoading(false);
     };
 
-    fetchUser Data();
+    fetchUserData();
   }, [auth, session]);
 
   const calculateUsage = (requestCount: number, plan: string): string => {
@@ -75,7 +75,7 @@ const ProfilePage = () => {
     try {
       await updateProfile(user, { displayName: name });
       await updateUser Data(user.email!, { ...userData, name } as UserData);
-      setUser Data((prev) => prev ? { ...prev, name } : prev); // Update local state
+      setUserData((prev) => prev ? { ...prev, name } : prev); // Update local state
       setNameEditMode(false);
       alert("Name updated successfully!");
     } catch (error) {
@@ -112,7 +112,7 @@ const ProfilePage = () => {
   };
 
   if (loading) {
-    return <div className="text-center text-lg mt-20 ">Loading...</div>;
+    return <div className="text-center text-lg mt-20">Loading...</div>;
   }
 
   if (!session) {
