@@ -12,11 +12,11 @@ import {
   GithubAuthProvider,
 } from "firebase/auth";
 import {
-  getUserData,
-  updateUserData,
+  getUser Data,
+  updateUser Data,
   connectProvider,
   getConnectedProviders,
-} from "@/firebaseFunctions";
+} from "@/firebaseFunctions"; // Ensure these functions are set up correctly for Firestore
 import { useSession, signIn } from "next-auth/react";
 
 interface UserData {
@@ -27,8 +27,8 @@ interface UserData {
 
 const ProfilePage = () => {
   const { data: session } = useSession();
-  const [user, setUser] = useState<User | null>(null);
-  const [userData, setUserData] = useState<UserData | null>(null);
+  const [user, setUser ] = useState<User | null>(null);
+  const [userData, setUser Data] = useState<UserData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [name, setName] = useState<string>("");
   const [nameEditMode, setNameEditMode] = useState<boolean>(false);
@@ -36,19 +36,19 @@ const ProfilePage = () => {
   const auth = getAuth();
 
   useEffect(() => {
-    if (!session) return;
+    const fetchUser Data = async () => {
+      if (!session) return;
 
-    const fetchUserData = async () => {
-      const currentUser = auth.currentUser;
-      if (currentUser) {
-        setUser(currentUser);
-        setName(currentUser.displayName || "");
+      const currentUser  = auth.currentUser ;
+      if (currentUser ) {
+        setUser (currentUser );
+        setName(currentUser .displayName || "");
 
         try {
-          const data = await getUserData(currentUser.email!);
-          setUserData(data ?? { plan: "free", requestCount: 0, name: currentUser.displayName || "" });
+          const data = await getUser Data(currentUser .email!);
+          setUser Data(data ?? { plan: "free", requestCount: 0, name: currentUser .displayName || "" });
 
-          const providers = await getConnectedProviders(currentUser.email!);
+          const providers = await getConnectedProviders(currentUser .email!);
           setConnectedProviders(providers);
         } catch (error) {
           console.error("Error fetching profile data:", error);
@@ -57,7 +57,7 @@ const ProfilePage = () => {
       setLoading(false);
     };
 
-    fetchUserData();
+    fetchUser Data();
   }, [auth, session]);
 
   const calculateUsage = (requestCount: number, plan: string): string => {
@@ -74,7 +74,8 @@ const ProfilePage = () => {
 
     try {
       await updateProfile(user, { displayName: name });
-      await updateUserData(user.email!, { ...userData, name } as UserData);
+      await updateUser Data(user.email!, { ...userData, name } as UserData);
+      setUser Data((prev) => prev ? { ...prev, name } : prev); // Update local state
       setNameEditMode(false);
       alert("Name updated successfully!");
     } catch (error) {
@@ -111,100 +112,99 @@ const ProfilePage = () => {
   };
 
   if (loading) {
-    return <div className="text-center text-lg mt-20">Loading...</div>;
+    return <div className="text-center text-lg mt-20 ">Loading...</div>;
   }
 
   if (!session) {
     return (
-      <div className="text-center mt-20">
-        <p>Please sign in to view your profile.</p>
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded mt-4"
-          onClick={() => signIn()}
-        >
-          Sign in
-        </button>
+      <div className="text-center text-lg mt-20">
+        <button onClick={signIn}>Sign in</button>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg mt-10">
-      <h1 className="text-2xl font-bold mb-4 text-center">Profile Page</h1>
-      <div className="space-y-4">
-        <div className="p-4 border-b">
-          <p className="text-lg"><strong>Email:</strong> {user?.email}</p>
-          <p className="text-lg"><strong>Plan:</strong> {userData?.plan}</p>
-          <p className="text-lg"><strong>Request Count:</strong> {userData?.requestCount}</p>
-          <p className="text-lg"><strong>Usage:</strong> {calculateUsage(userData?.requestCount || 0, userData?.plan || "free")}</p>
-        </div>
-        <div className="p-4 border-b">
-          <div className="flex items-center space-x-4">
-            <strong className="text-lg">Name:</strong>
-            {nameEditMode ? (
-              <>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="border rounded px-2 py-1"
-                  placeholder="Enter new name"
-                />
-                <button
-                  onClick={handleNameChange}
-                  className="bg-green-500 text-white px-3 py-1 rounded"
-                >
-                  Save
-                </button>
-                <button
-                  onClick={() => setNameEditMode(false)}
-                  className="bg-red-500 text-white px-3 py-1 rounded"
-                >
-                  Cancel
-                </button>
-              </>
-            ) : (
-              <div className="flex items-center space-x-2">
-                <span>{name || "Not set"}</span>
-                <button
-                  onClick={() => setNameEditMode(true)}
-                  className="bg-blue-500 text-white px-3 py-1 rounded"
-                >
-                  Edit
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="p-4 border-b">
-          <h3 className="text-lg font-semibold mb-2">Connect Providers:</h3>
-          <div className="space-x-2">
-            <button
-              onClick={() => handleProviderLink("google")}
-              disabled={connectedProviders.includes("google")}
-              className={`px-4 py-2 rounded ${
-                connectedProviders.includes("google") ? "bg-gray-400" : "bg-green-500"
-              } text-white`}
-            >
-              {connectedProviders.includes("google") ? "Google (Connected)" : "Connect Google"}
-            </button>
-            <button
-              onClick={() => handleProviderLink("github")}
-              disabled={connectedProviders.includes("github")}
-              className={`px-4 py-2 rounded ${
-                connectedProviders.includes("github") ? "bg-gray-400" : "bg-black"
-              } text-white`}
-            >
-              {connectedProviders.includes("github") ? "GitHub (Connected)" : "Connect GitHub"}
-            </button>
-          </div>
-        </div>
+    <div className="max-w-md mx-auto p-4 pt-6">
+      <h1 className="text-3xl mb-4">Profile</h1>
+
+      <div className="flex justify-between mb-4">
+        <span className="text-lg">Name:</span>
+        {nameEditMode ? (
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+          />
+        ) : (
+          <span className="text-lg">{name}</span>
+        )}
+        {nameEditMode ? (
+          <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            onClick={handleNameChange}
+          >
+            Save
+          </button>
+        ) : (
+          <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            onClick={() => setNameEditMode(true)}
+          >
+            Edit
+          </button>
+        )}
       </div>
+
+      <div className="flex justify-between mb-4">
+        <span className="text-lg">Email:</span>
+        <span className="text-lg">{user?.email}</span>
+      </div>
+
+      <div className="flex justify-between mb-4">
+        <span className="text-lg">Plan:</span>
+        <span className="text-lg">{userData?.plan}</span>
+      </div>
+
+      <div className="flex justify-between mb-4">
+        <span className="text-lg">Request Count:</span>
+        <span className="text-lg">{userData?.requestCount}</span>
+      </div>
+
+      <div className="flex justify-between mb-4">
+        <span className="text-lg">Usage:</span>
+        <span className="text-lg">{calculateUsage(userData?.requestCount ?? 0, userData?.plan ?? "free")}</span>
+      </div>
+
+      <div className="flex justify-between mb-4">
+        <span className="text-lg">Connected Providers:</span>
+        <ul>
+          {connectedProviders.map((provider) => (
+            <li key={provider}>{provider.charAt(0).toUpperCase() + provider.slice(1)}</li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="flex justify-between mb-4">
+        <button
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          onClick={() => handleProviderLink("google")}
+        >
+          Link Google
+        </button>
+        <button
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          onClick={() => handleProviderLink("github")}
+        >
+          Link GitHub
+        </button>
+      </div>
+
       <button
+        className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
         onClick={handleSignOut}
-        className="mt-6 bg-red-500 text-white px-4 py-2 rounded block mx-auto"
       >
-        Sign Out
+        Sign out
       </button>
     </div>
   );
