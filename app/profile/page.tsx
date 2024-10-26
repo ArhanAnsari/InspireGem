@@ -74,7 +74,7 @@ const ProfilePage = () => {
 
     try {
       await updateProfile(user, { displayName: name });
-      await updateUser Data(user.email!, { ...userData, name } as UserData);
+      await updateUserData(user.email!, { ...userData, name } as UserData);
       setUserData((prev) => prev ? { ...prev, name } : prev); // Update local state
       setNameEditMode(false);
       alert("Name updated successfully!");
