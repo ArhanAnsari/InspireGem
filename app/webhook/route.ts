@@ -6,8 +6,8 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
 export async function POST(req: NextRequest) {
-  const headersList = headers();
-  const body = await req.text(); // important: must be req.text() not req.json()
+  const headersList = await headers(); // Await the promise to get the headers
+  const body = await req.text(); // Important: must be req.text() not req.json()
   const signature = headersList.get("stripe-signature");
 
   if (!signature) {
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
       }
 
       // Get the plan from metadata
-      const purchasedPlan = session.metadata?.plan || "pro"; // default to pro if metadata not found
+      const purchasedPlan = session.metadata?.plan || "pro"; // Default to pro if metadata not found
 
       // Update the user's membership status based on the purchased plan
       await adminDb.collection("users").doc(userDetails.id).update({

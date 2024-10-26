@@ -1,3 +1,4 @@
+// firebaseFunctions.ts
 import { db } from "./firebaseConfig";
 import { 
   doc, 
@@ -13,66 +14,64 @@ import {
   serverTimestamp, 
   limit, 
   startAfter, 
-  orderBy // Import orderBy from Firebase
+  orderBy 
 } from "firebase/firestore";
-import { DocumentData } from "firebase/firestore"; // Import DocumentData from Firebase
+import { DocumentData } from "firebase/firestore";
 
 // Define the allowed plans as a union type
-type Plan = "free" | "pro" | "enterprise";
+export type Plan = "free" | "pro" | "enterprise";
 
 // Define an interface for the user data
-// Update the UserData interface to include 'usage'
 interface UserData {
   plan: Plan;
   requestCount: number;
-  usage: number; // Alias for requestCount
+  usage: number;
+  connectedProviders: string[]; // New field to store connected providers
 }
 
-// Define allowed plans and request limits
 const requestLimits: Record<Plan, number> = {
   free: 50,
   pro: 500,
-  enterprise: Infinity, // Unlimited requests for enterprise plan
+  enterprise: Infinity,
 };
 
-// Function to initialize user data in Firestore if not present
+// Initialize user data in Firestore if not present
 export const initializeUserData = async (email: string): Promise<void> => {
   const userDocRef = doc(db, "users", email);
   const userDoc = await getDoc(userDocRef);
 
   if (!userDoc.exists()) {
     await setDoc(userDocRef, {
-      plan: "free", // Default to the free plan
-      requestCount: 0, // Start with 0 requests
+      plan: "free",
+      requestCount: 0,
+      connectedProviders: [], // Initialize as empty
     });
   }
 };
 
-// Function to get user data from Firestore
-// Modify the getUserData function to return usage
+// Get user data from Firestore
 export const getUserData = async (email: string): Promise<UserData | null> => {
   try {
     const userDocRef = doc(db, "users", email);
     const userDoc = await getDoc(userDocRef);
 
     if (!userDoc.exists()) {
-      await initializeUserData(email); // Initialize the user data if it doesn't exist
-      return await getUserData(email); // Fetch the newly created data
+      await initializeUserData(email);
+      return await getUserData(email);
     }
 
     const data = userDoc.data() as UserData;
-
     return {
       ...data,
-      usage: data.requestCount, // Set usage equal to requestCount
+      usage: data.requestCount,
     };
   } catch (error) {
     console.error(`Error fetching user data for ${email}:`, error);
-    return null; // Return null if an error occurs
+    return null;
   }
 };
 
-// Function to check if the user has exceeded their request limit
+// Check if the user has exceeded their request limit
 export const checkUserPlanLimit = async (email: string): Promise<boolean> => {
   const userData = await getUserData(email);
   if (!userData) {
@@ -83,15 +82,10 @@ export const checkUserPlanLimit = async (email: string): Promise<boolean> => {
   const { plan, requestCount } = userData;
   const limit = requestLimits[plan];
 
-  // Check if user is within the request limit
-  if (requestCount >= limit) {
-    return false; // User has reached their limit
-  }
-
-  return true;
+  return requestCount < limit;
 };
 
-// Function to increment the user's request count after each AI content generation
+// Increment the user's request count
 export const incrementRequestCount = async (email: string): Promise<void> => {
   try {
     const userDocRef = doc(db, "users", email);
@@ -104,7 +98,7 @@ export const incrementRequestCount = async (email: string): Promise<void> => {
   }
 };
 
-// Function to handle content generation and limit checking
+// Handle content generation and limit checking
 export const handleContentGeneration = async (email: string, generatedContent: string): Promise<void> => {
   const canGenerate = await checkUserPlanLimit(email);
 
@@ -112,22 +106,18 @@ export const handleContentGeneration = async (email: string, generatedContent: s
     throw new Error("You have reached your content generation limit for this month.");
   }
 
-  // If user is allowed to generate content, increment request count
   await incrementRequestCount(email);
-  
-  // Save the newly generated content
   await saveGeneratedContent(email, generatedContent);
 };
 
-// Function to save the generated content to Firestore
+// Save the generated content to Firestore
 export const saveGeneratedContent = async (email: string, generatedContent: string): Promise<void> => {
   try {
     const contentRef = collection(db, "generatedContent");
-
     await addDoc(contentRef, {
       userEmail: email,
       generatedContent: generatedContent,
-      timestamp: serverTimestamp(), // Record the time of content generation
+      timestamp: serverTimestamp(),
     });
   } catch (error) {
     console.error(`Error saving generated content for ${email}:`, error);
@@ -135,7 +125,7 @@ export const saveGeneratedContent = async (email: string, generatedContent: stri
   }
 };
 
-// Function to fetch previous AI-generated content for a user with pagination
+// Fetch previous AI-generated content for a user with pagination
 export const getPreviousContent = async (
   email: string,
   lastVisible: DocumentData | null = null,
@@ -146,12 +136,12 @@ export const getPreviousContent = async (
     let q = query(
       contentRef,
       where("userEmail", "==", email),
-      orderBy('timestamp', 'desc'), // Order by timestamp descending
+      orderBy('timestamp', 'desc'),
       limit(limitVal)
     );
 
     if (lastVisible) {
-      q = query(q, startAfter(lastVisible.timestamp)); // Use timestamp for accurate ordering
+      q = query(q, startAfter(lastVisible.timestamp));
     }
 
     const querySnapshot = await getDocs(q);
@@ -164,5 +154,54 @@ export const getPreviousContent = async (
   } catch (error) {
     console.error(`Error fetching previous content for ${email}:`, error);
     throw new Error("Unable to fetch previous content.");
+  }
+};
+
+// Update user data in Firestore
+export const updateUserData = async (email: string, updatedData: Partial<UserData>): Promise<void> => {
+  try {
+    const userDocRef = doc(db, "users", email);
+    await updateDoc(userDocRef, updatedData);
+  } catch (error) {
+    console.error(`Error updating user data for ${email}:`, error);
+    throw new Error("Unable to update user data.");
+  }
+};
+
+// Connect an authentication provider for the user
+export const connectProvider = async (email: string, provider: string): Promise<void> => {
+  try {
+    const userDocRef = doc(db, "users", email);
+    const userDoc = await getDoc(userDocRef);
+
+    if (!userDoc.exists()) {
+      throw new Error("User does not exist.");
+    }
+
+    const connectedProviders = userDoc.data()?.connectedProviders || [];
+    if (!connectedProviders.includes(provider)) {
+      connectedProviders.push(provider);
+      await updateDoc(userDocRef, { connectedProviders });
+    }
+  } catch (error) {
+    console.error(`Error connecting provider for ${email}:`, error);
+    throw new Error("Unable to connect provider.");
+  }
+};
+
+// Fetch connected authentication providers for the user
+export const getConnectedProviders = async (email: string): Promise<string[]> => {
+  try {
+    const userDocRef = doc(db, "users", email);
+    const userDoc = await getDoc(userDocRef);
+
+    if (!userDoc.exists()) {
+      throw new Error("User does not exist.");
+    }
+
+    return userDoc.data()?.connectedProviders || [];
+  } catch (error) {
+    console.error(`Error fetching connected providers for ${email}:`, error);
+    throw new Error("Unable to fetch connected providers.");
   }
 };
