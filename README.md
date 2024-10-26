@@ -59,12 +59,16 @@ FIREBASE_SERVICE_ACCOUNT_KEY=your_firebase_service_account_key
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
 
+#GitHub Oauth Secrets
+GITHUB_CLIENT_ID=your_github_client_id
+GITHUB_CLIENT_SECRET=your_github_client_secret
+
 #You can get your Nextauth Secret at: https://generate-secret.vercel.app/32
 NEXTAUTH_SECRET=your_nextauth_secret
 
 #Stripe Configuration
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
-NEXT_PUBLIC_STRIPE_SECRET_KEY=your_stripe_secret_key
+STRIPE_SECRET_KEY=your_stripe_secret_key
 STRIPE_WEBHOOK_SECRET=your-stripe-webhook-secret
 
 #Google Gemini API Key
