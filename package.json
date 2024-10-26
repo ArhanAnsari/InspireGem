@@ -2,6 +2,8 @@
   "name": "inspiregem",
   "version": "1.0.0",
   "private": true,
+  "license": "MIT",
+  "author": "Arhan Ansari <arhanansari2009@gmail.com> (https://codewitharhan.infinityfreeapp.com)",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
