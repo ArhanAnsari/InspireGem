@@ -9,6 +9,7 @@ import { useSession, signIn } from "next-auth/react";
 interface UserData {
   plan: "free" | "pro" | "enterprise";
   requestCount: number;
+  name: string;
 }
 
 const ProfilePage = () => {
@@ -47,7 +48,7 @@ const ProfilePage = () => {
     fetchUserData();
   }, [auth, session]);
 
-  const calculateUsage = (requestCount: number, plan: string) => {
+  const calculateUsage = (requestCount: number, plan: string): string => {
     if (plan === "enterprise") {
       return "Unlimited";
     } else {
@@ -84,8 +85,8 @@ const ProfilePage = () => {
       await connectProvider(user.email!, provider);
       alert(`${provider.charAt(0).toUpperCase() + provider.slice(1)} has been successfully linked to your account.`);
       setConnectedProviders((prev) => [...prev, provider]);
-    } catch (error: any) {
-      if (error.code === "auth/credential-already-in-use") {
+    } catch (error: unknown) {
+      if (typeof error === "object" && error !== null && "code" in error && error.code === "auth/credential-already-in-use") {
         alert("This account is already linked to your current profile.");
       } else {
         console.error("Error linking provider:", error);
