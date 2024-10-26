@@ -28,7 +28,7 @@ interface UserData {
 const ProfilePage = () => {
   const { data: session } = useSession();
   const [user, setUser ] = useState<User | null>(null);
-  const [userData, setUserData] = useState<UserData | null>(null);
+  const [userData, setUser Data] = useState<UserData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [name, setName] = useState<string>("");
   const [nameEditMode, setNameEditMode] = useState<boolean>(false);
@@ -45,8 +45,8 @@ const ProfilePage = () => {
         setName(currentUser .displayName || "");
 
         try {
-          const data = await getUserData(currentUser.email!);
-          setUserData(data ?? { plan: "free", requestCount: 0, name: currentUser .displayName || "" });
+          const data = await getUser Data(currentUser .email!);
+          setUser Data(data ?? { plan: "free", requestCount: 0, name: currentUser .displayName || "" });
 
           const providers = await getConnectedProviders(currentUser .email!);
           setConnectedProviders(providers);
@@ -118,7 +118,7 @@ const ProfilePage = () => {
   if (!session) {
     return (
       <div className="text-center text-lg mt-20">
-        <button onClick={signIn}>Sign in</button>
+        <button onClick={() => signIn()}>Sign in</button>
       </div>
     );
   }
