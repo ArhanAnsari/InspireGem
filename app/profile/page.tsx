@@ -28,7 +28,7 @@ interface UserData {
 const ProfilePage = () => {
   const { data: session } = useSession();
   const [user, setUser ] = useState<User | null>(null);
-  const [userData, setUser Data] = useState<UserData | null>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [name, setName] = useState<string>("");
   const [nameEditMode, setNameEditMode] = useState<boolean>(false);
@@ -39,10 +39,10 @@ const ProfilePage = () => {
     const fetchUserData = async () => {
       if (!session) return;
 
-      const currentUser  = auth.currentUser ;
-      if (currentUser ) {
-        setUser (currentUser );
-        setName(currentUser .displayName || "");
+      const currentUser  = auth.currentUser;
+      if (currentUser) {
+        setUser (currentUser);
+        setName(currentUser.displayName || "");
 
         try {
           const data = await getUser Data(currentUser .email!);
