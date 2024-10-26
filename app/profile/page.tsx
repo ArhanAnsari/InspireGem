@@ -1,4 +1,4 @@
-//app/profile/page.tsx
+// app/profile/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -19,11 +19,10 @@ import {
 } from "@/firebaseFunctions";
 import { useSession, signIn } from "next-auth/react";
 
-// Updated UserData interface with optional name
 interface UserData {
   plan: "free" | "pro" | "enterprise";
   requestCount: number;
-  name?: string; // Optional name property
+  name?: string;
 }
 
 const ProfilePage = () => {
@@ -37,20 +36,18 @@ const ProfilePage = () => {
   const auth = getAuth();
 
   useEffect(() => {
-    if (!session) return; // User not authenticated, return early
+    if (!session) return;
 
     const fetchUserData = async () => {
       const currentUser = auth.currentUser;
       if (currentUser) {
         setUser(currentUser);
-        setName(currentUser.displayName || ""); // Set current name
+        setName(currentUser.displayName || "");
 
         try {
           const data = await getUserData(currentUser.email!);
-          // Initialize userData with default values if data is null
           setUserData(data ?? { plan: "free", requestCount: 0, name: currentUser.displayName || "" });
 
-          // Fetch connected providers from Firestore
           const providers = await getConnectedProviders(currentUser.email!);
           setConnectedProviders(providers);
         } catch (error) {
@@ -77,8 +74,7 @@ const ProfilePage = () => {
 
     try {
       await updateProfile(user, { displayName: name });
-      // Update name in Firestore as part of the userData object
-      await updateUserData(user.email!, { ...userData, name } as UserData); 
+      await updateUserData(user.email!, { ...userData, name } as UserData);
       setNameEditMode(false);
       alert("Name updated successfully!");
     } catch (error) {
@@ -102,17 +98,10 @@ const ProfilePage = () => {
     try {
       await linkWithPopup(user, providerInstance);
       await connectProvider(user.email!, provider);
-      alert(
-        `${provider.charAt(0).toUpperCase() + provider.slice(1)} has been successfully linked to your account.`
-      );
+      alert(`${provider.charAt(0).toUpperCase() + provider.slice(1)} has been successfully linked to your account.`);
       setConnectedProviders((prev) => [...prev, provider]);
     } catch (error: unknown) {
-      if (
-        typeof error === "object" &&
-        error !== null &&
-        "code" in error &&
-        (error as { code?: string }).code === "auth/credential-already-in-use"
-      ) {
+      if (typeof error === "object" && error !== null && "code" in error && (error as { code?: string }).code === "auth/credential-already-in-use") {
         alert("This account is already linked to your current profile.");
       } else {
         console.error("Error linking provider:", error);
@@ -122,63 +111,101 @@ const ProfilePage = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="text-center text-lg mt-20">Loading...</div>;
   }
 
   if (!session) {
     return (
-      <div>
+      <div className="text-center mt-20">
         <p>Please sign in to view your profile.</p>
-        <button onClick={() => signIn()}>Sign in</button>
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded mt-4"
+          onClick={() => signIn()}
+        >
+          Sign in
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="profile-page">
-      <h1>Profile Page</h1>
-      <div className="profile-info">
-        <p><strong>Email:</strong> {user?.email}</p>
-        <p><strong>Plan:</strong> {userData?.plan}</p>
-        <p><strong>Request Count:</strong> {userData?.requestCount}</p>
-        <p><strong>Usage:</strong> {calculateUsage(userData?.requestCount || 0, userData?.plan || "free")}</p>
-        <div className="name-edit">
-          <strong>Name:</strong>
-          {nameEditMode ? (
-            <div>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Enter new name"
-              />
-              <button onClick={handleNameChange}>Save</button>
-              <button onClick={() => setNameEditMode(false)}>Cancel</button>
-            </div>
-          ) : (
-            <div>
-              <span>{name || "Not set"}</span>
-              <button onClick={() => setNameEditMode(true)}>Edit</button>
-            </div>
-          )}
+    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg mt-10">
+      <h1 className="text-2xl font-bold mb-4 text-center">Profile Page</h1>
+      <div className="space-y-4">
+        <div className="p-4 border-b">
+          <p className="text-lg"><strong>Email:</strong> {user?.email}</p>
+          <p className="text-lg"><strong>Plan:</strong> {userData?.plan}</p>
+          <p className="text-lg"><strong>Request Count:</strong> {userData?.requestCount}</p>
+          <p className="text-lg"><strong>Usage:</strong> {calculateUsage(userData?.requestCount || 0, userData?.plan || "free")}</p>
         </div>
-        <div className="provider-links">
-          <h3>Connect Providers:</h3>
-          <button
-            onClick={() => handleProviderLink("google")}
-            disabled={connectedProviders.includes("google")}
-          >
-            {connectedProviders.includes("google") ? "Google (Connected)" : "Connect Google"}
-          </button>
-          <button
-            onClick={() => handleProviderLink("github")}
-            disabled={connectedProviders.includes("github")}
-          >
-            {connectedProviders.includes("github") ? "GitHub (Connected)" : "Connect GitHub"}
-          </button>
+        <div className="p-4 border-b">
+          <div className="flex items-center space-x-4">
+            <strong className="text-lg">Name:</strong>
+            {nameEditMode ? (
+              <>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="border rounded px-2 py-1"
+                  placeholder="Enter new name"
+                />
+                <button
+                  onClick={handleNameChange}
+                  className="bg-green-500 text-white px-3 py-1 rounded"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={() => setNameEditMode(false)}
+                  className="bg-red-500 text-white px-3 py-1 rounded"
+                >
+                  Cancel
+                </button>
+              </>
+            ) : (
+              <>
+                <span>{name || "Not set"}</span>
+                <button
+                  onClick={() => setNameEditMode(true)}
+                  className="bg-blue-500 text-white px-3 py-1 rounded"
+                >
+                  Edit
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+        <div className="p-4 border-b">
+          <h3 className="text-lg font-semibold mb-2">Connect Providers:</h3>
+          <div className="space-x-2">
+            <button
+              onClick={() => handleProviderLink("google")}
+              disabled={connectedProviders.includes("google")}
+              className={`px-4 py-2 rounded ${
+                connectedProviders.includes("google") ? "bg-gray-400" : "bg-green-500"
+              } text-white`}
+            >
+              {connectedProviders.includes("google") ? "Google (Connected)" : "Connect Google"}
+            </button>
+            <button
+              onClick={() => handleProviderLink("github")}
+              disabled={connectedProviders.includes("github")}
+              className={`px-4 py-2 rounded ${
+                connectedProviders.includes("github") ? "bg-gray-400" : "bg-black"
+              } text-white`}
+            >
+              {connectedProviders.includes("github") ? "GitHub (Connected)" : "Connect GitHub"}
+            </button>
+          </div>
         </div>
       </div>
-      <button onClick={handleSignOut}>Sign Out</button>
+      <button
+        onClick={handleSignOut}
+        className="mt-6 bg-red-500 text-white px-4 py-2 rounded block mx-auto"
+      >
+        Sign Out
+      </button>
     </div>
   );
 };
