@@ -77,8 +77,8 @@ const ProfilePage = () => {
 
   try {
     await updateProfile(user, { displayName: name });
-    // Update name in Firestore as part of the userData object
-    await updateUserData(user.email!, { ...userData, name }); 
+    // Ensure name is updated in Firestore under userData
+    await updateUserData(user.email!, { ...(userData || {}), name }); 
     setNameEditMode(false);
     alert("Name updated successfully!");
   } catch (error) {
