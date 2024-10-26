@@ -19,10 +19,11 @@ import {
 } from "@/firebaseFunctions";
 import { useSession, signIn } from "next-auth/react";
 
+// Updated UserData interface with optional name
 interface UserData {
   plan: "free" | "pro" | "enterprise";
   requestCount: number;
-  name: string;
+  name?: string; // Made optional to handle cases where name might not be available
 }
 
 const ProfilePage = () => {
@@ -46,8 +47,8 @@ const ProfilePage = () => {
 
         try {
           const data = await getUserData(currentUser.email!);
-           // If data is null, initialize with default values
-          setUserData(data ? data : { plan: "free", requestCount: 0, name: currentUser.displayName || "" });
+          // Initialize userData with default values if data is null
+          setUserData(data ?? { plan: "free", requestCount: 0, name: currentUser.displayName || "" });
 
           // Fetch connected providers from Firestore
           const providers = await getConnectedProviders(currentUser.email!);
@@ -101,9 +102,7 @@ const ProfilePage = () => {
       await linkWithPopup(user, providerInstance);
       await connectProvider(user.email!, provider);
       alert(
-        `${
-          provider.charAt(0).toUpperCase() + provider.slice(1)
-        } has been successfully linked to your account.`
+        `${provider.charAt(0).toUpperCase() + provider.slice(1)} has been successfully linked to your account.`
       );
       setConnectedProviders((prev) => [...prev, provider]);
     } catch (error: unknown) {
@@ -111,7 +110,7 @@ const ProfilePage = () => {
         typeof error === "object" &&
         error !== null &&
         "code" in error &&
-        error.code === "auth/credential-already-in-use"
+        (error as any).code === "auth/credential-already-in-use"
       ) {
         alert("This account is already linked to your current profile.");
       } else {
@@ -138,22 +137,10 @@ const ProfilePage = () => {
     <div className="profile-page">
       <h1>Profile Page</h1>
       <div className="profile-info">
-        <p>
-          <strong>Email:</strong> {user?.email}
-        </p>
-        <p>
-          <strong>Plan:</strong> {userData?.plan}
-        </p>
-        <p>
-          <strong>Request Count:</strong> {userData?.requestCount}
-        </p>
-        <p>
-          <strong>Usage:</strong>{" "}
-          {calculateUsage(
-            userData?.requestCount || 0,
-            userData?.plan || "free"
-          )}
-        </p>
+        <p><strong>Email:</strong> {user?.email}</p>
+        <p><strong>Plan:</strong> {userData?.plan}</p>
+        <p><strong>Request Count:</strong> {userData?.requestCount}</p>
+        <p><strong>Usage:</strong> {calculateUsage(userData?.requestCount || 0, userData?.plan || "free")}</p>
         <div className="name-edit">
           <strong>Name:</strong>
           {nameEditMode ? (
@@ -180,17 +167,13 @@ const ProfilePage = () => {
             onClick={() => handleProviderLink("google")}
             disabled={connectedProviders.includes("google")}
           >
-            {connectedProviders.includes("google")
-              ? "Google (Connected)"
-              : "Connect Google"}
+            {connectedProviders.includes("google") ? "Google (Connected)" : "Connect Google"}
           </button>
           <button
             onClick={() => handleProviderLink("github")}
             disabled={connectedProviders.includes("github")}
           >
-            {connectedProviders.includes("github")
-              ? "GitHub (Connected)"
-              : "Connect GitHub"}
+            {connectedProviders.includes("github") ? "GitHub (Connected)" : "Connect GitHub"}
           </button>
         </div>
       </div>
