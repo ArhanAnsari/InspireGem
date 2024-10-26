@@ -73,18 +73,19 @@ const ProfilePage = () => {
   };
 
   const handleNameChange = async () => {
-    if (!user) return;
+  if (!user) return;
 
-    try {
-      await updateProfile(user, { displayName: name });
-      await updateUserData(user.email!, { name }); // Update name in Firestore
-      setNameEditMode(false);
-      alert("Name updated successfully!");
-    } catch (error) {
-      console.error("Error updating name:", error);
-      alert("Failed to update name. Please try again.");
-    }
-  };
+  try {
+    await updateProfile(user, { displayName: name });
+    // Update name in Firestore as part of the userData object
+    await updateUserData(user.email!, { ...userData, name }); 
+    setNameEditMode(false);
+    alert("Name updated successfully!");
+  } catch (error) {
+    console.error("Error updating name:", error);
+    alert("Failed to update name. Please try again.");
+  }
+};
 
   const handleSignOut = () => {
     signOut(auth).catch((error) => console.error("Sign out error:", error));
