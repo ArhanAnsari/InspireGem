@@ -110,7 +110,7 @@ const ProfilePage = () => {
         typeof error === "object" &&
         error !== null &&
         "code" in error &&
-        (error as any).code === "auth/credential-already-in-use"
+        (error as { code?: string }).code === "auth/credential-already-in-use"
       ) {
         alert("This account is already linked to your current profile.");
       } else {
