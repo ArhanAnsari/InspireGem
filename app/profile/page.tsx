@@ -164,7 +164,7 @@ const ProfilePage = () => {
                 </button>
               </>
             ) : (
-              <>
+              <div className="flex items-center space-x-2">
                 <span>{name || "Not set"}</span>
                 <button
                   onClick={() => setNameEditMode(true)}
@@ -172,7 +172,7 @@ const ProfilePage = () => {
                 >
                   Edit
                 </button>
-              </>
+              </div>
             )}
           </div>
         </div>
