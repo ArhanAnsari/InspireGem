@@ -1,4 +1,4 @@
-// app/profile/page.tsx
+//app/profile/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -18,6 +18,7 @@ import {
   getConnectedProviders,
 } from "@/firebaseFunctions"; // Ensure these functions are set up correctly for Firestore
 import { useSession, signIn } from "next-auth/react";
+import { adminDb } from "@/firebaseAdmin"; // Import your adminDb
 
 interface UserData {
   plan: "free" | "pro" | "enterprise";
@@ -27,7 +28,7 @@ interface UserData {
 
 const ProfilePage = () => {
   const { data: session } = useSession();
-  const [user, setUser ] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(null); // Corrected useState syntax
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [name, setName] = useState<string>("");
@@ -39,15 +40,17 @@ const ProfilePage = () => {
     const fetchUserData = async () => {
       if (!session) return;
 
-      const currentUser  = auth.currentUser;
-      if (currentUser) {
-        setUser (currentUser);
-        setName(currentUser.displayName || "");
+      const currentUser  = auth.currentUser ; // Ensure currentUser  is defined
+      if (currentUser ) {
+        setUser (currentUser ); // Correctly set user state
+        setName(currentUser .displayName || "");
 
         try {
-          const data = await getUserData(currentUser.email!);
-          setUserData(data ?? { plan: "free", requestCount: 0, name: currentUser.displayName || "" });
+          // Fetch user data from Firestore using adminDb
+          const data = await getUserData(currentUser .email!);
+          setUserData(data ?? { plan: "free", requestCount: 0, name: currentUser .displayName || "" });
 
+          // Fetch connected providers
           const providers = await getConnectedProviders(currentUser .email!);
           setConnectedProviders(providers);
         } catch (error) {
@@ -74,8 +77,9 @@ const ProfilePage = () => {
 
     try {
       await updateProfile(user, { displayName: name });
+      // Update user data in Firestore using adminDb
       await updateUserData(user.email!, { ...userData, name } as UserData);
-      setUserData((prev) => prev ? { ...prev, name } : prev); // Update local state
+      setUserData((prev) => (prev ? { ...prev, name } : prev)); // Update local state
       setNameEditMode(false);
       alert("Name updated successfully!");
     } catch (error) {
@@ -118,7 +122,9 @@ const ProfilePage = () => {
   if (!session) {
     return (
       <div className="text-center text-lg mt-20">
-        <button onClick={() => signIn()}>Sign in</button>
+        <button onClick={() => signIn()} className="bg-blue- 500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          Sign in
+        </button>
       </div>
     );
   }
