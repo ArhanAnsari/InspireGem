@@ -16,18 +16,21 @@ import {
   updateUserData,
   connectProvider,
   getConnectedProviders,
-} from "@/firebaseFunctions"; // Ensure these functions are set up correctly for Firestore
+} from "@/firebaseFunctions";
 import { useSession, signIn } from "next-auth/react";
+import { adminDb } from "@/firebaseAdmin";
 
+// Updated UserData interface with optional name
 interface UserData {
   plan: "free" | "pro" | "enterprise";
   requestCount: number;
   name?: string;
+  hasActiveMembership?: boolean;
 }
 
 const ProfilePage = () => {
   const { data: session } = useSession();
-  const [user, setUser ] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [name, setName] = useState<string>("");
@@ -36,19 +39,20 @@ const ProfilePage = () => {
   const auth = getAuth();
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      if (!session) return;
+    if (!session) return; // User not authenticated, return early
 
-      const currentUser  = auth.currentUser;
+    const fetchUserData = async () => {
+      const currentUser = auth.currentUser;
       if (currentUser) {
-        setUser (currentUser);
-        setName(currentUser.displayName || "");
+        setUser(currentUser);
+        setName(currentUser.displayName || ""); // Set current name
 
         try {
           const data = await getUserData(currentUser.email!);
           setUserData(data ?? { plan: "free", requestCount: 0, name: currentUser.displayName || "" });
 
-          const providers = await getConnectedProviders(currentUser .email!);
+          // Fetch connected providers from Firestore
+          const providers = await getConnectedProviders(currentUser.email!);
           setConnectedProviders(providers);
         } catch (error) {
           console.error("Error fetching profile data:", error);
@@ -74,8 +78,7 @@ const ProfilePage = () => {
 
     try {
       await updateProfile(user, { displayName: name });
-      await updateUserData(user.email!, { ...userData, name } as UserData);
-      setUserData((prev) => prev ? { ...prev, name } : prev); // Update local state
+      await updateUserData(user.email!, { name });
       setNameEditMode(false);
       alert("Name updated successfully!");
     } catch (error) {
@@ -91,19 +94,30 @@ const ProfilePage = () => {
   const handleProviderLink = async (provider: "google" | "github") => {
     if (!user) return;
 
-    const providerInstance =
-      provider === "google"
-        ? new GoogleAuthProvider()
-        : new GithubAuthProvider();
+    const providerInstance = provider === "google" ? new GoogleAuthProvider() : new GithubAuthProvider();
 
     try {
       await linkWithPopup(user, providerInstance);
       await connectProvider(user.email!, provider);
+
+      // Update connected providers in Firestore using adminDb
+      await adminDb
+        .collection("users")
+        .doc(user.uid)
+        .update({
+          connectedProviders: adminDb.FieldValue.arrayUnion(provider),
+        });
+
       alert(`${provider.charAt(0).toUpperCase() + provider.slice(1)} has been successfully linked to your account.`);
       setConnectedProviders((prev) => [...prev, provider]);
     } catch (error: unknown) {
-      if (typeof error === "object" && error !== null && "code" in error && (error as { code?: string }).code === "auth/credential-already-in-use") {
-        alert("This account is already linked to your current profile.");
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "code" in error &&
+        (error as { code?: string }).code === "auth/credential-already-in-use"
+      ) {
+        alert("This account is already linked to another profile.");
       } else {
         console.error("Error linking provider:", error);
         alert("Failed to link provider. Please try again.");
@@ -112,100 +126,63 @@ const ProfilePage = () => {
   };
 
   if (loading) {
-    return <div className="text-center text-lg mt-20">Loading...</div>;
+    return <div>Loading...</div>;
   }
 
   if (!session) {
     return (
-      <div className="text-center text-lg mt-20">
+      <div>
+        <p>Please sign in to view your profile.</p>
         <button onClick={() => signIn()}>Sign in</button>
       </div>
     );
   }
 
   return (
-    <div className="max-w-md mx-auto p-4 pt-6">
-      <h1 className="text-3xl mb-4">Profile</h1>
-
-      <div className="flex justify-between mb-4">
-        <span className="text-lg">Name:</span>
-        {nameEditMode ? (
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-          />
-        ) : (
-          <span className="text-lg">{name}</span>
-        )}
-        {nameEditMode ? (
+    <div className="profile-page">
+      <h1>Profile Page</h1>
+      <div className="profile-info">
+        <p><strong>Email:</strong> {user?.email}</p>
+        <p><strong>Plan:</strong> {userData?.plan}</p>
+        <p><strong>Request Count:</strong> {userData?.requestCount}</p>
+        <p><strong>Usage:</strong> {calculateUsage(userData?.requestCount || 0, userData?.plan || "free")}</p>
+        <div className="name-edit">
+          <strong>Name:</strong>
+          {nameEditMode ? (
+            <div>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter new name"
+              />
+              <button onClick={handleNameChange}>Save</button>
+              <button onClick={() => setNameEditMode(false)}>Cancel</button>
+            </div>
+          ) : (
+            <div>
+              <span>{name || "Not set"}</span>
+              <button onClick={() => setNameEditMode(true)}>Edit</button>
+            </div>
+          )}
+        </div>
+        <div className="provider-links">
+          <h3>Connect Providers:</h3>
           <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            onClick={handleNameChange}
+            onClick={() => handleProviderLink("google")}
+            disabled={connectedProviders.includes("google")}
           >
-            Save
+            {connectedProviders.includes("google") ? "Google (Connected)" : "Connect Google"}
           </button>
-        ) : (
           <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            onClick={() => setNameEditMode(true)}
+            onClick={() => handleProviderLink("github")}
+            disabled={connectedProviders.includes("github")}
           >
-            Edit
+            {connectedProviders.includes("github") ? "GitHub (Connected)" : "Connect GitHub"}
           </button>
-        )}
+        </div>
       </div>
-
-      <div className="flex justify-between mb-4">
-        <span className="text-lg">Email:</span>
-        <span className="text-lg">{user?.email}</span>
-      </div>
-
-      <div className="flex justify-between mb-4">
-        <span className="text-lg">Plan:</span>
-        <span className="text-lg">{userData?.plan}</span>
-      </div>
-
-      <div className="flex justify-between mb-4">
-        <span className="text-lg">Request Count:</span>
-        <span className="text-lg">{userData?.requestCount}</span>
-      </div>
-
-      <div className="flex justify-between mb-4">
-        <span className="text-lg">Usage:</span>
-        <span className="text-lg">{calculateUsage(userData?.requestCount ?? 0, userData?.plan ?? "free")}</span>
-      </div>
-
-      <div className="flex justify-between mb-4">
-        <span className="text-lg">Connected Providers:</span>
-        <ul>
-          {connectedProviders.map((provider) => (
-            <li key={provider}>{provider.charAt(0).toUpperCase() + provider.slice(1)}</li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="flex justify-between mb-4">
-        <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          onClick={() => handleProviderLink("google")}
-        >
-          Link Google
-        </button>
-        <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          onClick={() => handleProviderLink("github")}
-        >
-          Link GitHub
-        </button>
-      </div>
-
-      <button
-        className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-        onClick={handleSignOut}
-      >
-        Sign Out
-      </button>
+      <button onClick={handleSignOut}>Sign Out</button>
     </div>
   );
 };
