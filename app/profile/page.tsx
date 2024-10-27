@@ -1,3 +1,4 @@
+/*eslint disable @typescript-eslint/no-unused-vars*/
 //app/profile/page.tsx
 "use client";
 
@@ -40,17 +41,18 @@ const ProfilePage = () => {
     const fetchUserData = async () => {
       if (!session) return;
 
-      const currentUser  = auth.currentUser ; // Ensure currentUser  is defined
+      const currentUser  = auth.currentUser ;
       if (currentUser ) {
-        setUser (currentUser ); // Correctly set user state
-        setName(currentUser .displayName || "");
+        setUser (currentUser);
+        setName(currentUser.displayName || "");
 
         try {
-          // Fetch user data from Firestore using adminDb
-          const data = await getUserData(currentUser .email!);
+          // Fetch user data from the API
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/getUserData?email=${currentUser .email}`);
+          const data = await response.json();
           setUserData(data ?? { plan: "free", requestCount: 0, name: currentUser .displayName || "" });
 
-          // Fetch connected providers
+          // Fetch connected providers (assuming you have a function for this)
           const providers = await getConnectedProviders(currentUser .email!);
           setConnectedProviders(providers);
         } catch (error) {
@@ -64,7 +66,7 @@ const ProfilePage = () => {
   }, [auth, session]);
 
   const calculateUsage = (requestCount: number, plan: string): string => {
-    if (plan === "enterprise") {
+ if (plan === "enterprise") {
       return "Unlimited";
     } else {
       const totalLimit = plan === "free" ? 50 : 500;
@@ -77,9 +79,13 @@ const ProfilePage = () => {
 
     try {
       await updateProfile(user, { displayName: name });
-      // Update user data in Firestore using adminDb
-      await updateUserData(user.email!, { ...userData, name } as UserData);
-      setUserData((prev) => (prev ? { ...prev, name } : prev)); // Update local state
+      // Update user data using the API
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/updateUserData`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email!, userData: { ...userData, name } }),
+      });
+      setUserData((prev) => (prev ? { ...prev, name } : prev));
       setNameEditMode(false);
       alert("Name updated successfully!");
     } catch (error) {
