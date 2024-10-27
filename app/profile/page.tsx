@@ -12,14 +12,7 @@ import {
   GoogleAuthProvider,
   GithubAuthProvider,
 } from "firebase/auth";
-import {
-  getUserData,
-  updateUserData,
-  connectProvider,
-  getConnectedProviders,
-} from "@/firebaseFunctions"; // Ensure these functions are set up correctly for Firestore
 import { useSession, signIn } from "next-auth/react";
-import { adminDb } from "@/firebaseAdmin"; // Import your adminDb
 
 interface UserData {
   plan: "free" | "pro" | "enterprise";
