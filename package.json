@@ -22,6 +22,7 @@
     "firebase-admin": "^11.4.1",
     "@google/generative-ai": "^0.3.0",
     "@heroicons/react": "^2.1.5", 
+    "protobufjs": "^7.4.0",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.2.0", 
     "react-dom": "^18.2.0",
