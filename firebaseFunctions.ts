@@ -1,4 +1,4 @@
-// firebaseFunctions.ts
+//firebaseFunctions.ts
 import { db } from "./firebaseConfig";
 import { 
   doc, 
@@ -16,6 +16,7 @@ import {
   startAfter, 
   orderBy 
 } from "firebase/firestore";
+import { adminDb } from "@/firebaseAdmin"; // Import the adminDb for admin-related functions
 import { DocumentData } from "firebase/firestore";
 
 // Define the allowed plans as a union type
@@ -27,6 +28,7 @@ interface UserData {
   requestCount: number;
   usage: number;
   connectedProviders: string[]; // New field to store connected providers
+  displayName?: string; // Optional field for user's name
 }
 
 const requestLimits: Record<Plan, number> = {
@@ -45,6 +47,7 @@ export const initializeUserData = async (email: string): Promise<void> => {
       plan: "free",
       requestCount: 0,
       connectedProviders: [], // Initialize as empty
+      displayName: "", // Default to empty string
     });
   }
 };
@@ -68,6 +71,17 @@ export const getUserData = async (email: string): Promise<UserData | null> => {
   } catch (error) {
     console.error(`Error fetching user data for ${email}:`, error);
     return null;
+  }
+};
+
+// Update user profile data in Firestore
+export const updateUserProfile = async (email: string, updatedData: Partial<UserData>): Promise<void> => {
+  try {
+    const userDocRef = doc(db, "users", email);
+    await updateDoc(userDocRef, updatedData);
+  } catch (error) {
+    console.error(`Error updating profile for ${email}:`, error);
+    throw new Error("Unable to update profile.");
   }
 };
 
@@ -98,19 +112,7 @@ export const incrementRequestCount = async (email: string): Promise<void> => {
   }
 };
 
-// Handle content generation and limit checking
-export const handleContentGeneration = async (email: string, generatedContent: string): Promise<void> => {
-  const canGenerate = await checkUserPlanLimit(email);
-
-  if (!canGenerate) {
-    throw new Error("You have reached your content generation limit for this month.");
-  }
-
-  await incrementRequestCount(email);
-  await saveGeneratedContent(email, generatedContent);
-};
-
-// Save the generated content to Firestore
+// Save generated content to Firestore
 export const saveGeneratedContent = async (email: string, generatedContent: string): Promise<void> => {
   try {
     const contentRef = collection(db, "generatedContent");
@@ -154,17 +156,6 @@ export const getPreviousContent = async (
   } catch (error) {
     console.error(`Error fetching previous content for ${email}:`, error);
     throw new Error("Unable to fetch previous content.");
-  }
-};
-
-// Update user data in Firestore
-export const updateUserData = async (email: string, updatedData: Partial<UserData>): Promise<void> => {
-  try {
-    const userDocRef = doc(db, "users", email);
-    await updateDoc(userDocRef, updatedData);
-  } catch (error) {
-    console.error(`Error updating user data for ${email}:`, error);
-    throw new Error("Unable to update user data.");
   }
 };
 
