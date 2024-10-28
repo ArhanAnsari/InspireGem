@@ -12,6 +12,7 @@ import {
   GithubAuthProvider,
 } from "firebase/auth";
 import { useSession, signIn } from "next-auth/react";
+import { getConnectedProviders, connectProvider } from "@/firebaseFunctions";
 
 interface UserData {
   plan: "free" | "pro" | "enterprise";
@@ -21,7 +22,7 @@ interface UserData {
 
 const ProfilePage = () => {
   const { data: session } = useSession();
-  const [user, setUser] = useState<User | null>(null); // Corrected useState syntax
+  const [user, setUser] = useState<User | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [name, setName] = useState<string>("");
@@ -33,19 +34,23 @@ const ProfilePage = () => {
     const fetchUserData = async () => {
       if (!session) return;
 
-      const currentUser  = auth.currentUser ;
-      if (currentUser ) {
-        setUser (currentUser);
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        setUser(currentUser);
         setName(currentUser.displayName || "");
 
         try {
           // Fetch user data from the API
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/getUserData?email=${currentUser .email}`);
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/getUserData?email=${currentUser.email}`
+          );
           const data = await response.json();
-          setUserData(data ?? { plan: "free", requestCount: 0, name: currentUser .displayName || "" });
+          setUserData(
+            data ?? { plan: "free", requestCount: 0, name: currentUser.displayName || "" }
+          );
 
-          // Fetch connected providers (assuming you have a function for this)
-          const providers = await getConnectedProviders(currentUser .email!);
+          // Fetch connected providers
+          const providers = await getConnectedProviders(currentUser.email!);
           setConnectedProviders(providers);
         } catch (error) {
           console.error("Error fetching profile data:", error);
@@ -58,7 +63,7 @@ const ProfilePage = () => {
   }, [auth, session]);
 
   const calculateUsage = (requestCount: number, plan: string): string => {
- if (plan === "enterprise") {
+    if (plan === "enterprise") {
       return "Unlimited";
     } else {
       const totalLimit = plan === "free" ? 50 : 500;
@@ -73,8 +78,8 @@ const ProfilePage = () => {
       await updateProfile(user, { displayName: name });
       // Update user data using the API
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/updateUserData`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: user.email!, userData: { ...userData, name } }),
       });
       setUserData((prev) => (prev ? { ...prev, name } : prev));
@@ -94,17 +99,22 @@ const ProfilePage = () => {
     if (!user) return;
 
     const providerInstance =
-      provider === "google"
-        ? new GoogleAuthProvider()
-        : new GithubAuthProvider();
+      provider === "google" ? new GoogleAuthProvider() : new GithubAuthProvider();
 
     try {
       await linkWithPopup(user, providerInstance);
       await connectProvider(user.email!, provider);
-      alert(`${provider.charAt(0).toUpperCase() + provider.slice(1)} has been successfully linked to your account.`);
+      alert(
+        `${provider.charAt(0).toUpperCase() + provider.slice(1)} has been successfully linked to your account.`
+      );
       setConnectedProviders((prev) => [...prev, provider]);
     } catch (error: unknown) {
-      if (typeof error === "object" && error !== null && "code" in error && (error as { code?: string }).code === "auth/credential-already-in-use") {
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "code" in error &&
+        (error as { code?: string }).code === "auth/credential-already-in-use"
+      ) {
         alert("This account is already linked to your current profile.");
       } else {
         console.error("Error linking provider:", error);
@@ -120,7 +130,10 @@ const ProfilePage = () => {
   if (!session) {
     return (
       <div className="text-center text-lg mt-20">
-        <button onClick={() => signIn()} className="bg-blue- 500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        <button
+          onClick={() => signIn()}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
           Sign in
         </button>
       </div>
@@ -130,7 +143,7 @@ const ProfilePage = () => {
   return (
     <div className="max-w-md mx-auto p-4 pt-6">
       <h1 className="text-3xl mb-4">Profile</h1>
-
+      {/* Display user data */}
       <div className="flex justify-between mb-4">
         <span className="text-lg">Name:</span>
         {nameEditMode ? (
@@ -159,27 +172,24 @@ const ProfilePage = () => {
           </button>
         )}
       </div>
-
+      {/* Additional user details */}
       <div className="flex justify-between mb-4">
         <span className="text-lg">Email:</span>
         <span className="text-lg">{user?.email}</span>
       </div>
-
       <div className="flex justify-between mb-4">
         <span className="text-lg">Plan:</span>
         <span className="text-lg">{userData?.plan}</span>
       </div>
-
       <div className="flex justify-between mb-4">
         <span className="text-lg">Request Count:</span>
         <span className="text-lg">{userData?.requestCount}</span>
       </div>
-
       <div className="flex justify-between mb-4">
         <span className="text-lg">Usage:</span>
         <span className="text-lg">{calculateUsage(userData?.requestCount ?? 0, userData?.plan ?? "free")}</span>
       </div>
-
+      {/* Connected providers */}
       <div className="flex justify-between mb-4">
         <span className="text-lg">Connected Providers:</span>
         <ul>
@@ -188,7 +198,6 @@ const ProfilePage = () => {
           ))}
         </ul>
       </div>
-
       <div className="flex justify-between mb-4">
         <button
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
@@ -203,7 +212,6 @@ const ProfilePage = () => {
           Link GitHub
         </button>
       </div>
-
       <button
         className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
         onClick={handleSignOut}
