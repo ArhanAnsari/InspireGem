@@ -1,4 +1,4 @@
-// app/auth/signup/page.tsx
+// app/auth /signup/page.tsx
 "use client";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";

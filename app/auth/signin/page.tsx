@@ -1,4 +1,4 @@
-//app/auth/signin/page.tsx
+// app/auth/signin/page.tsx
 "use client";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -21,6 +21,12 @@ export default function SignIn() {
       const result = await signIn(provider, { redirect: false });
 
       if (result?.error) {
+        if (result.error === "OAuthAccountNotLinked") {
+          // Redirect to sign-up if the account is not linked
+          toast.info("Account not linked. Redirecting to sign-up.");
+          router.push("/auth/signup");
+          return;
+        }
         throw new Error(result.error);
       }
 
