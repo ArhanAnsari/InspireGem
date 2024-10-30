@@ -41,7 +41,7 @@
     "@types/react-dom": "^18.2.7",
     "@types/react-syntax-highlighter": "^15.5.13",
     "@stripe/stripe-js": "^4.4.0",
-    "next-auth": "^4.24.7",
+    "next-auth": "^4.24.10",
     "react-toastify": "^10.0.5",
     "micro": "^10.0.1", 
     "stripe": "^16.10.0",
