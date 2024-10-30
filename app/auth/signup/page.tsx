@@ -1,4 +1,4 @@
-// app/auth /signup/page.tsx
+//app/auth/signup/page.tsx
 "use client";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -25,7 +25,6 @@ export default function SignUp() {
       }
 
       const userEmail = session?.user?.email;
-
       if (userEmail) {
         const userData = await getUserData(userEmail);
         if (userData) {
