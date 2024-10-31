@@ -1,18 +1,16 @@
-//app/profile/page.tsx
+// app/profile/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import {
   getAuth,
   signOut,
-  updateProfile,
   linkWithPopup,
   GoogleAuthProvider,
   GithubAuthProvider,
 } from "firebase/auth";
 import { useSession, signIn } from "next-auth/react";
-import { connectProvider } from "@/firebaseFunctions";
-import { getConnectedProviders } from "@/firebaseFunctions"; // Adjust if needed
+import { connectProvider, getConnectedProviders } from "@/firebaseFunctions";
 
 interface UserData {
   plan: "free" | "pro" | "enterprise";
@@ -23,9 +21,9 @@ interface UserData {
 const ProfilePage = () => {
   const { data: session } = useSession();
   const [userData, setUserData] = useState<UserData | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [name, setName] = useState<string>("");
-  const [nameEditMode, setNameEditMode] = useState<boolean>(false);
+  const [loading, setLoading] = useState(true);
+  const [name, setName] = useState("");
+  const [nameEditMode, setNameEditMode] = useState(false);
   const [connectedProviders, setConnectedProviders] = useState<string[]>([]);
   const auth = getAuth();
 
@@ -40,16 +38,15 @@ const ProfilePage = () => {
       });
 
       if (response.ok) {
-        const data = await response.json();
+        const data: UserData = await response.json();
         setUserData(data);
         setName(data.name || "");
       } else {
         console.error("Failed to fetch user data");
       }
 
-      const providers = await getConnectedProviders(session.user?.email!);
+      const providers = await getConnectedProviders(session.user?.email || "");
       setConnectedProviders(providers);
-
       setLoading(false);
     };
 
@@ -69,18 +66,24 @@ const ProfilePage = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: session.user.email, name }),
       });
-      if (res.ok) setNameEditMode(false);
-      else console.error("Failed to update name");
+      if (res.ok) {
+        setNameEditMode(false);
+        setUserData((prevData) => (prevData ? { ...prevData, name } : prevData));
+      } else {
+        console.error("Failed to update name");
+      }
     }
   };
 
   const handleProviderLink = async (provider: "google" | "github") => {
-    const providerInstance = provider === "google" ? new GoogleAuthProvider() : new GithubAuthProvider();
+    const providerInstance =
+      provider === "google" ? new GoogleAuthProvider() : new GithubAuthProvider();
     const user = auth.currentUser;
+
     if (user) {
       try {
         await linkWithPopup(user, providerInstance);
-        await connectProvider(user.email!, provider);
+        await connectProvider(user.email || "", provider);
         setConnectedProviders((prev) => [...prev, provider]);
         alert(`Successfully linked to ${provider}`);
       } catch (error) {
@@ -108,10 +111,10 @@ const ProfilePage = () => {
           {nameEditMode ? "Save" : "Edit"}
         </button>
       </div>
-      <div>Email: {session.user.email}</div>
+      <div>Email: {session.user?.email}</div>
       <div>Plan: {userData?.plan}</div>
       <div>Request Count: {userData?.requestCount}</div>
-      <div>Usage: {calculateUsage(userData?.requestCount ?? 0, userData?.plan ?? "free")}</div>
+      <div>Usage: {calculateUsage(userData?.requestCount || 0, userData?.plan || "free")}</div>
       <div>
         Connected Providers:
         {connectedProviders.map((provider) => (
