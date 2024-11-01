@@ -1,19 +1,19 @@
-import { NextApiRequest, NextApiResponse } from "next";
+//app/api/updateUserData/route.ts
+import { NextResponse } from "next/server";
 import { adminDb } from "@/firebaseAdmin";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === "POST") {
-    const { email, userData } = req.body;
+export async function POST(req: Request) {
+  try {
+    const { email, userData } = await req.json();
 
-    try {
-      await adminDb.collection("users").doc(email).set(userData, { merge: true });
-      return res.status(200).json({ message: "User data updated successfully" });
-    } catch (error) {
-      console.error("Error updating user data:", error);
-      return res.status(500).json({ message: "Internal Server Error" });
+    if (!email || !userData) {
+      return NextResponse.json({ message: "Invalid request data" }, { status: 400 });
     }
-  } else {
-    res.setHeader("Allow", ['POST']);
-    return res.status(405).end(`Method ${req.method} Not Allowed`);
+
+    await adminDb.collection("users").doc(email).set(userData, { merge: true });
+    return NextResponse.json({ message: "User data updated successfully" }, { status: 200 });
+  } catch (error) {
+    console.error("Error updating user data:", error);
+    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
   }
 }
