@@ -1,22 +1,23 @@
-import { NextApiRequest, NextApiResponse } from "next";
+//app/api/getUserData/route.ts
+import { NextResponse } from "next/server";
 import { adminDb } from "@/firebaseAdmin";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === "GET") {
-    const { email } = req.query;
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const email = searchParams.get("email");
 
-    if (typeof email !== "string") return res.status(400).json({ message: "Invalid email parameter" });
+  if (!email) {
+    return NextResponse.json({ message: "Invalid email parameter" }, { status: 400 });
+  }
 
-    try {
-      const userDoc = await adminDb.collection("users").doc(email).get();
-      if (!userDoc.exists) return res.status(404).json({ message: "User not found" });
-      return res.status(200).json(userDoc.data());
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-      return res.status(500).json({ message: "Internal Server Error" });
+  try {
+    const userDoc = await adminDb.collection("users").doc(email).get();
+    if (!userDoc.exists) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
-  } else {
-    res.setHeader("Allow", ["GET"]);
-    return res.status(405).end(`Method ${req.method} Not Allowed`);
+    return NextResponse.json(userDoc.data(), { status: 200 });
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
   }
 }
