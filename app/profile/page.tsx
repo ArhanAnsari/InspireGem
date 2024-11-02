@@ -6,11 +6,11 @@ import { getAuth, signOut, updateProfile, User } from "firebase/auth";
 import { getUserData, updateUserData } from "@/firebaseFunctions"; // Custom Firebase functions
 import { useSession, signIn, getProviders } from "next-auth/react";
 
-// UserData interface with optional name
+// UserData interface including the 'name' property
 interface UserData {
   plan: "free" | "pro" | "enterprise";
   requestCount: number;
-  name?: string;
+  name?: string; // Ensure 'name' is defined as optional
 }
 
 interface Provider {
@@ -67,8 +67,14 @@ const ProfilePage = () => {
 
     try {
       await updateProfile(user, { displayName: name });
-      // Ensure that the name is updated in Firestore through the custom function
-      await updateUserData(user.email!, { ...userData, name });
+      // Ensure the updated userData includes 'name'
+      const updatedUserData = {
+        ...userData,
+        name,
+      };
+
+      // Update userData in Firestore
+      await updateUserData(user.email!, updatedUserData);
       setNameEditMode(false);
       alert("Name updated successfully!");
     } catch (error) {
