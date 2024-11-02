@@ -1,4 +1,4 @@
-// app/profile/page.tsx
+//app/profile/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -13,6 +13,11 @@ interface UserData {
   name?: string;
 }
 
+interface Provider {
+  id: string;
+  name: string;
+}
+
 const ProfilePage = () => {
   const { data: session } = useSession();
   const [user, setUser] = useState<User | null>(null);
@@ -21,7 +26,7 @@ const ProfilePage = () => {
   const [name, setName] = useState<string>("");
   const [nameEditMode, setNameEditMode] = useState<boolean>(false);
   const [connectedProviders, setConnectedProviders] = useState<string[]>([]);
-  const [availableProviders, setAvailableProviders] = useState<any>(null);
+  const [availableProviders, setAvailableProviders] = useState<Record<string, Provider> | null>(null);
   const auth = getAuth();
 
   useEffect(() => {
@@ -63,7 +68,7 @@ const ProfilePage = () => {
     try {
       await updateProfile(user, { displayName: name });
       // Ensure that the name is updated in Firestore through the custom function
-      await updateUserData(user.email!, { ...userData, name }); 
+      await updateUserData(user.email!, { ...userData, name });
       setNameEditMode(false);
       alert("Name updated successfully!");
     } catch (error) {
