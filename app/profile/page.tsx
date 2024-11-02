@@ -1,16 +1,16 @@
-//app/profile/page.tsx
+// app/profile/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import { getAuth, signOut, updateProfile, User } from "firebase/auth";
-import { getUserData, updateUserData } from "@/firebaseFunctions";
+import { getUserData, updateUserData } from "@/firebaseFunctions"; // Custom Firebase functions
 import { useSession, signIn, getProviders } from "next-auth/react";
 
 // UserData interface with optional name
 interface UserData {
   plan: "free" | "pro" | "enterprise";
   requestCount: number;
-  name?: string; // Optional name property
+  name?: string;
 }
 
 const ProfilePage = () => {
@@ -62,7 +62,8 @@ const ProfilePage = () => {
 
     try {
       await updateProfile(user, { displayName: name });
-      await updateUserData(user.email!, { ...userData, name }); // Update name in Firestore
+      // Ensure that the name is updated in Firestore through the custom function
+      await updateUserData(user.email!, { ...userData, name }); 
       setNameEditMode(false);
       alert("Name updated successfully!");
     } catch (error) {
