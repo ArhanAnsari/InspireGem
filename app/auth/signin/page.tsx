@@ -13,39 +13,26 @@ export default function SignIn() {
   const router = useRouter();
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
-  const [showFallbackLink, setShowFallbackLink] = useState(false);
+  //const [showFallbackLink, setShowFallbackLink] = useState(false);
 
   const handleSignIn = async (provider: string) => {
     setLoading(true);
     try {
-      const result = await signIn(provider, { redirect: false });
-
-      if (result?.error) {
-        if (result.error === "OAuthAccountNotLinked") {
-          toast.info("Account not linked. Redirecting to sign-up.");
-          router.push("/auth/signup");
-          return;
-        }
-        throw new Error(result.error);
+      await signIn(provider, { callbackUrl: "/dashboard" }); // Redirect directly
+    } catch (error: any) {  // Correct type annotation here
+      if (error.message === "OAuthAccountNotLinked") {
+         toast.info("Account not linked. Please sign up.");
+         router.push("/auth/signup");  // Redirect to signup page
+      } else {
+        toast.error("Sign-in failed. Please try again.");
+        console.error("Sign-in error:", error); // Log the full error for debugging
       }
-
-      const userEmail = session?.user?.email;
-      if (userEmail) {
-        const userData = await getUserData(userEmail);
-        if (userData) {
-          toast.success(`Welcome back! You are on the ${userData.plan} plan.`);
-        }
-      }
-
-      router.push("/dashboard");
-    } catch (error) {
-      toast.error("Sign-in failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
+  /*useEffect(() => {
     if (session) {
       const timer = setTimeout(() => {
         router.push("/dashboard");
@@ -58,7 +45,7 @@ export default function SignIn() {
         clearTimeout(fallbackTimer);
       };
     }
-  }, [session, router]);
+  }, [session, router]);*/
 
   return (
     <>
