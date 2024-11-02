@@ -1,10 +1,10 @@
-//app/auth/signin/page.tsx
+// app/auth/signin/page.tsx
 "use client";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
-import { getUserData } from "@/firebaseFunctions";
+// import { getUserData } from "@/firebaseFunctions"; // Removed unused import
 import "react-toastify/dist/ReactToastify.css";
 import SEO from "@/components/SEO";
 import { FaGoogle, FaGithub } from "react-icons/fa";
@@ -13,26 +13,31 @@ export default function SignIn() {
   const router = useRouter();
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
-  //const [showFallbackLink, setShowFallbackLink] = useState(false);
+  const [showFallbackLink, setShowFallbackLink] = useState(false); // Uncommented and initialized
 
   const handleSignIn = async (provider: string) => {
     setLoading(true);
     try {
-      await signIn(provider, { callbackUrl: "/dashboard" }); // Redirect directly
-    } catch (error: any) {  // Correct type annotation here
-      if (error.message === "OAuthAccountNotLinked") {
-         toast.info("Account not linked. Please sign up.");
-         router.push("/auth/signup");  // Redirect to signup page
+      await signIn(provider, { callbackUrl: "/dashboard" });
+    } catch (error: unknown) { // Use unknown and narrow the type
+      if (error instanceof Error) {
+        if (error.message === "OAuthAccountNotLinked") {
+          toast.info("Account not linked. Please sign up.");
+          router.push("/auth/signup");
+        } else {
+          toast.error("Sign-in failed. Please try again.");
+          console.error("Sign-in error:", error.message);
+        }
       } else {
-        toast.error("Sign-in failed. Please try again.");
-        console.error("Sign-in error:", error); // Log the full error for debugging
+        console.error("An unexpected error occurred:", error);
       }
+
     } finally {
       setLoading(false);
     }
   };
 
-  /*useEffect(() => {
+  useEffect(() => {  // Uncommented useEffect
     if (session) {
       const timer = setTimeout(() => {
         router.push("/dashboard");
@@ -45,7 +50,8 @@ export default function SignIn() {
         clearTimeout(fallbackTimer);
       };
     }
-  }, [session, router]);*/
+  }, [session, router]);
+
 
   return (
     <>
