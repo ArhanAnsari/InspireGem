@@ -1,10 +1,10 @@
-//app/auth/signup/page.tsx
+// app/auth/signup/page.tsx
 "use client";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
-import { getUserData } from "@/firebaseFunctions";
+// import { getUserData } from "@/firebaseFunctions"; // Removed unused import
 import "react-toastify/dist/ReactToastify.css";
 import SEO from "@/components/SEO";
 import { FaGoogle, FaGithub } from "react-icons/fa";
@@ -13,22 +13,25 @@ export default function SignUp() {
   const router = useRouter();
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
-  //const [showFallbackLink, setShowFallbackLink] = useState(false);
+  const [showFallbackLink, setShowFallbackLink] = useState(false); // Uncommented and initialized
 
   const handleSignUp = async (provider: string) => {
     setLoading(true);
     try {
-      // For sign-up, we'll force linking the account even if it exists
-      await signIn(provider, { callbackUrl: "/dashboard" }); // Redirect directly
-    } catch (error: any) { // Correct type annotation here
-      toast.error("Sign-up failed. Please try again.");
-      console.error("Sign-up error:", error); // Log the full error for debugging
+      await signIn(provider, { callbackUrl: "/dashboard" });
+    } catch (error: unknown) { // Use unknown and then narrow down
+      if (error instanceof Error) {
+        toast.error("Sign-up failed. Please try again.");
+        console.error("Sign-up error:", error.message);
+      } else {
+        console.error("An unexpected error occurred:", error);
+      }
     } finally {
       setLoading(false);
     }
   };
-  
-  /*useEffect(() => {
+
+  useEffect(() => { // Uncommented useEffect
     if (session) {
       const timer = setTimeout(() => {
         router.push("/dashboard");
@@ -43,7 +46,7 @@ export default function SignUp() {
         clearTimeout(fallbackTimer);
       };
     }
-  }, [session, router]);*/
+  }, [session, router]);
 
   return (
     <>
