@@ -2,30 +2,26 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  signOut,
-  updateProfile,
-  linkWithPopup,
-  GoogleAuthProvider,
-  GithubAuthProvider,
-} from "@/firebaseFunctions";
-import { useSession, signIn } from "next-auth/react";
-import { getAuth } from "firebase/auth";
+import { getAuth, signOut, updateProfile, User } from "firebase/auth";
+import { getUserData, updateUserData } from "@/firebaseFunctions";
+import { useSession, signIn, getProviders } from "next-auth/react";
 
+// UserData interface with optional name
 interface UserData {
   plan: "free" | "pro" | "enterprise";
   requestCount: number;
-  name?: string;
+  name?: string; // Optional name property
 }
 
 const ProfilePage = () => {
   const { data: session } = useSession();
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [name, setName] = useState<string>("");
   const [nameEditMode, setNameEditMode] = useState<boolean>(false);
   const [connectedProviders, setConnectedProviders] = useState<string[]>([]);
+  const [availableProviders, setAvailableProviders] = useState<any>(null);
   const auth = getAuth();
 
   useEffect(() => {
@@ -38,16 +34,10 @@ const ProfilePage = () => {
         setName(currentUser.displayName || "");
 
         try {
-          // Fetch user data using the API route
-          const response = await fetch("/api/getUserData", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ email: currentUser.email }),
-          });
-          const data = await response.json();
+          const data = await getUserData(currentUser.email!);
           setUserData(data ?? { plan: "free", requestCount: 0, name: currentUser.displayName || "" });
+          const providers = await getProviders();
+          setAvailableProviders(providers);
         } catch (error) {
           console.error("Error fetching profile data:", error);
         }
@@ -72,14 +62,7 @@ const ProfilePage = () => {
 
     try {
       await updateProfile(user, { displayName: name });
-      // Update name in Firestore using the API route
-      await fetch("/api/updateUserData", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: user.email, data: { name } }),
-      });
+      await updateUserData(user.email!, { ...userData, name }); // Update name in Firestore
       setNameEditMode(false);
       alert("Name updated successfully!");
     } catch (error) {
@@ -88,32 +71,15 @@ const ProfilePage = () => {
     }
   };
 
-  const handleSignOut = () => {
-    signOut(auth).catch((error) => console.error("Sign out error:", error));
-  };
-
-  const handleProviderLink = async (provider: "google" | "github") => {
-    if (!user) return;
-
-    const providerInstance =
-      provider === "google" ? new GoogleAuthProvider() : new GithubAuthProvider();
-
+  const handleProviderLink = async (providerId: string) => {
+    if (!session) return;
     try {
-      await linkWithPopup(user, providerInstance);
-      alert(`${provider.charAt(0).toUpperCase() + provider.slice(1)} has been successfully linked to your account.`);
-      setConnectedProviders((prev) => [...prev, provider]);
-    } catch (error: unknown) {
-      if (
-        typeof error === "object" &&
-        error !== null &&
-        "code" in error &&
-        (error as { code?: string }).code === "auth/credential-already-in-use"
-      ) {
-        alert("This account is already linked to your current profile.");
-      } else {
-        console.error("Error linking provider:", error);
-        alert("Failed to link provider. Please try again.");
-      }
+      await signIn(providerId, { callbackUrl: "/profile" });
+      alert(`${providerId.charAt(0).toUpperCase() + providerId.slice(1)} has been successfully linked to your account.`);
+      setConnectedProviders((prev) => [...prev, providerId]);
+    } catch (error) {
+      console.error("Error linking provider:", error);
+      alert("Failed to link provider. Please try again.");
     }
   };
 
@@ -142,12 +108,7 @@ const ProfilePage = () => {
           <strong>Name:</strong>
           {nameEditMode ? (
             <div>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Enter new name"
-              />
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter new name" />
               <button onClick={handleNameChange}>Save</button>
               <button onClick={() => setNameEditMode(false)}>Cancel</button>
             </div>
@@ -160,21 +121,14 @@ const ProfilePage = () => {
         </div>
         <div className="provider-links">
           <h3>Connect Providers:</h3>
-          <button
-            onClick={() => handleProviderLink("google")}
-            disabled={connectedProviders.includes("google")}
-          >
-            {connectedProviders.includes("google") ? "Google (Connected)" : "Connect Google"}
-          </button>
-          <button
-            onClick={() => handleProviderLink("github")}
-            disabled={connectedProviders.includes("github")}
-          >
-            {connectedProviders.includes("github") ? "GitHub (Connected)" : "Connect GitHub"}
-          </button>
+          {availableProviders && Object.keys(availableProviders).map((providerId) => (
+            <button key={providerId} onClick={() => handleProviderLink(providerId)} disabled={connectedProviders.includes(providerId)}>
+              {connectedProviders.includes(providerId) ? `${providerId} (Connected)` : `Connect ${providerId}`}
+            </button>
+          ))}
         </div>
       </div>
-      <button onClick={handleSignOut}>Sign Out</button>
+      <button onClick={() => signOut(auth).catch((error) => console.error("Sign out error:", error))}>Sign Out</button>
     </div>
   );
 };
