@@ -1,10 +1,10 @@
-//app/auth/signup/page.tsx
+// app/auth/signup/page.tsx
 "use client";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
-import { getUserData } from "@/firebaseFunctions";
+// import { getUserData } from "@/firebaseFunctions"; // Removed unused import
 import "react-toastify/dist/ReactToastify.css";
 import SEO from "@/components/SEO";
 import { FaGoogle, FaGithub } from "react-icons/fa";
@@ -13,34 +13,25 @@ export default function SignUp() {
   const router = useRouter();
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
-  const [showFallbackLink, setShowFallbackLink] = useState(false);
+  const [showFallbackLink, setShowFallbackLink] = useState(false); // Uncommented and initialized
 
   const handleSignUp = async (provider: string) => {
     setLoading(true);
     try {
-      const result = await signIn(provider, { redirect: false });
-
-      if (result?.error) {
-        throw new Error(result.error);
+      await signIn(provider, { callbackUrl: "/dashboard" });
+    } catch (error: unknown) { // Use unknown and then narrow down
+      if (error instanceof Error) {
+        toast.error("Sign-up failed. Please try again.");
+        console.error("Sign-up error:", error.message);
+      } else {
+        console.error("An unexpected error occurred:", error);
       }
-
-      const userEmail = session?.user?.email;
-      if (userEmail) {
-        const userData = await getUserData(userEmail);
-        if (userData) {
-          toast.success(`Welcome! You are on the ${userData.plan} plan.`);
-        }
-      }
-
-      router.push("/dashboard");
-    } catch (error) {
-      toast.error("Sign-up failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
+  useEffect(() => { // Uncommented useEffect
     if (session) {
       const timer = setTimeout(() => {
         router.push("/dashboard");

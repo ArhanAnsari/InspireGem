@@ -1,10 +1,10 @@
-//app/auth/signin/page.tsx
+// app/auth/signin/page.tsx
 "use client";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
-import { getUserData } from "@/firebaseFunctions";
+// import { getUserData } from "@/firebaseFunctions"; // Removed unused import
 import "react-toastify/dist/ReactToastify.css";
 import SEO from "@/components/SEO";
 import { FaGoogle, FaGithub } from "react-icons/fa";
@@ -13,39 +13,31 @@ export default function SignIn() {
   const router = useRouter();
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
-  const [showFallbackLink, setShowFallbackLink] = useState(false);
+  const [showFallbackLink, setShowFallbackLink] = useState(false); // Uncommented and initialized
 
   const handleSignIn = async (provider: string) => {
     setLoading(true);
     try {
-      const result = await signIn(provider, { redirect: false });
-
-      if (result?.error) {
-        if (result.error === "OAuthAccountNotLinked") {
-          toast.info("Account not linked. Redirecting to sign-up.");
+      await signIn(provider, { callbackUrl: "/dashboard" });
+    } catch (error: unknown) { // Use unknown and narrow the type
+      if (error instanceof Error) {
+        if (error.message === "OAuthAccountNotLinked") {
+          toast.info("Account not linked. Please sign up.");
           router.push("/auth/signup");
-          return;
+        } else {
+          toast.error("Sign-in failed. Please try again.");
+          console.error("Sign-in error:", error.message);
         }
-        throw new Error(result.error);
+      } else {
+        console.error("An unexpected error occurred:", error);
       }
 
-      const userEmail = session?.user?.email;
-      if (userEmail) {
-        const userData = await getUserData(userEmail);
-        if (userData) {
-          toast.success(`Welcome back! You are on the ${userData.plan} plan.`);
-        }
-      }
-
-      router.push("/dashboard");
-    } catch (error) {
-      toast.error("Sign-in failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
+  useEffect(() => {  // Uncommented useEffect
     if (session) {
       const timer = setTimeout(() => {
         router.push("/dashboard");
@@ -59,6 +51,7 @@ export default function SignIn() {
       };
     }
   }, [session, router]);
+
 
   return (
     <>
