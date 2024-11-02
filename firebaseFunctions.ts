@@ -75,7 +75,7 @@ export const getUserData = async (email: string): Promise<UserData | null> => {
 };
 
 // Update user profile data in Firestore
-export const updateUserProfile = async (email: string, updatedData: Partial<UserData>): Promise<void> => {
+export const updateUserData = async (email: string, updatedData: Partial<UserData>): Promise<void> => {
   try {
     const userDocRef = doc(db, "users", email);
     await updateDoc(userDocRef, updatedData);
