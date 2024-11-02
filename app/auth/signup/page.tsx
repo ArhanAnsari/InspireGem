@@ -13,34 +13,22 @@ export default function SignUp() {
   const router = useRouter();
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
-  const [showFallbackLink, setShowFallbackLink] = useState(false);
+  //const [showFallbackLink, setShowFallbackLink] = useState(false);
 
   const handleSignUp = async (provider: string) => {
     setLoading(true);
     try {
-      const result = await signIn(provider, { redirect: false });
-
-      if (result?.error) {
-        throw new Error(result.error);
-      }
-
-      const userEmail = session?.user?.email;
-      if (userEmail) {
-        const userData = await getUserData(userEmail);
-        if (userData) {
-          toast.success(`Welcome! You are on the ${userData.plan} plan.`);
-        }
-      }
-
-      router.push("/dashboard");
-    } catch (error) {
+      // For sign-up, we'll force linking the account even if it exists
+      await signIn(provider, { callbackUrl: "/dashboard" }); // Redirect directly
+    } catch (error: any) { // Correct type annotation here
       toast.error("Sign-up failed. Please try again.");
+      console.error("Sign-up error:", error); // Log the full error for debugging
     } finally {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
+  
+  /*useEffect(() => {
     if (session) {
       const timer = setTimeout(() => {
         router.push("/dashboard");
@@ -55,7 +43,7 @@ export default function SignUp() {
         clearTimeout(fallbackTimer);
       };
     }
-  }, [session, router]);
+  }, [session, router]);*/
 
   return (
     <>
