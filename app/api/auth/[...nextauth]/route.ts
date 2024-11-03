@@ -4,6 +4,7 @@ import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import { FirestoreAdapter } from "@next-auth/firebase-adapter";
 import { adminDb } from "@/firebaseAdmin";
+import { getBaseUrl } from "@/lib/getBaseUrl";
 
 const authOptions: NextAuthOptions = {
   providers: [
@@ -68,9 +69,9 @@ const authOptions: NextAuthOptions = {
       console.log("Session created:", session);
       return session;
     },
-    async redirect({ baseUrl }) {
-      console.log("Redirecting to:", `${baseUrl}/dashboard`);
-      return `${baseUrl}/dashboard`;
+    async redirect({ getBaseUrl }) {
+      console.log("Redirecting to:", `${getBaseUrl}/dashboard`);
+      return `${getBaseUrl}/dashboard`;
     },
   },
 };
