@@ -24,15 +24,20 @@ const authOptions: NextAuthOptions = {
 
       if (!userEmail) {
         console.error("No email found for user");
-        return false; // Block sign-in if no email
+        return false;
       }
 
       const userDocRef = adminDb.collection("users").doc(userEmail);
       const userDoc = await userDocRef.get();
 
       if (userDoc.exists) {
-        // Log the user data for verification
         const userData = userDoc.data();
+
+        if (userData?.provider && userData.provider !== provider) {
+          console.error("OAuthAccountNotLinked: User exists but provider is different");
+          throw new Error("OAuthAccountNotLinked");
+        }
+
         console.log("User signed in successfully:", {
           email: userEmail,
           plan: userData?.plan,
@@ -40,10 +45,9 @@ const authOptions: NextAuthOptions = {
           provider: provider,
         });
       } else {
-        // New user, create a default entry in Firestore
         const newUser = {
-          plan: "free", // Default plan
-          requestCount: 0, // Default request count
+          plan: "free",
+          requestCount: 0,
           email: userEmail,
           provider: provider,
         };
@@ -56,15 +60,13 @@ const authOptions: NextAuthOptions = {
         });
       }
 
-      return true; // Allow sign-in
+      return true;
     },
     async session({ session }) {
-      // Log the session information
       console.log("Session created:", session);
       return session;
     },
     async redirect({ baseUrl }) {
-      // Redirect to the dashboard after sign-in
       console.log("Redirecting to:", `${baseUrl}/dashboard`);
       return `${baseUrl}/dashboard`;
     },

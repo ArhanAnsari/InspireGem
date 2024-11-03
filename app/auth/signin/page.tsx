@@ -1,10 +1,9 @@
-// app/auth/signin/page.tsx
+//app/auth/signin/page.tsx
 "use client";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
-// import { getUserData } from "@/firebaseFunctions"; // Removed unused import
 import "react-toastify/dist/ReactToastify.css";
 import SEO from "@/components/SEO";
 import { FaGoogle, FaGithub } from "react-icons/fa";
@@ -13,17 +12,18 @@ export default function SignIn() {
   const router = useRouter();
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
-  const [showFallbackLink, setShowFallbackLink] = useState(false); // Uncommented and initialized
+  const [showFallbackLink, setShowFallbackLink] = useState(false);
 
   const handleSignIn = async (provider: string) => {
     setLoading(true);
     try {
-      await signIn(provider, { callbackUrl: "/dashboard" });
-    } catch (error: unknown) { // Use unknown and narrow the type
+      await signIn(provider, {
+        callbackUrl: "/dashboard",
+      });
+    } catch (error) {
       if (error instanceof Error) {
-        if (error.message === "OAuthAccountNotLinked") {
-          toast.info("Account not linked. Please sign up.");
-          router.push("/auth/signup");
+        if (error.message.includes("OAuthAccountNotLinked")) {
+          toast.info("This account is not linked. Please sign up first or sign in using the originally linked provider.");
         } else {
           toast.error("Sign-in failed. Please try again.");
           console.error("Sign-in error:", error.message);
@@ -31,13 +31,12 @@ export default function SignIn() {
       } else {
         console.error("An unexpected error occurred:", error);
       }
-
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {  // Uncommented useEffect
+  useEffect(() => {
     if (session) {
       const timer = setTimeout(() => {
         router.push("/dashboard");
@@ -51,7 +50,6 @@ export default function SignIn() {
       };
     }
   }, [session, router]);
-
 
   return (
     <>
