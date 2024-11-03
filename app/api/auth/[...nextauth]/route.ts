@@ -4,7 +4,6 @@ import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import { FirestoreAdapter } from "@next-auth/firebase-adapter";
 import { adminDb } from "@/firebaseAdmin";
-import { getBaseUrl } from "@/lib/getBaseUrl";
 
 const authOptions: NextAuthOptions = {
   providers: [
@@ -19,13 +18,13 @@ const authOptions: NextAuthOptions = {
   ],
   adapter: FirestoreAdapter(adminDb),
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       const userEmail = user.email;
       const provider = account?.provider;
 
       if (!userEmail) {
         console.error("No email found for user");
-        return false; // Block sign-in if no email
+        return false;
       }
 
       const userDocRef = adminDb.collection("users").doc(userEmail);
@@ -34,7 +33,6 @@ const authOptions: NextAuthOptions = {
       if (userDoc.exists) {
         const userData = userDoc.data();
 
-        // Check if the provider matches the existing record in Firestore
         if (userData?.provider && userData.provider !== provider) {
           console.error("OAuthAccountNotLinked: User exists but provider is different");
           throw new Error("OAuthAccountNotLinked");
@@ -47,10 +45,9 @@ const authOptions: NextAuthOptions = {
           provider: provider,
         });
       } else {
-        // New user creation with default data
         const newUser = {
-          plan: "free", // Default plan
-          requestCount: 0, // Default request count
+          plan: "free",
+          requestCount: 0,
           email: userEmail,
           provider: provider,
         };
@@ -63,15 +60,15 @@ const authOptions: NextAuthOptions = {
         });
       }
 
-      return true; // Allow sign-in
+      return true;
     },
-    async session({ session, user }) {
+    async session({ session }) {
       console.log("Session created:", session);
       return session;
     },
-    async redirect({ getBaseUrl }) {
-      console.log("Redirecting to:", `${getBaseUrl}/dashboard`);
-      return `${getBaseUrl}/dashboard`;
+    async redirect({ baseUrl }) {
+      console.log("Redirecting to:", `${baseUrl}/dashboard`);
+      return `${baseUrl}/dashboard`;
     },
   },
 };
