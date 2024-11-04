@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 // app/api/auth/[...nextauth]/route.ts
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
@@ -20,40 +19,47 @@ const authOptions: NextAuthOptions = {
   adapter: FirestoreAdapter(adminDb),
   callbacks: {
     async signIn({ user, account }) {
-  const userEmail = user.email;
-  const provider = account?.provider;
+      const userEmail = user.email;
+      const provider = account?.provider;
 
-  if (!userEmail) {
-    console.error("No email found for user");
-    return false;
-  }
+      if (!userEmail) {
+        console.error("No email found for user");
+        return false;
+      }
 
-  const userDocRef = adminDb.collection("users").doc(userEmail);
-  const userDoc = await userDocRef.get();
+      const userDocRef = adminDb.collection("users").doc(userEmail);
+      const userDoc = await userDocRef.get();
 
-  if (userDoc.exists) {
-    const userData = userDoc.data();
+      if (userDoc.exists) {
+        const userData = userDoc.data();
 
-    // Check for provider mismatch ONLY if the user exists
-    if (userData?.provider && userData.provider !== provider) {
-      console.error("OAuthAccountNotLinked: User exists but provider is different");
-      // Redirect to sign-in with the correct provider information
-      return `/api/auth/signin?error=OAuthAccountNotLinked&provider=${userData.provider}`; // Key change here
-    }
+        if (userData?.provider && userData.provider !== provider) {
+          console.error("OAuthAccountNotLinked: User exists but provider is different");
+          throw new Error("OAuthAccountNotLinked");
+        }
 
-    console.log("User signed in successfully:", { /* ... */ });
+        console.log("User signed in successfully:", {
+          email: userEmail,
+          plan: userData?.plan,
+          requestCount: userData?.requestCount,
+          provider: provider,
+        });
+      } else {
+        const newUser = {
+          plan: "free",
+          requestCount: 0,
+          email: userEmail,
+          provider: provider,
+        };
+        await userDocRef.set(newUser);
+        console.log("New user created and signed in successfully:", {
+          email: userEmail,
+          plan: "free",
+          requestCount: 0,
+          provider: provider,
+        });
+      }
 
-  } else {
-    // User doesn't exist, create them
-    await userDocRef.set({
-      plan: "free",
-      requestCount: 0,
-      email: userEmail,
-      provider: provider,
-    });
-    console.log("New user created and signed in successfully:", { /* ... */ });
-  }
-      
       return true;
     },
     async session({ session }) {
