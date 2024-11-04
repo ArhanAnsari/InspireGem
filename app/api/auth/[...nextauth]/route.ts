@@ -32,31 +32,30 @@ const authOptions: NextAuthOptions = {
 
       if (userDoc.exists) {
         const userData = userDoc.data();
-
         if (userData?.provider && userData.provider !== provider) {
           console.error("OAuthAccountNotLinked: User exists but provider is different");
           return `/auth/signin?error=OAuthAccountNotLinked&provider=${userData.provider}`;
         }
+
+        console.log("User signed in successfully:", userEmail);
       } else {
-        // Create a new user if not found in the Firestore database
+        // Create a new user entry
         await userDocRef.set({
+          email: userEmail,
           plan: "free",
           requestCount: 0,
-          email: userEmail,
           provider: provider,
         });
-        console.log("New user created and signed in successfully");
+        console.log("New user created successfully:", userEmail);
       }
 
       return true;
     },
-    async session({ session, user }) {
-      session.user.id = user.id;
-      console.log("Session created:", session);
+    async session({ session }) {
       return session;
     },
     async redirect({ url, baseUrl }) {
-      return url.startsWith(baseUrl) ? url : `${baseUrl}/dashboard`;
+      return url.startsWith(baseUrl) ? url : baseUrl;
     },
   },
 };
