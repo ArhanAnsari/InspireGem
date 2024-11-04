@@ -53,13 +53,14 @@ const authOptions: NextAuthOptions = {
       return false;
      }
    },
-  }
+  },
 
     async session({ session, user }) {
       session.user.id = user.id;
       return session;
     },
   },
+  
   events: {
     async signIn({ user }) {
       console.log("User signed in:", user);
@@ -68,4 +69,5 @@ const authOptions: NextAuthOptions = {
 };
 
 const handler = NextAuth(authOptions);
+
 export { handler as GET, handler as POST };
