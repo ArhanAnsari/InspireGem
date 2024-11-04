@@ -12,12 +12,15 @@ export default function SignIn() {
   const router = useRouter();
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
-  const [showFallbackLink, setShowFallbackLink] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    setError(urlParams.get("error"));
+    const errorParam = urlParams.get("error");
+    if (errorParam && errorParam === "OAuthAccountNotLinked") {
+      toast.error("Please sign in using your existing linked provider.");
+      setError(errorParam);
+    }
   }, []);
 
   const handleSignIn = async (provider: string) => {
@@ -27,17 +30,8 @@ export default function SignIn() {
         callbackUrl: "/dashboard",
       });
     } catch (err) {
-      if (err instanceof Error) {
-        if (err.message.includes("OAuthAccountNotLinked")) {
-          const providerName = new URLSearchParams(window.location.search).get("provider");
-          toast.info(`This account is already linked to ${providerName}. Please sign in with that provider.`);
-        } else {
-          toast.error("Sign-in failed. Please try again.");
-          console.error("Sign-in error:", err.message);
-        }
-      } else {
-        console.error("An unexpected error occurred:", err);
-      }
+      console.error("Sign-in error:", err);
+      toast.error("An unexpected error occurred during sign-in.");
     } finally {
       setLoading(false);
     }
@@ -45,16 +39,7 @@ export default function SignIn() {
 
   useEffect(() => {
     if (session) {
-      const timer = setTimeout(() => {
-        router.push("/dashboard");
-      }, 2000);
-      const fallbackTimer = setTimeout(() => {
-        setShowFallbackLink(true);
-      }, 5000);
-      return () => {
-        clearTimeout(timer);
-        clearTimeout(fallbackTimer);
-      };
+      router.push("/dashboard");
     }
   }, [session, router]);
 
@@ -62,31 +47,16 @@ export default function SignIn() {
     <>
       <SEO title="Sign In - InspireGem" description="Sign in to InspireGem using your Google or GitHub account." />
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-gray-800 py-6 px-4">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-6">Sign In</h1>
-        <p className="text-base sm:text-lg mb-4">Sign in with one of the options below.</p>
-        <button
-          onClick={() => handleSignIn("google")}
-          className={`bg-blue-500 text-white px-4 py-2 rounded flex items-center gap-2 ${loading ? "opacity-50" : "hover:bg-blue-600"}`}
-          disabled={loading}
-        >
-          <FaGoogle /> {loading ? "Signing in..." : "Sign in with Google"}
+        <h1 className="text-3xl font-bold mb-6">Sign In</h1>
+        <button onClick={() => handleSignIn("google")} disabled={loading} className="btn btn-primary">
+          <FaGoogle className="mr-2" />
+          {loading ? "Signing in..." : "Sign in with Google"}
         </button>
-        <button
-          onClick={() => handleSignIn("github")}
-          className={`bg-gray-800 text-white px-4 py-2 mt-4 rounded flex items-center gap-2 ${loading ? "opacity-50" : "hover:bg-gray-900"}`}
-          disabled={loading}
-        >
-          <FaGithub /> {loading ? "Signing in..." : "Sign in with GitHub"}
+        <button onClick={() => handleSignIn("github")} disabled={loading} className="btn btn-secondary mt-4">
+          <FaGithub className="mr-2" />
+          {loading ? "Signing in..." : "Sign in with GitHub"}
         </button>
-        {showFallbackLink && (
-          <p className="mt-4 text-blue-500">
-            Still don&apos;t get redirected to the dashboard?{" "}
-            <a href="/dashboard" className="underline">
-              Click here.
-            </a>
-          </p>
-        )}
-        <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
+        <ToastContainer />
       </div>
     </>
   );

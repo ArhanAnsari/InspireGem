@@ -1,4 +1,4 @@
-// app/api/auth/[...nextauth]/route.ts
+//app/api/auth/[...nextauth]/route.ts
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
@@ -19,49 +19,43 @@ const authOptions: NextAuthOptions = {
   adapter: FirestoreAdapter(adminDb),
   callbacks: {
     async signIn({ user, account }) {
-  const userEmail = user.email;
-  const provider = account?.provider;
+      const userEmail = user.email;
+      const provider = account?.provider;
 
-  if (!userEmail) {
-    console.error("No email found for user");
-    return false;
-  }
+      if (!userEmail) {
+        console.error("No email found for user");
+        return false;
+      }
 
-  const userDocRef = adminDb.collection("users").doc(userEmail);
-  const userDoc = await userDocRef.get();
+      const userDocRef = adminDb.collection("users").doc(userEmail);
+      const userDoc = await userDocRef.get();
 
-  if (userDoc.exists) {
-    const userData = userDoc.data();
+      if (userDoc.exists) {
+        const userData = userDoc.data();
+        if (userData?.provider && userData.provider !== provider) {
+          console.error("OAuthAccountNotLinked: User exists but provider is different");
+          return `/auth/signin?error=OAuthAccountNotLinked&provider=${userData.provider}`;
+        }
 
-    // Check for provider mismatch ONLY if the user exists
-    if (userData?.provider && userData.provider !== provider) {
-      console.error("OAuthAccountNotLinked: User exists but provider is different");
-      // Redirect to sign-in with the correct provider information
-      return `/api/auth/signin?error=OAuthAccountNotLinked&provider=${userData.provider}`; // Key change here
-    }
+        console.log("User signed in successfully:", userEmail);
+      } else {
+        // Create a new user entry
+        await userDocRef.set({
+          email: userEmail,
+          plan: "free",
+          requestCount: 0,
+          provider: provider,
+        });
+        console.log("New user created successfully:", userEmail);
+      }
 
-    console.log("User signed in successfully:", { /* ... */ });
-
-  } else {
-    // User doesn't exist, create them
-    await userDocRef.set({
-      plan: "free",
-      requestCount: 0,
-      email: userEmail,
-      provider: provider,
-    });
-    console.log("New user created and signed in successfully:", { /* ... */ });
-  }
-      
       return true;
     },
     async session({ session }) {
-      console.log("Session created:", session);
       return session;
     },
-    async redirect({ baseUrl }) {
-      console.log("Redirecting to:", `${baseUrl}/dashboard`);
-      return `${baseUrl}/dashboard`;
+    async redirect({ url, baseUrl }) {
+      return url.startsWith(baseUrl) ? url : baseUrl;
     },
   },
 };
