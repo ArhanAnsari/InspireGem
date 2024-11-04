@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import NextAuth, { NextAuthOptions, User } from "next-auth";
+// app/api/auth/[...nextauth]/route.ts
+import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import GitHubProvider from "next-auth/providers/github";
 import { FirestoreAdapter } from "@next-auth/firebase-adapter";
-import { adminDb } from "@/firebaseAdmin"; // Import Firestore Admin instance
+import { adminDb } from "@/firebaseAdmin";
 
 const authOptions: NextAuthOptions = {
   providers: [
@@ -10,48 +12,60 @@ const authOptions: NextAuthOptions = {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
+    GitHubProvider({
+      clientId: process.env.GITHUB_CLIENT_ID!,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+    }),
   ],
-  adapter: FirestoreAdapter(adminDb), // Use the Firebase Admin Firestore instance
+  adapter: FirestoreAdapter(adminDb),
   callbacks: {
-    async signIn({ user }: { user: User }) {
-      const userEmail = user.email;
+    async signIn({ user, account }) {
+  const userEmail = user.email;
+  const provider = account?.provider;
 
-      if (!userEmail) {
-        console.error("No email found for user");
-        return false; // Block sign-in if no email
-      }
+  if (!userEmail) {
+    console.error("No email found for user");
+    return false;
+  }
 
-      // Reference to the user's document in Firestore
-      const userDocRef = adminDb.collection("users").doc(userEmail);
-      const userDoc = await userDocRef.get();
+  const userDocRef = adminDb.collection("users").doc(userEmail);
+  const userDoc = await userDocRef.get();
 
-      if (userDoc.exists) {
-        // User already exists, fetch plan and request count
-        const userData = userDoc.data();
-        console.log("User Plan:", userData?.plan);
-        console.log("Request Count:", userData?.requestCount);
-      } else {
-        // New user, create a default entry in Firestore
-        const newUser = {
-          email: userEmail,
-          plan: "free", //Default Plan
-          requestCount: 0, //Default Request Count
-        };
-        await userDocRef.set(newUser);
-        console.log("New user created with Free plan and 0 request count.");
-      }
+  if (userDoc.exists) {
+    const userData = userDoc.data();
 
-      return true; // Allow sign-in
+    // Check for provider mismatch ONLY if the user exists
+    if (userData?.provider && userData.provider !== provider) {
+      console.error("OAuthAccountNotLinked: User exists but provider is different");
+      // Redirect to sign-in with the correct provider information
+      return `/api/auth/signin?error=OAuthAccountNotLinked&provider=${userData.provider}`; // Key change here
+    }
+
+    console.log("User signed in successfully:", { /* ... */ });
+
+  } else {
+    // User doesn't exist, create them
+    await userDocRef.set({
+      plan: "free",
+      requestCount: 0,
+      email: userEmail,
+      provider: provider,
+    });
+    console.log("New user created and signed in successfully:", { /* ... */ });
+  }
+      
+      return true;
     },
     async session({ session }) {
-      // Pass session information
+      console.log("Session created:", session);
       return session;
+    },
+    async redirect({ baseUrl }) {
+      console.log("Redirecting to:", `${baseUrl}/dashboard`);
+      return `${baseUrl}/dashboard`;
     },
   },
 };
 
-// Create the NextAuth handler
 const handler = NextAuth(authOptions);
-
-// Export the handler for POST and GET requests
 export { handler as GET, handler as POST };
