@@ -13,6 +13,12 @@ export default function SignIn() {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
   const [showFallbackLink, setShowFallbackLink] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    setError(urlParams.get("error"));
+  }, []);
 
   const handleSignIn = async (provider: string) => {
     setLoading(true);
@@ -20,16 +26,17 @@ export default function SignIn() {
       await signIn(provider, {
         callbackUrl: "/dashboard",
       });
-    } catch (error) {
-      if (error instanceof Error) {
-        if (error.message.includes("OAuthAccountNotLinked")) {
-          toast.info("This account is not linked. Please sign up first or sign in using the originally linked provider.");
+    } catch (err) {
+      if (err instanceof Error) {
+        if (err.message.includes("OAuthAccountNotLinked")) {
+          const providerName = new URLSearchParams(window.location.search).get("provider");
+          toast.info(`This account is already linked to ${providerName}. Please sign in with that provider.`);
         } else {
           toast.error("Sign-in failed. Please try again.");
-          console.error("Sign-in error:", error.message);
+          console.error("Sign-in error:", err.message);
         }
       } else {
-        console.error("An unexpected error occurred:", error);
+        console.error("An unexpected error occurred:", err);
       }
     } finally {
       setLoading(false);
