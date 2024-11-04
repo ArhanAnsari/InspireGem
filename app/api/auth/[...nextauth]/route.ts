@@ -35,6 +35,12 @@ const authOptions: NextAuthOptions = {
         if (userData?.provider && userData.provider !== provider) {
           console.error("OAuthAccountNotLinked: User exists but provider is different");
           throw new Error("OAuthAccountNotLinked");
+          console.log("User signed in successfully:", {
+          email: userEmail,
+          plan: userData?.plan,
+          requestCount: userData?.requestCount,
+          provider: provider,
+        });
         }
       } else {
         // Create a new user document in Firestore
@@ -45,15 +51,23 @@ const authOptions: NextAuthOptions = {
           provider: provider,
         };
         await userDocRef.set(newUser);
+        console.log("New user created and signed in successfully:", {
+          email: userEmail,
+          plan: "free",
+          requestCount: 0,
+          provider: provider,
+        });
       }
 
       return true;
     },
     async session({ session, user }) {
+      console.log("Session created:", session);
       session.user.id = user.id; // Include user ID in session if needed
       return session;
     },
     async redirect({ baseUrl }) {
+      console.log("Redirecting to:", `${baseUrl}/dashboard`);
       return `${baseUrl}/dashboard`;
     },
   },
