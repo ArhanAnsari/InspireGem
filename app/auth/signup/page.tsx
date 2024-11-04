@@ -4,8 +4,8 @@ import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import SEO from "@/components/SEO";
+import "react-toastify/dist/ReactToastify.css";
 import { FaGoogle, FaGithub } from "react-icons/fa";
 
 export default function SignUp() {
@@ -22,10 +22,12 @@ export default function SignUp() {
       });
     } catch (error) {
       if (error instanceof Error) {
-        toast.error("Sign-up failed. Please try again.");
-        console.error("Sign-up error:", error.message);
-      } else {
-        console.error("An unexpected error occurred:", error);
+        if (error.message.includes("OAuthAccountNotLinked")) {
+          toast.error("Sign-up failed. Please try again or sign in with your existing account.");
+        } else {
+          toast.error("Sign-up failed. Please try again.");
+          console.error("Sign-up error:", error.message);
+        }
       }
     } finally {
       setLoading(false);

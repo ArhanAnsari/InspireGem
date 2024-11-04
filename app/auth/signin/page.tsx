@@ -53,6 +53,7 @@ export default function SignIn() {
 
   return (
     <>
+      {/* Sign-in content */}
       <SEO title="Sign In - InspireGem" description="Sign in to InspireGem using your Google or GitHub account." />
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-gray-800 py-6 px-4">
         <h1 className="text-3xl sm:text-4xl font-bold mb-6">Sign In</h1>
@@ -80,7 +81,7 @@ export default function SignIn() {
           </p>
         )}
         <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
-      </div>
+        </div>
     </>
   );
 }
