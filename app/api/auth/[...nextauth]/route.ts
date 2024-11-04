@@ -19,64 +19,45 @@ const authOptions: NextAuthOptions = {
   adapter: FirestoreAdapter(adminDb),
   callbacks: {
     async signIn({ user, account, profile }) {
-      const userEmail = user.email;
-      const provider = account?.provider;
+      try {
+        const userEmail = user.email;
+        const provider = account?.provider;
 
-      if (!userEmail) {
-        console.error("No email found for user");
+        if (!userEmail) {
+          throw new Error("No email found for user");
+        }
+
+        const userDocRef = adminDb.collection("users").doc(userEmail);
+        const userDoc = await userDocRef.get();
+
+        if (userDoc.exists) {
+          const userData = userDoc.data();
+          if (userData?.provider && userData.provider !== provider) {
+            throw new Error("OAuthAccountNotLinked");
+          }
+        } else {
+          const newUser = {
+            email: userEmail,
+            plan: "free",
+            requestCount: 0,
+            provider: provider,
+          };
+          await userDocRef.set(newUser);
+        }
+        return true;
+      } catch (error) {
+        console.error("Sign-in error:", error);
         return false;
       }
-
-      const userDocRef = adminDb.collection("users").doc(userEmail);
-      const userDoc = await userDocRef.get();
-
-      if (userDoc.exists) {
-        const userData = userDoc.data();
-        if (userData?.provider && userData.provider !== provider) {
-          console.error("OAuthAccountNotLinked: User exists but provider is different");
-          throw new Error("OAuthAccountNotLinked");
-          console.log("User signed in successfully:", {
-          email: userEmail,
-          plan: userData?.plan,
-          requestCount: userData?.requestCount,
-          provider: provider,
-        });
-        }
-      } else {
-        // Create a new user document in Firestore
-        const newUser = {
-          plan: "free",
-          requestCount: 0,
-          email: userEmail,
-          provider: provider,
-        };
-        await userDocRef.set(newUser);
-        console.log("New user created and signed in successfully:", {
-          email: userEmail,
-          plan: "free",
-          requestCount: 0,
-          provider: provider,
-        });
-      }
-
-      return true;
     },
     async session({ session, user }) {
-      console.log("Session created:", session);
-      session.user.id = user.id; // Include user ID in session if needed
+      session.user.id = user.id;
       return session;
-    },
-    async redirect({ baseUrl }) {
-      console.log("Redirecting to:", `${baseUrl}/dashboard`);
-      return `${baseUrl}/dashboard`;
     },
   },
   events: {
     async signIn({ user }) {
       console.log("User signed in:", user);
-    },
-    async signOut({ token }) {
-      console.log("User signed out:", token);
     },
   },
 };
