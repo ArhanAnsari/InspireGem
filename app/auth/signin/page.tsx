@@ -13,6 +13,12 @@ export default function SignIn() {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
   const [showFallbackLink, setShowFallbackLink] = useState(false);
+  const [error, setError] = useState<string | null>(null); // Add error state
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    setError(urlParams.get("error")); // Get error from URL
+  }, []);
 
   const handleSignIn = async (provider: string) => {
     setLoading(true);
@@ -21,6 +27,14 @@ export default function SignIn() {
         callbackUrl: "/dashboard",
       });
     } catch (error) {
+      {error === "OAuthAccountNotLinked" && (
+        <p className="text-red-500 mt-2">
+          This account is already linked to{" "}
+          {/* Extract correct provider from URL */}
+          {new URLSearchParams(window.location.search).get("provider")}. Please sign in
+          with that provider.
+        </p>
+      )}
       if (error instanceof Error) {
         if (error.message.includes("OAuthAccountNotLinked")) {
           toast.info("This account is not linked. Please sign up first or sign in using the originally linked provider.");
