@@ -52,11 +52,13 @@ const authOptions: NextAuthOptions = {
         return false;
       }
     },
+    
     async session({ session, user }) {
-      (link unavailable) = (link unavailable);
+      session.user.id = user.id;
       return session;
     },
   },
+
   events: {
     async onSignIn({ user }) {
       console.log("User signed in:", user);
