@@ -1,4 +1,3 @@
-// app/api/auth/[...nextauth]/route.ts
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
@@ -32,35 +31,41 @@ const authOptions: NextAuthOptions = {
 
         if (userDoc.exists) {
           const userData = userDoc.data();
-          if (userData?.provider && userData.provider !== provider) {
-            throw new Error("OAuthAccountNotLinked");
+
+          // Link account if provider doesn't match
+          if (userData.provider && userData.provider !== provider) {
+            await userDocRef.update({ provider });
           }
         } else {
           const newUser = {
             email: userEmail,
             plan: "free",
             requestCount: 0,
-            provider: provider,
+            provider,
           };
           await userDocRef.set(newUser);
         }
+
         return true;
       } catch (error) {
         console.error("Sign-in error:", error);
         return false;
       }
     },
+    
     async session({ session, user }) {
       session.user.id = user.id;
       return session;
     },
   },
+
   events: {
-    async signIn({ user }) {
+    async onSignIn({ user }) {
       console.log("User signed in:", user);
     },
   },
 };
 
 const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST };
+
+export { handler as GET, handler as POST };

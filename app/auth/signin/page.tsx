@@ -17,9 +17,8 @@ export default function SignIn() {
   const handleSignIn = async (provider: string) => {
   setLoading(true);
   try {
-    await signIn(provider, {
-      callbackUrl: "/dashboard",
-    });
+    await signIn(provider, { callbackUrl: "/dashboard" });
+    toast.success("Signed in successfully!");
   } catch (error) {
     setLoading(false);
     if (error instanceof Error) {
@@ -30,7 +29,7 @@ export default function SignIn() {
       }
     }
   }
-  };
+};
   
   useEffect(() => {
     if (session) {
