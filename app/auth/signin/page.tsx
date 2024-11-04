@@ -15,27 +15,23 @@ export default function SignIn() {
   const [showFallbackLink, setShowFallbackLink] = useState(false);
 
   const handleSignIn = async (provider: string) => {
-    setLoading(true);
-    try {
-      await signIn(provider, {
-        callbackUrl: "/dashboard",
-      });
-    } catch (error) {
-      if (error instanceof Error) {
-        if (error.message.includes("OAuthAccountNotLinked")) {
-          toast.info("This account is not linked. Please sign up first or sign in using the originally linked provider.");
-        } else {
-          toast.error("Sign-in failed. Please try again.");
-          console.error("Sign-in error:", error.message);
-        }
+  setLoading(true);
+  try {
+    await signIn(provider, {
+      callbackUrl: "/dashboard",
+    });
+  } catch (error) {
+    setLoading(false);
+    if (error instanceof Error) {
+      if (error.message.includes("OAuthAccountNotLinked")) {
+        toast.error("This account is not linked. Please sign in with the provider you originally used.");
       } else {
-        console.error("An unexpected error occurred:", error);
+        toast.error("Sign-in failed. Please try again.");
       }
-    } finally {
-      setLoading(false);
     }
+  }
   };
-
+  
   useEffect(() => {
     if (session) {
       const timer = setTimeout(() => {
