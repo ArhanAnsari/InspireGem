@@ -27,11 +27,13 @@ const authOptions: NextAuthOptions = {
         return false;
       }
 
+      // Check if the user exists in Firestore
       const userDocRef = adminDb.collection("users").doc(userEmail);
       const userDoc = await userDocRef.get();
 
       if (userDoc.exists) {
         const userData = userDoc.data();
+
         if (userData?.provider && userData.provider !== provider) {
           console.error("OAuthAccountNotLinked: User exists but provider is different");
           return `/auth/signin?error=OAuthAccountNotLinked&provider=${userData.provider}`;
@@ -39,19 +41,24 @@ const authOptions: NextAuthOptions = {
 
         console.log("User signed in successfully:", userEmail);
       } else {
-        // Create a new user entry
+        // Handle new user creation
         await userDocRef.set({
           email: userEmail,
           plan: "free",
           requestCount: 0,
           provider: provider,
+          createdAt: new Date(),
         });
         console.log("New user created successfully:", userEmail);
       }
 
       return true;
     },
-    async session({ session }) {
+    async session({ session, user }) {
+      // Attach additional user information if needed
+      if (user?.email) {
+        session.user.email = user.email;
+      }
       return session;
     },
     async redirect({ url, baseUrl }) {
