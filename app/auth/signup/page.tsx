@@ -15,23 +15,21 @@ export default function SignUp() {
   const [showFallbackLink, setShowFallbackLink] = useState(false);
 
   const handleSignUp = async (provider: string) => {
-    setLoading(true);
-    try {
-      await signIn(provider, {
-        callbackUrl: "/dashboard",
-      });
-    } catch (error) {
-      if (error instanceof Error) {
-        if (error.message.includes("OAuthAccountNotLinked")) {
-          toast.error("Sign-up failed. Please try again or sign in with your existing account.");
-        } else {
-          toast.error("Sign-up failed. Please try again.");
-          console.error("Sign-up error:", error.message);
-        }
+  setLoading(true);
+  try {
+    await signIn(provider, {
+      callbackUrl: "/dashboard",
+    });
+  } catch (error) {
+    setLoading(false);
+    if (error instanceof Error) {
+      if (error.message.includes("OAuthAccountNotLinked")) {
+        toast.error("This account is already linked. Please sign in with the existing provider.");
+      } else {
+        toast.error("Sign-up failed. Please try again.");
       }
-    } finally {
-      setLoading(false);
     }
+  }
   };
 
   useEffect(() => {
