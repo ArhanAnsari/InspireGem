@@ -7,6 +7,7 @@ import { ToastContainer, toast } from "react-toastify";
 import { getUserData } from "@/firebaseFunctions";
 import "react-toastify/dist/ReactToastify.css";
 import SEO from "@/components/SEO";
+import { FaGoogle } from "react-icons/fa";
 
 export default function SignUp() {
   const router = useRouter();
@@ -72,7 +73,7 @@ export default function SignUp() {
           className={`bg-blue-500 text-white px-4 py-2 rounded ${loading ? "opacity-50" : "hover:bg-blue-600"}`}
           disabled={loading}
         >
-          {loading ? "Signing up..." : "Sign up with Google"}
+         <FaGoogle /> {loading ? "Signing up..." : "Sign up with Google"}
         </button>
         {showFallbackLink && (
           <p className="mt-4 text-blue-500">
