@@ -15,6 +15,7 @@ const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user }: { user: User }) {
       const userEmail = user.email;
+      const provider = user.provider;
 
       if (!userEmail) {
         console.error("No email found for user");
@@ -33,8 +34,11 @@ const authOptions: NextAuthOptions = {
       } else {
         // New user, create a default entry in Firestore
         const newUser = {
-          plan: "free", // Default plan
-          requestCount: 0, // Default request count
+          email: userEmail,
+          plan: "free", //Default Plan
+          requestCount: 0, //Default Request Count
+          provider: provider, //Provider on which user has signed in
+          createdAt: new Date(),
         };
         await userDocRef.set(newUser);
         console.log("New user created with Free plan and 0 request count.");
