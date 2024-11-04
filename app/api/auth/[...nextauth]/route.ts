@@ -1,9 +1,8 @@
-//app/api/auth/[...nextauth]/route.ts
-import NextAuth, { NextAuthOptions } from "next-auth";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import NextAuth, { NextAuthOptions, User } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import GitHubProvider from "next-auth/providers/github";
 import { FirestoreAdapter } from "@next-auth/firebase-adapter";
-import { adminDb } from "@/firebaseAdmin";
+import { adminDb } from "@/firebaseAdmin"; // Import Firestore Admin instance
 
 const authOptions: NextAuthOptions = {
   providers: [
@@ -11,61 +10,47 @@ const authOptions: NextAuthOptions = {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
-    GitHubProvider({
-      clientId: process.env.GITHUB_CLIENT_ID!,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-    }),
   ],
-  adapter: FirestoreAdapter(adminDb),
+  adapter: FirestoreAdapter(adminDb), // Use the Firebase Admin Firestore instance
   callbacks: {
-    async signIn({ user, account }) {
+    async signIn({ user }: { user: User }) {
       const userEmail = user.email;
-      const provider = account?.provider;
 
       if (!userEmail) {
         console.error("No email found for user");
-        return false;
+        return false; // Block sign-in if no email
       }
 
-      // Check if the user exists in Firestore
+      // Reference to the user's document in Firestore
       const userDocRef = adminDb.collection("users").doc(userEmail);
       const userDoc = await userDocRef.get();
 
       if (userDoc.exists) {
+        // User already exists, fetch plan and request count
         const userData = userDoc.data();
-
-        if (userData?.provider && userData.provider !== provider) {
-          console.error("OAuthAccountNotLinked: User exists but provider is different");
-          return `/auth/signin?error=OAuthAccountNotLinked&provider=${userData.provider}`;
-        }
-
-        console.log("User signed in successfully:", userEmail);
+        console.log("User Plan:", userData?.plan);
+        console.log("Request Count:", userData?.requestCount);
       } else {
-        // Handle new user creation
-        await userDocRef.set({
-          email: userEmail,
-          plan: "free",
-          requestCount: 0,
-          provider: provider,
-          createdAt: new Date(),
-        });
-        console.log("New user created successfully:", userEmail);
+        // New user, create a default entry in Firestore
+        const newUser = {
+          plan: "free", // Default plan
+          requestCount: 0, // Default request count
+        };
+        await userDocRef.set(newUser);
+        console.log("New user created with Free plan and 0 request count.");
       }
 
-      return true;
+      return true; // Allow sign-in
     },
-    async session({ session, user }) {
-      // Attach additional user information if needed
-      if (user?.email) {
-        session.user.email = user.email;
-      }
+    async session({ session }) {
+      // Pass session information
       return session;
-    },
-    async redirect({ url, baseUrl }) {
-      return url.startsWith(baseUrl) ? url : baseUrl;
     },
   },
 };
 
+// Create the NextAuth handler
 const handler = NextAuth(authOptions);
+
+// Export the handler for POST and GET requests
 export { handler as GET, handler as POST };

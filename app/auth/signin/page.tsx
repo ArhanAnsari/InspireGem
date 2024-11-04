@@ -7,7 +7,6 @@ import { ToastContainer, toast } from "react-toastify";
 import { getUserData } from "@/firebaseFunctions";
 import "react-toastify/dist/ReactToastify.css";
 import SEO from "@/components/SEO";
-import { FaGoogle, FaGithub } from "react-icons/fa";
 
 export default function SignIn() {
   const router = useRouter();
@@ -15,10 +14,10 @@ export default function SignIn() {
   const [loading, setLoading] = useState(false);
   const [showFallbackLink, setShowFallbackLink] = useState(false);
 
-  const handleSignIn = async (provider: string) => {
+  const handleSignIn = async () => {
     setLoading(true);
     try {
-      const result = await signIn(provider, { redirect: false });
+      const result = await signIn("google", { redirect: false });
 
       if (result?.error) {
         throw new Error(result.error);
@@ -41,14 +40,19 @@ export default function SignIn() {
     }
   };
 
+  // Effect to handle automatic redirection
   useEffect(() => {
     if (session) {
+      // Redirect after a short delay if session exists
       const timer = setTimeout(() => {
         router.push("/dashboard");
       }, 2000);
+
+      // Show the fallback link if not redirected within 5 seconds
       const fallbackTimer = setTimeout(() => {
         setShowFallbackLink(true);
       }, 5000);
+
       return () => {
         clearTimeout(timer);
         clearTimeout(fallbackTimer);
@@ -58,23 +62,19 @@ export default function SignIn() {
 
   return (
     <>
-      <SEO title="Sign In - InspireGem" description="Sign in to InspireGem using your Google or GitHub account." />
+      <SEO
+        title="Sign In - InspireGem"
+        description="Sign in to InspireGem using your Google account to access AI-powered content generation."
+      />
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-gray-800 py-6 px-4">
         <h1 className="text-3xl sm:text-4xl font-bold mb-6">Sign In</h1>
-        <p className="text-base sm:text-lg mb-4">Sign in with one of the options below.</p>
+        <p className="text-base sm:text-lg mb-4">Sign in with your Google account.</p>
         <button
-          onClick={() => handleSignIn("google")}
-          className={`bg-blue-500 text-white px-4 py-2 rounded flex items-center gap-2 ${loading ? "opacity-50" : "hover:bg-blue-600"}`}
+          onClick={handleSignIn}
+          className={`bg-blue-500 text-white px-4 py-2 rounded ${loading ? "opacity-50" : "hover:bg-blue-600"}`}
           disabled={loading}
         >
-          <FaGoogle /> {loading ? "Signing in..." : "Sign in with Google"}
-        </button>
-        <button
-          onClick={() => handleSignIn("github")}
-          className={`bg-gray-800 text-white px-4 py-2 mt-4 rounded flex items-center gap-2 ${loading ? "opacity-50" : "hover:bg-gray-900"}`}
-          disabled={loading}
-        >
-          <FaGithub /> {loading ? "Signing in..." : "Sign in with GitHub"}
+          {loading ? "Signing in..." : "Sign in with Google"}
         </button>
         {showFallbackLink && (
           <p className="mt-4 text-blue-500">
