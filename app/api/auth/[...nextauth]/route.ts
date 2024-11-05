@@ -35,15 +35,27 @@ const authOptions: NextAuthOptions = {
           // Link account if provider doesn't match
           if (userData.provider && userData.provider !== provider) {
             await userDocRef.update({ provider });
+            console.log("User signed in successfully:", {
+              email: userEmail,
+              plan: userData?.plan,
+              requestCount: userData?.requestCount,
+              provider: provider,
+            });
           }
         } else {
           const newUser = {
             email: userEmail,
             plan: "free",
             requestCount: 0,
-            provider,
+            provider: provider,
           };
           await userDocRef.set(newUser);
+          console.log("New user created and signed in successfully:", {
+          email: userEmail,
+          plan: "free",
+          requestCount: 0,
+          provider: provider,
+        });
         }
 
         return true;
@@ -53,7 +65,8 @@ const authOptions: NextAuthOptions = {
       }
     },
     
-    async session({ session, user }) {
+    async session({ session, user }){
+      console.log("Session created:", session);
       session.user.id = user.id;
       return session;
     },
