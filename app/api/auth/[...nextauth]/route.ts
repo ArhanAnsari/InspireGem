@@ -31,17 +31,16 @@ const authOptions: NextAuthOptions = {
 
         if (userDoc.exists) {
           const userData = userDoc.data();
-
-          // Link account if provider doesn't match
-          if (userData.provider && userData.provider !== provider) {
+        
+          if (userData && userData.provider && userData.provider !== provider) {
             await userDocRef.update({ provider });
             console.log("User signed in successfully:", { 
               email: userEmail, 
-              plan: userData?.plan, 
-              requestCount: userData?.requestCount, 
-              provider: provider, 
-            });
-          }           
+              plan: userData?.plan ?? 'free', 
+              requestCount: userData?.requestCount ?? 0, 
+              provider: provider,
+            });            
+          }
         } else {
           const newUser = {
             email: userEmail,
