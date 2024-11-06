@@ -1,3 +1,4 @@
+//app/api/auth/[...nextauth]/route.ts
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
@@ -17,55 +18,43 @@ const authOptions: NextAuthOptions = {
   ],
   adapter: FirestoreAdapter(adminDb),
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
+      const userEmail = user.email;
+      const provider = account?.provider;
+
+      if (!userEmail) return false;
+
       try {
-        const userEmail = user.email;
-        const provider = account?.provider;
-
-        if (!userEmail) {
-          throw new Error("No email found for user");
-        }
-
         const userDocRef = adminDb.collection("users").doc(userEmail);
         const userDoc = await userDocRef.get();
 
         if (userDoc.exists) {
           const userData = userDoc.data();
-        
-          if (userData && userData.provider && userData.provider !== provider) {
-            await userDocRef.update({ provider });
-            console.log("User signed in successfully:", { 
-              email: userEmail, 
-              plan: userData?.plan ?? 'free', 
-              requestCount: userData?.requestCount ?? 0, 
-              provider: provider,
-            });            
+          
+          if (userData?.provider && userData.provider !== provider) {
+            throw new Error("OAuthAccountNotLinked");
           }
+          // Update provider if needed
+          await userDocRef.update({ provider });
+          return true;
         } else {
-          const newUser = {
+          // Create a new user if not found
+          await userDocRef.set({
             email: userEmail,
             plan: "free",
             requestCount: 0,
-            provider: provider,
-          };
-          await userDocRef.set(newUser);
-          console.log("New user created and signed in successfully:", {
-            email: userEmail,
-            plan: "free",
-            requestCount: 0,
-            provider: provider,
-          });          
+            provider,
+          });
+          return true;
         }
-
-        return true;
       } catch (error) {
         console.error("Sign-in error:", error);
+        if (error.message === "OAuthAccountNotLinked") return false;
         return false;
       }
     },
     
     async session({ session, user }) {
-      console.log("Session created:", session);
       session.user.id = user.id;
       return session;
     },    
