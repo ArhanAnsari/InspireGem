@@ -30,22 +30,22 @@ const authOptions: NextAuthOptions = {
 
         if (userDoc.exists) {
           const userData = userDoc.data();
+          console.log("Existing user signing in:", userData); // Log existing user data
 
           if (userData?.provider && userData.provider !== provider) {
-            // If provider mismatch, add current provider to a list of linked providers
             const linkedProviders = userData.linkedProviders || [];
             if (!linkedProviders.includes(provider)) {
               linkedProviders.push(provider);
               await userDocRef.update({ linkedProviders });
             }
           } else if (!userData?.provider) {
-            // If no provider set, initialize it with the current provider
             await userDocRef.update({ provider });
           }
 
           return true;
         } else {
-          // Create a new user if not found
+          console.log("New user signing up:", { email: userEmail, provider }); // Log new user data
+          
           await userDocRef.set({
             email: userEmail,
             plan: "free",
@@ -62,9 +62,10 @@ const authOptions: NextAuthOptions = {
     },
     
     async session({ session, user }) {
+      console.log("Session data:", session); // Log session data
       session.user.id = user.id;
       return session;
-    },    
+    },
   },
 
   events: {
