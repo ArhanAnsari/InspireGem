@@ -18,7 +18,10 @@ const authOptions: NextAuthOptions = {
   ],
   adapter: FirestoreAdapter(adminDb),
   callbacks: {
-    async signIn({ user, account }) {
+    async signIn({ user: { email }, account: { provider } }: {
+      user: { email: string },
+      account: { provider: string }
+    }) => {
       const userEmail = user.email;
       const provider = account?.provider;
 
@@ -61,7 +64,12 @@ const authOptions: NextAuthOptions = {
           return true;
         }
       } catch (error) {
-        console.error("Sign-in error:", error);
+        if (error.code === 'auth/invalid-email') {
+          console.error('Invalid email:', error);
+        } else {
+          console.error('Sign-in error:', error);
+        }
+        //console.error("Sign-in error:", error);
         return false;
       }
     },
