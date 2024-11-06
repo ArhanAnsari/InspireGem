@@ -13,21 +13,19 @@ export default function SignIn() {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
   const [showFallbackLink, setShowFallbackLink] = useState(false);
-
+  
   const handleSignIn = async (provider: string) => {
   setLoading(true);
   try {
-    await signIn(provider, { callbackUrl: "/dashboard" });
-    toast.success("Signed in successfully!");
+    const response = await signIn(provider, { callbackUrl: "/dashboard" });
+    if (response?.error === "OAuthAccountNotLinked") {
+      toast.error("Account not linked. Please sign in with your original provider.");
+    } else {
+      toast.success("Signed in successfully!");
+    }
   } catch (error) {
     setLoading(false);
-    if (error instanceof Error) {
-      if (error.message.includes("OAuthAccountNotLinked")) {
-        toast.error("This account is not linked. Please sign in with the provider you originally used.");
-      } else {
-        toast.error("Sign-in failed. Please try again.");
-      }
-    }
+    toast.error("Sign-in failed. Please try again.");
   }
 };
   
