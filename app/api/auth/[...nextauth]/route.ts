@@ -1,4 +1,4 @@
-//app/api/auth/[...nextauth]/route.ts
+// app/api/auth/[...nextauth]/route.ts
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
@@ -30,12 +30,19 @@ const authOptions: NextAuthOptions = {
 
         if (userDoc.exists) {
           const userData = userDoc.data();
-          
+
           if (userData?.provider && userData.provider !== provider) {
-            throw new Error("OAuthAccountNotLinked");
+            // If provider mismatch, add current provider to a list of linked providers
+            const linkedProviders = userData.linkedProviders || [];
+            if (!linkedProviders.includes(provider)) {
+              linkedProviders.push(provider);
+              await userDocRef.update({ linkedProviders });
+            }
+          } else if (!userData?.provider) {
+            // If no provider set, initialize it with the current provider
+            await userDocRef.update({ provider });
           }
-          // Update provider if needed
-          await userDocRef.update({ provider });
+
           return true;
         } else {
           // Create a new user if not found
@@ -44,12 +51,12 @@ const authOptions: NextAuthOptions = {
             plan: "free",
             requestCount: 0,
             provider,
+            linkedProviders: [provider],
           });
           return true;
         }
       } catch (error) {
         console.error("Sign-in error:", error);
-        if (error.message === "OAuthAccountNotLinked") return false;
         return false;
       }
     },
