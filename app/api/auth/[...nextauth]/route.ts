@@ -18,41 +18,40 @@ const authOptions: NextAuthOptions = {
   ],
   adapter: FirestoreAdapter(adminDb),
   callbacks: {
-    async signIn({ user: { email }, account: { provider } }: {
-      user: { email: string },
-      account: { provider: string }
-    }) => {
+    async signIn({ user, account }) {
       const userEmail = user.email;
-      const provider = account?.provider;
+      const provider = account.provider;
 
       if (!userEmail || !provider) return false;
+
       try {
         const userDocRef = adminDb.collection("users").doc(userEmail);
         const userDoc = await userDocRef.get();
-        
+
         if (userDoc.exists) {
           const userData = userDoc.data();
-          
+
           if (!userData) {
             console.error("User data not found");
             return false;
           }
+
           console.log("Existing user signing in:", userData);
-          
+
           if (userData.provider && userData.provider !== provider) {
             const linkedProviders = userData.linkedProviders || [];
-            
-            if (!linkedProviders.includes(provider)) {            
+            if (!linkedProviders.includes(provider)) {
               linkedProviders.push(provider);
               await userDocRef.update({ linkedProviders });
             }
           } else if (!userData.provider) {
             await userDocRef.update({ provider });
           }
-          
+
           return true;
         } else {
           console.log("New user signing up:", { email: userEmail, provider });
+
           await userDocRef.set({
             email: userEmail,
             plan: "free",
@@ -60,7 +59,7 @@ const authOptions: NextAuthOptions = {
             provider,
             linkedProviders: [provider],
           });
-          
+
           return true;
         }
       } catch (error) {
@@ -69,18 +68,15 @@ const authOptions: NextAuthOptions = {
         } else {
           console.error('Sign-in error:', error);
         }
-        //console.error("Sign-in error:", error);
         return false;
       }
     },
-    
     async session({ session, user }) {
-      console.log("Session data:", session); // Log session data
+      console.log("Session data:", session);
       session.user.id = user.id;
       return session;
     },
   },
-
   events: {
     async signIn({ user }) {
       console.log("User signed in:", user);
