@@ -19,69 +19,47 @@ const authOptions: NextAuthOptions = {
   adapter: FirestoreAdapter(adminDb),
   callbacks: {
   async signIn({ user, account }) {
-    const userEmail = user.email;
-    const provider = account.provider;
+  const { email } = user;
+  const { provider } = account;
 
-    if (!userEmail || !provider) return false;
+  if (!email || !provider) return false;
 
-    try {
-      const userDocRef = adminDb.collection("users").doc(userEmail);
-      const userDoc = await userDocRef.get();
+  const userDocRef = adminDb.collection("users").doc(email);
 
-      if (userDoc.exists) {
-        const userData = userDoc.data();
+  try {
+    const userDoc = await userDocRef.get();
 
-        if (!userData) {
-          console.error("User data not found");
-          return false;
-        }
+    if (userDoc.exists) {
+      const userData = userDoc.data();
 
-        console.log("Existing user signing in:", userData);
-
-        // Check if provider is already linked
-        if (userData.linkedProviders && userData.linkedProviders.includes(provider)) {
-          return true;
-        }
-
-        // Link provider to existing account
-        if (userData.provider && userData.provider !== provider) {
-          const linkedProviders = userData.linkedProviders || [];
-          if (!linkedProviders.includes(provider)) {
-            linkedProviders.push(provider);
-            await userDocRef.update({ linkedProviders });
-          }
-          return true;
-        }
-
-        // Handle new provider for existing user without provider
-        if (!userData.provider) {
-          await userDocRef.update({ provider, linkedProviders: [provider] });
-          return true;
-        }
-
-        // If none of the above conditions are met, return error
-        console.error("OAuthAccountNotLinked error");
+      if (!userData) {
+        console.error("No user data found.");
         return false;
-      } else {
-        // Create new user document
-        console.log("New user signing up:", { email: userEmail, provider });
-        await userDocRef.set({
-          email: userEmail,
-          plan: "free",
-          requestCount: 0,
-          provider,
-          linkedProviders: [provider],
+      }
+
+      // Link the provider if not already linked
+      if (!userData.linkedProviders?.includes(provider)) {
+        await userDocRef.update({
+          linkedProviders: admin.firestore.FieldValue.arrayUnion(provider),
         });
-        return true;
       }
-    } catch (error) {
-      if (error.code === 'auth/invalid-email') {
-        console.error('Invalid email:', error);
-      } else {
-        console.error('Sign-in error:', error);
-      }
-      return false;
+
+      return true;
+    } else {
+      // New user - create user document
+      await userDocRef.set({
+        email,
+        plan: "free",
+        requestCount: 0,
+        provider,
+        linkedProviders: [provider],
+      });
+      return true;
     }
+  } catch (error) {
+    console.error("Error during signIn:", error);
+    return false;
+  }
   },
 
     async session({ session, user }) {
