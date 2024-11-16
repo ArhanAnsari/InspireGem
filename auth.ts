@@ -73,7 +73,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       console.log("User signed in:", user);
     },
   },
-};
+},
 
 const handler = NextAuth(authOptions);
 
