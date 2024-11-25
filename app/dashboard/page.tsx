@@ -15,6 +15,7 @@ import { StarIcon } from "@heroicons/react/24/solid";
 import { CheckBadgeIcon } from "@heroicons/react/24/outline";  // Plan badge icons
 import SEO from "@/components/SEO";
 import Footer from "@/components/Footer"; // Import the Footer component 
+import MathRenderer from "@/components/MathRenderer";
 
 export default function Dashboard() {
     const { data: session, status } = useSession();
@@ -73,6 +74,15 @@ export default function Dashboard() {
 
         if (!session || !session.user?.email) {
             toast.error("User session is not available.");
+            return;
+        }
+
+        // Check for math input (e.g., detect LaTeX syntax like $$...$$)
+        const isMathInput = input.trim().startsWith("$$") && input.trim().endsWith("$$");
+
+        if (isMathInput) {
+            setOutput(input);
+            toast.success("Math content displayed successfully!");
             return;
         }
 
@@ -152,6 +162,9 @@ export default function Dashboard() {
                     {isLoading ? 'Generating...' : 'Generate AI Content'}
                 </button>
                 {output ? (
+            {output.startsWith("$$") ? (
+                            <MathRenderer content={output.slice(2, -2).trim()} displayMode={true} />
+                        ) : (
                     <div className="mt-6 bg-gray-100 p-4 rounded overflow-x-auto">
                         <h3 className="text-lg font-semibold">Generated Content:</h3>
                         <MarkdownRenderer content={output} />
