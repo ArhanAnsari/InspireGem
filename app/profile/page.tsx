@@ -2,20 +2,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getAuth, signOut, updateProfile, User } from "firebase/auth";
-import { getUserData, updateUserData } from "@/firebaseFunctions"; // Custom Firebase functions
-import { useSession, signIn, getProviders } from "next-auth/react";
+import { getAuth, signOut, updateProfile, User, linkWithPopup, GoogleAuthProvider, GithubAuthProvider } from "firebase/auth";
+import { getUserData, updateUserData, connectProvider, getConnectedProviders } from "@/firebaseFunctions"; // Importing functions
+import { useSession, signIn } from "next-auth/react";
+import { adminDb } from "@/firebaseAdmin"; // Importing admin functions
 
-// UserData interface including the 'name' property
 interface UserData {
   plan: "free" | "pro" | "enterprise";
   requestCount: number;
-  name?: string; // Ensure 'name' is defined as optional
-}
-
-interface Provider {
-  id: string;
-  name: string;
+  name?: string; // Optional for cases where name might not be available
 }
 
 const ProfilePage = () => {
@@ -26,7 +21,6 @@ const ProfilePage = () => {
   const [name, setName] = useState<string>("");
   const [nameEditMode, setNameEditMode] = useState<boolean>(false);
   const [connectedProviders, setConnectedProviders] = useState<string[]>([]);
-  const [availableProviders, setAvailableProviders] = useState<Record<string, Provider> | null>(null);
   const auth = getAuth();
 
   useEffect(() => {
@@ -41,8 +35,9 @@ const ProfilePage = () => {
         try {
           const data = await getUserData(currentUser.email!);
           setUserData(data ?? { plan: "free", requestCount: 0, name: currentUser.displayName || "" });
-          const providers = await getProviders();
-          setAvailableProviders(providers);
+
+          const providers = await getConnectedProviders(currentUser.email!);
+          setConnectedProviders(providers);
         } catch (error) {
           console.error("Error fetching profile data:", error);
         }
@@ -67,14 +62,14 @@ const ProfilePage = () => {
 
     try {
       await updateProfile(user, { displayName: name });
-      // Ensure the updated userData includes 'name'
-      const updatedUserData = {
-        ...userData,
-        name,
-      };
-
-      // Update userData in Firestore
-      await updateUserData(user.email!, updatedUserData);
+      // Update name in Firestore using Firebase Admin
+      if (userData) {
+        await adminDb.collection("users").doc(user.email!).update({
+          name,
+          plan: userData.plan,
+          requestCount: userData.requestCount,
+        });
+      }
       setNameEditMode(false);
       alert("Name updated successfully!");
     } catch (error) {
@@ -83,15 +78,35 @@ const ProfilePage = () => {
     }
   };
 
-  const handleProviderLink = async (providerId: string) => {
-    if (!session) return;
+  const handleSignOut = () => {
+    signOut(auth).catch((error) => console.error("Sign out error:", error));
+  };
+
+  const handleProviderLink = async (provider: "google" | "github") => {
+    if (!user) return;
+
+    const providerInstance =
+      provider === "google"
+        ? new GoogleAuthProvider()
+        : new GithubAuthProvider();
+
     try {
-      await signIn(providerId, { callbackUrl: "/profile" });
-      alert(`${providerId.charAt(0).toUpperCase() + providerId.slice(1)} has been successfully linked to your account.`);
-      setConnectedProviders((prev) => [...prev, providerId]);
+      await linkWithPopup(user, providerInstance);
+      await connectProvider(user.email!, provider); // Using function from firebaseFunctions
+      alert(`${provider.charAt(0).toUpperCase() + provider.slice(1)} has been successfully linked.`);
+      setConnectedProviders((prev) => [...prev, provider]);
     } catch (error) {
-      console.error("Error linking provider:", error);
-      alert("Failed to link provider. Please try again.");
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "code" in error &&
+        (error as { code?: string }).code === "auth/credential-already-in-use"
+      ) {
+        alert("This account is already linked to your current profile.");
+      } else {
+        console.error("Error linking provider:", error);
+        alert("Failed to link provider. Please try again.");
+      }
     }
   };
 
@@ -120,7 +135,12 @@ const ProfilePage = () => {
           <strong>Name:</strong>
           {nameEditMode ? (
             <div>
-              <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter new name" />
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter new name"
+              />
               <button onClick={handleNameChange}>Save</button>
               <button onClick={() => setNameEditMode(false)}>Cancel</button>
             </div>
@@ -133,14 +153,21 @@ const ProfilePage = () => {
         </div>
         <div className="provider-links">
           <h3>Connect Providers:</h3>
-          {availableProviders && Object.keys(availableProviders).map((providerId) => (
-            <button key={providerId} onClick={() => handleProviderLink(providerId)} disabled={connectedProviders.includes(providerId)}>
-              {connectedProviders.includes(providerId) ? `${providerId} (Connected)` : `Connect ${providerId}`}
-            </button>
-          ))}
+          <button
+            onClick={() => handleProviderLink("google")}
+            disabled={connectedProviders.includes("google")}
+          >
+            {connectedProviders.includes("google") ? "Google (Connected)" : "Connect Google"}
+          </button>
+          <button
+            onClick={() => handleProviderLink("github")}
+            disabled={connectedProviders.includes("github")}
+          >
+            {connectedProviders.includes("github") ? "GitHub (Connected)" : "Connect GitHub"}
+          </button>
         </div>
       </div>
-      <button onClick={() => signOut(auth).catch((error) => console.error("Sign out error:", error))}>Sign Out</button>
+      <button onClick={handleSignOut}>Sign Out</button>
     </div>
   );
 };
