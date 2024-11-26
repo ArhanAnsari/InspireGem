@@ -81,8 +81,14 @@ export default function Dashboard() {
         const isMathInput = input.trim().startsWith("$$") && input.trim().endsWith("$$");
 
         if (isMathInput) {
-            setOutput(input);
-            toast.success("Math content displayed successfully!");
+            // Use a state variable to trigger re-render after setting the output
+            // This forces React to update the component and render the MathRenderer
+            setOutput(""); 
+            setTimeout(() => {
+                setOutput(input);
+                toast.success("Math content displayed successfully!");
+            }, 0); // Setting a timeout of 0 ensures the state update happens after the current execution context.
+
             return;
         }
 
