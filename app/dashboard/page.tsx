@@ -81,8 +81,14 @@ export default function Dashboard() {
         const isMathInput = input.trim().startsWith("$$") && input.trim().endsWith("$$");
 
         if (isMathInput) {
-            setOutput(input);
-            toast.success("Math content displayed successfully!");
+            // Use a state variable to trigger re-render after setting the output
+            // This forces React to update the component and render the MathRenderer
+            setOutput(""); 
+            setTimeout(() => {
+                setOutput(input);
+                toast.success("Math content displayed successfully!");
+            }, 0); // Setting a timeout of 0 ensures the state update happens after the current execution context.
+
             return;
         }
 
@@ -161,17 +167,18 @@ export default function Dashboard() {
                 >
                     {isLoading ? 'Generating...' : 'Generate AI Content'}
                 </button>
-                {output ? (
-            output.startsWith("$$") ? (
+                {output && ( // Conditionally render output section only when output exists
+        output.startsWith("$$") ? (
+            <div className="mt-6 bg-gray-100 p-4 rounded overflow-x-auto">  {/* Add container div */}
+                <h3 className="text-lg font-semibold">Generated Content:</h3>
                 <MathRenderer content={output.slice(2, -2).trim()} displayMode={true} />
-            ) : (
-                <div className="mt-6 bg-gray-100 p-4 rounded overflow-x-auto">
-                    <h3 className="text-lg font-semibold">Generated Content:</h3>
-                    <MarkdownRenderer content={output} />
-                </div>
-            )
+            </div>
         ) : (
-            <div className="mt-6 text-gray-500">No content generated yet.</div>
+            <div className="mt-6 bg-gray-100 p-4 rounded overflow-x-auto">
+                <h3 className="text-lg font-semibold">Generated Content:</h3>
+                <MarkdownRenderer content={output} />
+            </div>
+        )
         )}
             </div>
 
