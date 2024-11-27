@@ -167,18 +167,17 @@ export default function Dashboard() {
                 >
                     {isLoading ? 'Generating...' : 'Generate AI Content'}
                 </button>
-                {output && ( // Conditionally render output section only when output exists
-        output.startsWith("$$") ? (
-            <div className="mt-6 bg-gray-100 p-4 rounded overflow-x-auto">  {/* Add container div */}
-                <h3 className="text-lg font-semibold">Generated Content:</h3>
+                {output ? (
+            output.trim().startsWith("$$") && output.trim().endsWith("$$") ? (
                 <MathRenderer content={output.slice(2, -2).trim()} displayMode={true} />
-            </div>
+            ) : (
+                <div className="mt-6 bg-gray-100 p-4 rounded overflow-x-auto">
+                    <h3 className="text-lg font-semibold">Generated Content:</h3>
+                    <MarkdownRenderer content={output} />
+                </div>
+            )
         ) : (
-            <div className="mt-6 bg-gray-100 p-4 rounded overflow-x-auto">
-                <h3 className="text-lg font-semibold">Generated Content:</h3>
-                <MarkdownRenderer content={output} />
-            </div>
-        )
+            <div className="mt-6 text-gray-500">No content generated yet.</div>
         )}
             </div>
 
