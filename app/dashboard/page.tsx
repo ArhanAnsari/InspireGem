@@ -239,5 +239,6 @@ export default function Dashboard() {
             <Footer />
             <ToastContainer />
         </div>
+        </div>
     );
 }
