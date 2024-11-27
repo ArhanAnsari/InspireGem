@@ -137,18 +137,21 @@ export default function Dashboard() {
 
     return (
         <div className="max-w-full mx-auto p-4 md:p-6 overflow-hidden">
-            <SEO title="Dashboard - InspireGem" description="Access your AI content generation dashboard, view plans, and review your previously generated content on InspireGem." />
-            
-            {/* Personalized Greeting with Plan Badge */}
-            <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">
-                Welcome to the Dashboard, {session?.user?.name}
-            </h1>
-            <div className="flex items-center mb-6">
-                <CheckBadgeIcon className="w-6 h-6 mr-2 text-blue-500" />
-                <span className="text-lg font-semibold text-gray-600">
-                    Your current plan: {userPlan === "free" ? "Free Plan" : userPlan === "pro" ? "Pro Plan" : "Enterprise Plan"}
-                </span>
-            </div>
+            <SEO 
+                title="Dashboard - InspireGem" 
+                description="Access your AI content generation dashboard, view plans, and review your previously generated content on InspireGem." 
+                />
+
+    <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">
+        Welcome to the Dashboard, {session?.user?.name}
+    </h1>
+    
+    <div className="flex items-center mb-6">
+        <CheckBadgeIcon className="w-6 h-6 mr-2 text-blue-500" />
+        <span className="text-lg font-semibold text-gray-600">
+            Your current plan: {userPlan === "free" ? "Free Plan" : userPlan === "pro" ? "Pro Plan" : "Enterprise Plan"}
+        </span>
+    </div>        
 
             {/* AI Content Generator Section */}
             <div className="mb-6">
