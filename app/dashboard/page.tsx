@@ -16,6 +16,7 @@ import { CheckBadgeIcon } from "@heroicons/react/24/outline";  // Plan badge ico
 import SEO from "@/components/SEO";
 import Footer from "@/components/Footer"; // Import the Footer component 
 import MathRenderer from "@/components/MathRenderer";
+import "katex/dist/katex.min.css";
 
 export default function Dashboard() {
     const { data: session, status } = useSession();
@@ -152,6 +153,7 @@ export default function Dashboard() {
             Your current plan: {userPlan === "free" ? "Free Plan" : userPlan === "pro" ? "Pro Plan" : "Enterprise Plan"}
         </span>
     </div>        
+        </div>
 
             {/* AI Content Generator Section */}
             <div className="mb-6">
