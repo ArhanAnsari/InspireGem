@@ -193,31 +193,30 @@ export default function Dashboard() {
                 {previousContent.length ? (
                     <div className="flex flex-col space-y-4">
                         {previousContent.map((content) => {
-                            const isMathContent =
-                                content.response.trim().startsWith("$$") &&
-                                content.response.trim().endsWith("$$");
+    const isMathContent =
+        content.response.trim().startsWith("$$") &&
+        content.response.trim().endsWith("$$");
 
-                            return (
-                                <div
-                                    key={content.id}
-                                    className="border p-4 rounded break-words overflow-x-auto"
-                                >
-                                    <h3 className="font-semibold">{content.question}</h3>
-                                    {isMathContent ? (
-                                        <MathRenderer
-                                            content={content.response.slice(2, -2).trim()}
-                                            displayMode={true}
-                                        />
-                                    ) : (
-                                        <MarkdownRenderer content={content.response} />
-                                    )}
-                                    <p className="text-sm text-gray-500">
-                                        Generated on {new Date(content.createdAt).toLocaleString()}
-                                    </p>
-                                </div>
-                            );
-                        })}
-                    </div>
+    return (
+        <div
+            key={content.id}
+            className="border p-4 rounded break-words overflow-x-auto"
+        >
+            <h3 className="font-semibold">{content.question}</h3>
+            {isMathContent ? (
+                <MathRenderer
+                    content={content.response.slice(2, -2).trim()}
+                    displayMode={true}
+                />
+            ) : (
+                <MarkdownRenderer content={content.response} />
+            )}
+            <p className="text-sm text-gray-500">
+                Generated on {new Date(content.createdAt).toLocaleString()}
+            </p>
+        </div>
+    );
+                    })}
                 ) : (
                     <p>No previous content found.</p>
                 )}
