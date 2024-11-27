@@ -17,15 +17,20 @@ export default function SignUp() {
   const handleSignUp = async (provider: string) => {
   setLoading(true);
   try {
-    const response = await signIn(provider, { callbackUrl: "/dashboard" });
+    const response = await signIn(provider, { redirect: false });
     if (response?.error === "OAuthAccountNotLinked") {
-      toast.error("Account not linked. Please sign in with your original provider.");
+      toast.error("Account not linked. Please use your original provider.");
+    } else if (!response?.ok) {
+      toast.error("Sign-in failed. Please try again.");
     } else {
-      toast.success("Signed up successfully!");
+      toast.success("Signed in successfully!");
+      router.push("/dashboard");
     }
   } catch (error) {
+    console.error("Error during sign-in:", error);
+    toast.error("Sign-in failed. Please try again.");
+  } finally {
     setLoading(false);
-    toast.error("Sign-up failed. Please try again.");
   }
 };
 

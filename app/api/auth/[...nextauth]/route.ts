@@ -18,71 +18,44 @@ const authOptions: NextAuthOptions = {
   ],
   adapter: FirestoreAdapter(adminDb),
   callbacks: {
-  async signIn({ user, account }) {
-    const userEmail = user.email;
-    const provider = account.provider;
+    async signIn({ user, account, profile }) {
+      try {
+        const userDocRef = adminDb.collection("users").doc(user.email!);
+        const userDoc = await userDocRef.get();
 
-    if (!userEmail || !provider) return false;
+        if (userDoc.exists) {
+          const userData = userDoc.data();
 
-    try {
-      const userDocRef = adminDb.collection("users").doc(userEmail);
-      const userDoc = await userDocRef.get();
-
-      if (userDoc.exists) {
-        const userData = userDoc.data();
-
-        if (!userData) {
-          console.error("User data not found");
-          return false;
-        }
-
-        console.log("Existing user signing in:", userData);
-
-        // Check if provider is already linked
-        if (userData.linkedProviders && userData.linkedProviders.includes(provider)) {
-          return true;
-        }
-
-        // Link provider to existing account
-        if (userData.provider && userData.provider !== provider) {
-          const linkedProviders = userData.linkedProviders || [];
-          if (!linkedProviders.includes(provider)) {
-            linkedProviders.push(provider);
-            await userDocRef.update({ linkedProviders });
+          if (
+            userData.provider &&
+            userData.provider !== account.provider &&
+            !userData.linkedProviders?.includes(account.provider)
+          ) {
+            throw new Error("OAuthAccountNotLinked");
           }
+
+          if (!userData.linkedProviders?.includes(account.provider)) {
+            await userDocRef.update({
+              linkedProviders: [...(userData.linkedProviders || []), account.provider],
+            });
+          }
+
+          return true;
+        } else {
+          await userDocRef.set({
+            email: user.email!,
+            plan: "free",
+            requestCount: 0,
+            provider: account.provider,
+            linkedProviders: [account.provider],
+          });
           return true;
         }
-
-        // Handle new provider for existing user without provider
-        if (!userData.provider) {
-          await userDocRef.update({ provider, linkedProviders: [provider] });
-          return true;
-        }
-
-        // If none of the above conditions are met, return error
-        console.error("OAuthAccountNotLinked error");
+      } catch (error) {
+        console.error("Error during sign-in:", error);
         return false;
-      } else {
-        // Create new user document
-        console.log("New user signing up:", { email: userEmail, provider });
-        await userDocRef.set({
-          email: userEmail,
-          plan: "free",
-          requestCount: 0,
-          provider,
-          linkedProviders: [provider],
-        });
-        return true;
       }
-    } catch (error) {
-      if (error.code === 'auth/invalid-email') {
-        console.error('Invalid email:', error);
-      } else {
-        console.error('Sign-in error:', error);
-      }
-      return false;
-    }
-  },
+    },
 
     async session({ session, user }) {
       console.log("Session data:", session);
