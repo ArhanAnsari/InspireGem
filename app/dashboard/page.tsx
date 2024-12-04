@@ -67,70 +67,63 @@ export default function Dashboard() {
         fetchPreviousContent();
     }, [session, fetchPreviousContent]);
 
-    const generateAIContent = async () => {
-        if (!input) {
-            toast.error("Please enter some text to generate AI content.");
-            return;
-        }
+    // AI Content Generation Section
+const generateAIContent = async () => {
+  if (!input) {
+    toast.error("Please enter some text to generate AI content.");
+    return;
+  }
 
-        if (!session || !session.user?.email) {
-            toast.error("User session is not available.");
-            return;
-        }
+  if (!session || !session.user?.email) {
+    toast.error("User session is not available.");
+    return;
+  }
 
-        // Check for math input (e.g., detect LaTeX syntax like $$...$$)
-        const isMathInput = input.trim().startsWith("$$") && input.trim().endsWith("$$");
+  setIsLoading(true);
 
-        if (isMathInput) {
-            // Use a state variable to trigger re-render after setting the output
-            // This forces React to update the component and render the MathRenderer
-            setOutput(""); 
-            setTimeout(() => {
-                setOutput(input);
-                toast.success("Math content displayed successfully!");
-            }, 0); // Setting a timeout of 0 ensures the state update happens after the current execution context.
+  try {
+    if (userPlan !== "enterprise") {
+      const canGenerate = await checkUserPlanLimit(session.user.email);
+      if (!canGenerate) {
+        toast.error("You have reached your limit for this month.");
+        setIsLoading(false);
+        return;
+      }
+    }
 
-            return;
-        }
+    // Detect LaTeX Input
+    const isMathInput = input.trim().startsWith("$$") && input.trim().endsWith("$$");
+    if (isMathInput) {
+      const mathContent = input.trim().slice(2, -2);
+      setOutput(mathContent);
+      toast.success("Math content displayed successfully!");
+    } else {
+      const result = await askQuestion({
+        userId: session.user.email,
+        question: input,
+      });
 
-        setIsLoading(true);
+      if (!result.success) {
+        toast.error(result.message);
+        return;
+      }
 
-        try {
-            if (userPlan !== "enterprise") {
-                const canGenerate = await checkUserPlanLimit(session.user.email);
+      setOutput(result.message);
+      toast.success("AI content generated successfully!");
 
-                if (!canGenerate) {
-                    toast.error("You have reached your limit for this month.");
-                    setIsLoading(false);
-                    return;
-                }
-            }
+      // Increment request count after successful content generation
+      await incrementRequestCount(session.user.email);
+      await fetchPreviousContent();
+    }
 
-            const result = await askQuestion({
-                userId: session.user.email,
-                question: input,
-            });
-
-            if (!result.success) {
-                toast.error(result.message);
-                return;
-            }
-
-            setOutput(result.message);
-            toast.success("AI content generated successfully!");
-
-            // Increment request count after successful content generation
-            await incrementRequestCount(session.user.email);
-            
-            await fetchPreviousContent();
-            setInput("");
-        } catch (error) {
-            console.error("Error generating AI content:", error);
-            toast.error("An error occurred while generating AI content.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
+      setInput("");
+  } catch (error) {
+      console.error("Error generating AI content:", error);
+      toast.error("An error occurred while generating AI content.");
+  } finally {
+      setIsLoading(false);
+  }
+};
 
     if (status === "loading") {
         return <div>Loading...</div>;
@@ -192,36 +185,35 @@ export default function Dashboard() {
         <div className="mt-6">
             <h2 className="text-lg md:text-xl font-semibold mb-4">Previously Generated Content</h2>
             {previousContent.length ? (
-                <div className="flex flex-col space-y-4">
-                    {previousContent.map((content) => {
-                        const isMathContent =
-                            content.response.trim().startsWith("$$") &&
-                            content.response.trim().endsWith("$$");
-
-                        return (
-                            <div
-                                key={content.id}
-                                className="border p-4 rounded break-words overflow-x-auto"
-                            >
-                                <h3 className="font-semibold">{content.question}</h3>
-                                {isMathContent ? (
-                                    <MathRenderer
-                                        content={content.response.slice(2, -2).trim()}
-                                        displayMode={true}
-                                    />
-                                ) : (
-                                    <MarkdownRenderer content={content.response} />
-                                )}
-                                <p className="text-sm text-gray-500">
-                                    Generated on {new Date(content.createdAt).toLocaleString()}
-                                </p>
-                            </div>
-                        );
-                    })}
+        <div className="flex flex-col space-y-4">
+            {previousContent.map((content) => {
+            const isMathContent =
+                content.response.trim().startsWith("$$") && content.response.trim().endsWith("$$");
+            
+            return (
+                <div
+                    key={content.id}
+                    className="border p-4 rounded break-words overflow-x-auto"
+                    >
+                    <h3 className="font-semibold">{content.question}</h3>
+                    {isMathContent ? (
+                        <MathRenderer
+                            content={content.response.slice(2, -2).trim()}
+                            displayMode={true}
+                            />
+                    ) : (
+                        <MarkdownRenderer content={content.response} />
+                    )}
+                    <p className="text-sm text-gray-500">
+                        Generated on {new Date(content.createdAt).toLocaleString()}
+                    </p>
                 </div>
-            ) : (
-                <p>No previous content found.</p>
-            )}
+            );
+        })}
+        </div>
+    ) : (
+        <p>No previous content found.</p>
+    )}
         </div>
 
         {/* Star us on GitHub Button */}
