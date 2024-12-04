@@ -1,3 +1,4 @@
+//components/MathRenderer.tsx
 "use client";
 
 import { BlockMath, InlineMath } from "react-katex";
@@ -9,5 +10,11 @@ interface MathRendererProps {
 }
 
 export default function MathRenderer({ content, displayMode = false }: MathRendererProps) {
-  return displayMode ? <BlockMath>{content}</BlockMath> : <InlineMath>{content}</InlineMath>;
+  try {
+    if (!content) return <p>No content provided</p>;
+    return displayMode ? <BlockMath>{content}</BlockMath> : <InlineMath>{content}</InlineMath>;
+  } catch (error) {
+    console.error("Error rendering math content:", error);
+    return <p>Error rendering math content</p>;
+  }
 }
