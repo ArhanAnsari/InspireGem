@@ -214,6 +214,7 @@ const generateAIContent = async () => {
     ) : (
         <p>No previous content found.</p>
     )}
+        </div>
 
         {/* Star us on GitHub Button */}
         <div className="mt-8">
