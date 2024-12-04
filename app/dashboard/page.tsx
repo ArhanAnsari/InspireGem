@@ -201,19 +201,19 @@ const generateAIContent = async () => {
                             content={content.response.slice(2, -2).trim()}
                             displayMode={true}
                             />
-          ) : (
-            <MarkdownRenderer content={content.response} />
-          )}
-          <p className="text-sm text-gray-500">
-            Generated on {new Date(content.createdAt).toLocaleString()}
-          </p>
+                    ) : (
+                        <MarkdownRenderer content={content.response} />
+                    )}
+                    <p className="text-sm text-gray-500">
+                        Generated on {new Date(content.createdAt).toLocaleString()}
+                    </p>
+                </div>
+            );
+        })}
         </div>
-      );
-    })}
-  </div>
-) : (
-  <p>No previous content found.</p>
-)}
+    ) : (
+        <p>No previous content found.</p>
+    )}
 
         {/* Star us on GitHub Button */}
         <div className="mt-8">
